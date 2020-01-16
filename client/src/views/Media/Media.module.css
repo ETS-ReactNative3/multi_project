@@ -1,0 +1,77 @@
+.mediaSection{
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    width:90%;
+    margin:auto;
+   
+}
+.media{
+    width:17.5%;
+    margin: 5px auto;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 3px #ccc;
+    text-align: center;
+    padding: 10px
+}
+.media img{
+    width:126px;
+    height:126px;
+}
+.addMediaSection{
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: center;
+    width: 90%;
+    margin: auto;
+    border: 4px dashed #b4b9be;
+    min-height: 500px;
+    height: auto;
+    padding-bottom: 110px;
+}
+.dragdropSection{
+    margin:  auto ;
+    width: 250px;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+}
+input[type="file"] {
+    display: none;
+}
+.fileSelection{
+    padding: 0.25rem 0.5rem;
+    font-size: 1.256325rem;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+    color: #fff;
+    background-color: #20a8d8;
+    border-color: #20a8d8;
+    margin-top: 15px;
+}
+.filePreview{
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-end;
+    width:90%;
+    margin:auto;
+}
+.file{
+    width:17.5%;
+    margin: 5px ;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 3px #ccc;
+    text-align: center;
+    padding: 10px;
+    position: relative;
+}
+.filePreview img{
+    width:110px;
+    height: 110px;
+}
+.removeIcons{
+    position: absolute;
+    left: -5px;
+    top: -29px;
+}

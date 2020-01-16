@@ -1,0 +1,55 @@
+{
+  "name": "digikala_project_api",
+  "version": "1.0.0",
+  "description": "this is a api for store digikala project",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ali-kiani-dev/multi_project.git"
+  },
+  "keywords": [
+    "reactapp.ir/project"
+  ],
+  "author": "ali kiani",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ali-kiani-dev/multi_project/issues"
+  },
+  "homepage": "https://github.com/Ali-kiani-dev/multi_project#readme",
+  "dependencies": {
+    "apollo-server-express": "^2.9.15",
+    "app-module-path": "^2.2.0",
+    "auto-bind": "^4.0.0",
+    "bcryptjs": "^2.4.3",
+    "connect-mongo": "^3.2.0",
+    "cookie-parser": "^1.4.4",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-graphql": "^0.9.0",
+    "express-recaptcha": "^5.0.1",
+    "express-session": "^1.17.0",
+    "express-validator": "^6.3.1",
+    "file-type": "^13.0.3",
+    "flash": "^1.1.0",
+    "graphql": "^14.5.8",
+    "image-size": "^0.8.3",
+    "jsonwebtoken": "^8.5.1",
+    "mkdirp": "^0.5.1",
+    "moment-jalaali": "^0.9.1",
+    "mongoose": "^5.8.5",
+    "mongoose-paginate": "^5.0.3",
+    "nodemailer": "^6.4.2",
+    "passport": "^0.4.1",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0",
+    "sweetalert2": "^9.5.4",
+    "unique-string": "^2.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}
