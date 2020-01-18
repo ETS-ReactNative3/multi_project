@@ -8,7 +8,9 @@ const Category = require('app/models/category');
 const Survey = require('app/models/survey');
 const Brand = require('app/models/brand');
 const Product = require('app/models/product');
-const Productdetails = require('app/models/product-details');
+const Productspecs = require('app/models/p-specs');
+const Productdetails = require('app/models/p-details');
+const Details = require('app/models/details');
 
 const resolvers = {
     Query : {
@@ -42,6 +44,11 @@ const resolvers = {
 
             const users = await User.find({});
             return users;
+        },
+
+        getProduct : async (param, args) => {
+            const producs = await Product.find({});
+            return producs
         }
     },
 
@@ -168,34 +175,115 @@ const resolvers = {
         },
 
         product : async (param, args) => {
+            const details = await saveDetailsValue(args.input.details);
             const pro = await Product({
-                ...args.input
+                 fname : args.input.fname,
+                 ename : args.input.ename,
+                 details : details,
+                 image : args.input.image
             })
 
-            await pro.save();
+            await pro.save(err => {
+                if(err) {
+                    const error = new Error('امکان درج محصول جدید وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                }
+            });
+
+            return {
+                status : 200,
+                message : 'محصول مورد نظر ثبت شد.'
+            }
+        },
+
+        productSpecs : async (param, args) => {
+            const ProSpecs = await new Productspecs({
+                category : args.input.category,
+                specs : args.input.specs,
+                label : args.input.label
+            })
+
+            await ProSpecs.save(err => {
+                if(err) {
+                    const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                }
+            });
+
+            return {
+                status : 200,
+                message : 'لیست اصلی مربوط به مشخصات محصول ذخیره شد.'
+            }
+        },
+
+        productSpecsDetails : async (param, args) => {
+            const ProSpecs = await new Productdetails({
+                specs : args.input.specs,
+                name : args.input.name,
+                label : args.input.label
+            })
+
+            ProSpecs.save(err => {
+                if(err) {
+                    const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                }
+            });
+
+            return {
+                status : 200,
+                message : 'لیست جزئیات مربوط به مشخصات محصول ذخیره شد.'
+            }
+        },
+
+        productDetailsValue : async (param, args) => {
+            const detail = await new Details({
+                p_details : args.input.p_details,
+                value : args.input.value,
+                label : args.input.label
+            })
+
+            await detail.save(err =>{
+                if(err) {
+                    const error = new Error('امکان درج جزئیات مشخصات محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                }
+            })
 
             return {
                 status : 200,
                 message : 'ok'
             }
-        },
-
-        productdetails : async (param, args) => {
-            const ProDetails = await new Productdetails({
-                category : args.input.category,
-                name : args.input.name,
-                description : args.input.description
-            })
-
-            ProDetails.save(err => {
-                if(err) {
-                    const error = new Error('امکان درج جزئیات محصول برای این دسته بندی وجود ندارد.');
-                    error.code = 401;
-                    throw error;
-                }
-            });
         }
     }
+}
+
+let saveDetailsValue = async (args) => {
+    const arr = [];
+    for (let index = 0; index < args.length; index++) {
+        const element = args[index];
+                    const op = await new Details({
+                        p_details : element.p_details,
+                        value : element.value,
+                        label : element.label
+                    })
+
+                    await op.save(async err => {
+                                                if(err) {
+                                                    const error = new Error('امکان درج محصول جدید وجود ندارد.');
+                                                    error.code = 401;
+                                                    throw error;
+                                                } 
+                                            });
+
+                    arr[index] = op._id
+
+    }
+    return arr;
 }
 
 let getImageSize = (type) => {

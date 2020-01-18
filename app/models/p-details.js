@@ -3,9 +3,9 @@ const mongoosePaginate = require('mongoose-paginate');
 const Schema = mongoose.Schema;
 
 const ProductDetails = Schema({
-    category : { type : mongoose.Types.ObjectId, ref : 'CAtegory'},
+    specs : { type : mongoose.Types.ObjectId, ref : 'ProductSpecs'},
     name : { type : String, required : true},
-    description : [{type : String}]
+    label : { type : String }
 });
 
 ProductDetails.plugin(mongoosePaginate);

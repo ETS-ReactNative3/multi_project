@@ -1,8 +1,10 @@
 const { gql } = require('apollo-server-express');
+
 const typeDefs = gql`
     type Query {
         login(input : LRInput) : Token!,
-        getUsers : [User]!
+        getUsers : [User]!,
+        getProduct : [product]!
     }
 
     type Mutation {
@@ -11,23 +13,41 @@ const typeDefs = gql`
         category(input : InputCategory) : operation!,
         survey(input : InputSurvey) : operation!,
         brand(input : InputBrand) : operation!,
-        product(input : InputPro) : operation!,
-        productdetails(input : InputProductDetails) : operation!
+        product(input : InputProduct) : operation!,
+        productSpecs(input : InputProductSpecs) : operation!,
+        productSpecsDetails(input : InputProductSpecsDetails) : operation!
+        productDetailsValue(input : InputProductDetailsValue) : operation!
     }
 
-    input InputProductDetails {
+    input InputProductSpecs {
         category : ID!,
+        specs : String!,
+        label : String
+    }
+
+    input InputProductSpecsDetails {
+        specs : ID!,
         name : String!,
-        description : String!
+        label : String
     }
 
-    input InputPro {
-        att : [inp!]
+    input InputProductDetailsValue {
+        p_details : ID!,
+        value : String!,
+        label : String
     }
 
-    input inp {
-        fname : String,
-        lname : String
+    input InputProduct {
+        fname : String!,
+        ename : String!,
+        details : [InputDetails!]!,
+        image : [String!]!
+    }
+
+    input InputDetails {
+        p_details : ID!,
+        value : String!,
+        label : String
     }
 
     input InputBrand {
@@ -94,6 +114,12 @@ const typeDefs = gql`
         dir : String!
     }
 
+    type product {
+        fname : String!,
+        ename : String!,
+        details : [ID!]!,
+        image : [String!]!
+    }
 `;
 
 module.exports = typeDefs;
