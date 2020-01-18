@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Badge,Pagination,PaginationItem,PaginationLink  } from 'reactstrap';
-import classes from './scoring.module.css'
+import classes from './scoring.module.css';
+import { Link } from 'react-router-dom';
 const Scoring=()=> {
 
   const[ownerState,setOwnerState] = useState([]);
@@ -109,8 +110,8 @@ const onSubmitForm =()=>{
                     })}
                 </CardBody>
                 <CardFooter>
-                <Button type="submit" size="sm" color="primary" onClick={onSubmitForm}><strong>ثبت</strong> </Button>
-              </CardFooter>
+                    <Button type="submit" size="sm" color="primary" onClick={onSubmitForm}><strong>ثبت</strong> </Button>
+                </CardFooter>
               </Card>
               <Card>
                 <CardHeader>                   
@@ -133,7 +134,7 @@ const onSubmitForm =()=>{
                             <td>
                                 
                                 <Col xs="6">
-                                     <Button type="submit" size="sm" color="primary"><strong>مشاهده معیار های امتیاز دهی</strong> </Button>
+                                <Link to="/shop/scoring/1"> مشاهده معیار های امتیاز دهی </Link>
                                 </Col>
                                 
                                 

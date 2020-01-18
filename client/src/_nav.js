@@ -58,6 +58,16 @@ export default {
           icon: 'icon-puzzle',
         },
         {
+          name: 'مشخصات',
+          url: '/shop/specifications',
+          icon: 'icon-puzzle',
+        },
+        {
+          name: ' ریز مشخصات',
+          url: '/shop/subSpecifications',
+          icon: 'icon-puzzle',
+        },
+        {
           name: 'Breadcrumbs',
           url: '/base/breadcrumbs',
           icon: 'icon-puzzle',

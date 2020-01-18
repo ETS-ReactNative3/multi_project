@@ -43,6 +43,9 @@ const AddMedia = React.lazy(() => import('./views/Media/AddMedia'));
 const Category = React.lazy(() => import('./views/Shop/Category'));
 const Brand = React.lazy(() => import('./views/Shop/Brand'));
 const Scoring = React.lazy(() => import('./views/Shop/Scoring'));
+const ScoringItem = React.lazy(() => import('./views/Shop/ScoringItem'));
+const Specifications = React.lazy(() => import('./views/Shop/Specifications'));
+const SubSpecifications = React.lazy(() => import('./views/Shop/SubSpecifications'));
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
   
@@ -54,6 +57,9 @@ const routes = [
   { path: '/shop/category', exact: true, name: 'دسته بندی ها', component: Category },
   { path: '/shop/brand', exact: true, name: ' برند ها', component: Brand },
   { path: '/shop/scoring', exact: true, name: 'نحوه امتیاز دهی', component: Scoring },
+  { path: '/shop/scoring/:scoringid', exact: true, name: ' معیار های نحوه امتیاز دهی ', component: ScoringItem },
+  { path: '/shop/specifications', exact: true, name: 'مشخصات', component: Specifications },
+  { path: '/shop/subSpecifications', exact: true, name: 'مشخصات', component: SubSpecifications },
   { path: '/base/cards', name: 'Cards', component: Cards },
   { path: '/base/forms', name: 'Forms', component: Forms },
   { path: '/base/switches', name: 'Switches', component: Switches },
