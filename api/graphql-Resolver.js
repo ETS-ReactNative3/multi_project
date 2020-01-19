@@ -55,32 +55,7 @@ const resolvers = {
     Mutation : {
         register : async (param, args) => {
             const person = await User.findOne({ phone : args.input.phone});
-            if(person) {
-                return {
-                    status : 401,
-                    message : 'این شماره تلفن قبلا در سیستم ثبت شده است!'
-                }
-            }
-            const salt = await bcrypt.genSaltSync(15);
-            const hash = await bcrypt.hashSync(args.input.password, salt);
-            const user = await new User({
-                phone : args.input.phone,
-                password : hash,
-                ...args
-            })
-            await user.save(err => {
-                if(err) {
-                    return {
-                        status : 401,
-                        message : 'این شماره تلفن قبلا در سیستم ثبت شده است!'
-                    }
-                }
-            });
-            return {
-                status : 200,
-                message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
-            };
-            
+        
             if(!person) {
                 const salt = await bcrypt.genSaltSync(15);
                 const hash = await bcrypt.hashSync(args.input.password, salt);

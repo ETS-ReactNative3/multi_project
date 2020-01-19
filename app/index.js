@@ -51,8 +51,6 @@ module.exports = class Application {
         
         app.use(cors());
         app.use(express.static(config.layout.PUBLIC_DIR));
-         app.use(session({...config.session}));
-         app.use(cookieParser());
         // app.use(session({...config.session}));
         app.use(cookieParser());
         // app.use(passport.initialize());
