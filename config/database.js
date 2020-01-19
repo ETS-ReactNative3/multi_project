@@ -1,5 +1,5 @@
 module.exports = {
-    url : 'mongodb://localhost/Digikala',
+    url : 'mongodb://root:2bUa5sHebWc8bPRXiQm9tI86@s9.liara.ir:33373/digikalaP?authSource=admin',
     options : {
         useUnifiedTopology: true,
         useNewUrlParser: true,

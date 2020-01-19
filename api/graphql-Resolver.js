@@ -56,9 +56,10 @@ const resolvers = {
         register : async (param, args) => {
             const person = await User.findOne({ phone : args.input.phone});
             if(person) {
-                const error = new Error('این شماره تلفن قبلا در سیستم ثبت شده است!');
-                error.code = 401;
-                throw error;
+                return {
+                    status : 401,
+                    message : 'این شماره تلفن قبلا در سیستم ثبت شده است!'
+                }
             }
             const salt = await bcrypt.genSaltSync(15);
             const hash = await bcrypt.hashSync(args.input.password, salt);
@@ -67,11 +68,12 @@ const resolvers = {
                 password : hash,
                 ...args
             })
-            user.save(err => {
+            await user.save(err => {
                 if(err) {
-                    const error = new Error('متاسفانه! اطلاعات شما ذخیره نشد.مجددا تلاش نمایید');
-                    error.code = 401;
-                    throw error;
+                    return {
+                        status : 401,
+                        message : 'این شماره تلفن قبلا در سیستم ثبت شده است!'
+                    }
                 }
             });
             return {

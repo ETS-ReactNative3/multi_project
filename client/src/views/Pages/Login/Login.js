@@ -1,9 +1,39 @@
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, CardBody, CardGroup, Col, Container, Form, Input, InputGroup, InputGroupAddon, InputGroupText, Row } from 'reactstrap';
+import axios from 'axios';
+const Login =()=> {
+   useEffect(()=>{
+    let data = {
+      query : `
+        mutation {
+          register(input : { phone : "09154968751", password : "123456"}) {
+            status,
+            message
+          }
+        }
+      `
+  };
 
-class Login extends Component {
-  render() {
+  let optitons = {
+      method : 'POST',
+      headers : { 
+          'content-type' : 'application/json'
+      },
+      body : JSON.stringify(data)
+  };
+
+  let url = 'http://localhost:4000/graphql';
+
+  fetch(url,optitons)
+      .then(res => res.json())
+      .then(res => console.log(res))
+      .catch(err => console.log(err));
+
+  },[])
+  const handleLogin=()=>{
+   
+  }
     return (
       <div className="app flex-row align-items-center">
         <Container>
@@ -38,7 +68,7 @@ class Login extends Component {
                           </Link>
                         </Col>
                         <Col xs="6" className="text-right">
-                          <Button color="link" className="px-0">رمز عبور خود را فراموش کرده اید؟</Button>
+                          <Button color="link" className="px-0" onClick={handleLogin}>رمز عبور خود را فراموش کرده اید؟</Button>
                         </Col>
                       </Row>
                     </Form>
@@ -55,9 +85,9 @@ class Login extends Component {
                       🔸استفاده از NodeJS برای توسعه سمت سرور
                       🔸استفاده از ساختار GraphQl برای API
                       </p>
-                      <Link to="/register">
+                     
                         <a href="https://reactapp.ir"><Button color="primary" className="mt-3" active tabIndex={-1}>ثبت نام دوره</Button></a>
-                      </Link>
+                      
                     </div>
                   </CardBody>
                 </Card>
@@ -67,7 +97,7 @@ class Login extends Component {
         </Container>
       </div>
     );
-  }
+  
 }
 
 export default Login;

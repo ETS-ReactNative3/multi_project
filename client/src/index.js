@@ -8,7 +8,7 @@ import './index.css';
 import App from './App';
 import axios from 'axios';
 import * as serviceWorker from './serviceWorker';
-axios.defaults.baseURL = 'https://jsonplaceholder.ir'
+//axios.defaults.baseURL = 'http://192.168.119.2:4000/graphql'
 axios.defaults.headers.post['Contetnt-Type'] = 'application/json';
 axios.defaults.headers.post['Accept'] = 'applicaion/json';
 

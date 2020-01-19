@@ -4,12 +4,8 @@
   "description": "this is a api for store digikala project",
   "main": "server.js",
   "scripts": {
-<<<<<<< HEAD
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-=======
     "start": "nodemon server.js"
->>>>>>> 82bf7bda6f6c95a6c871a7b932eca814eebfa831
   },
   "repository": {
     "type": "git",
@@ -28,29 +24,20 @@
     "apollo-server-express": "^2.9.15",
     "app-module-path": "^2.2.0",
     "auto-bind": "^4.0.0",
-<<<<<<< HEAD
     "connect-mongo": "^3.2.0",
     "cookie-parser": "^1.4.4",
-=======
     "bcryptjs": "^2.4.3",
-    "connect-mongo": "^3.2.0",
-    "cookie-parser": "^1.4.4",
     "cors": "^2.8.5",
->>>>>>> 82bf7bda6f6c95a6c871a7b932eca814eebfa831
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
     "express-recaptcha": "^5.0.1",
     "express-session": "^1.17.0",
     "express-validator": "^6.3.1",
-<<<<<<< HEAD
     "graphql": "^14.5.8",
-=======
     "file-type": "^13.0.3",
     "flash": "^1.1.0",
-    "graphql": "^14.5.8",
     "image-size": "^0.8.3",
->>>>>>> 82bf7bda6f6c95a6c871a7b932eca814eebfa831
     "jsonwebtoken": "^8.5.1",
     "mkdirp": "^0.5.1",
     "moment-jalaali": "^0.9.1",
@@ -62,11 +49,8 @@
     "passport-local": "^1.0.0",
     "sweetalert2": "^9.5.4",
     "unique-string": "^2.0.0"
-<<<<<<< HEAD
-=======
   },
   "devDependencies": {
     "nodemon": "^2.0.2"
->>>>>>> 82bf7bda6f6c95a6c871a7b932eca814eebfa831
   }
 }

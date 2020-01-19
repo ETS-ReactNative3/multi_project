@@ -6,6 +6,7 @@ const typeDefs = require('api/graphql-Schema');
 const resolvers = require('api/graphql-Resolver');
 const User = require('app/models/users');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const app = express();
 
 
@@ -19,9 +20,6 @@ module.exports = class Application {
 
     ConfigServer() {
         const server = new ApolloServer({typeDefs, resolvers, formatError(err) {
-            if(!err.originalError) {
-                return err;
-            }
 
             const data = err.originalError.data;
             const code = err.originalError.code || 500;
@@ -51,8 +49,8 @@ module.exports = class Application {
         
         app.use(cors());
         app.use(express.static(config.layout.PUBLIC_DIR));
-        // app.use(session({...config.session}));
-        // app.use(cookieParser());
+         app.use(session({...config.session}));
+         app.use(cookieParser());
         // app.use(passport.initialize());
         // app.use(passport.session());
     }
