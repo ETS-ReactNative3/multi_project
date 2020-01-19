@@ -3,8 +3,10 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const { ApolloServer } = require('apollo-server-express');
 const typeDefs = require('api/graphql-Schema');
+const cookieParser = require('cookie-parser');
 const resolvers = require('api/graphql-Resolver');
 const User = require('app/models/users');
+
 const cors = require('cors');
 const app = express();
 
@@ -52,7 +54,7 @@ module.exports = class Application {
         app.use(cors());
         app.use(express.static(config.layout.PUBLIC_DIR));
         // app.use(session({...config.session}));
-        // app.use(cookieParser());
+        app.use(cookieParser());
         // app.use(passport.initialize());
         // app.use(passport.session());
     }

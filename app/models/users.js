@@ -4,18 +4,18 @@ const Schema = mongoose.Schema;
 const mongoosePaginate = require('mongoose-paginate');
 
 const User = Schema({
-    level : { type : Boolean, required : true, default : 0},
-    fname : { type : String, required : false},
-    lname : { type : String, required : false},
-    code : { type : Number, required : false, unique : true, dropDups : true},
-    number : { type : String, required : false, unique : true, dropDups : true},
-    phone : { type : String, required : true, unique : true, dropDups : true},
+    level : { type : Boolean, required : true, default : false},
+    fname : { type : String, default : null},
+    lname : { type : String, default : null},
+    code : { type : String, default : null},
+    number : { type : String, default : null},
+    phone : { type : String, required : true},
     password : { type : String, required : true},
-    email : { type : Number, required : false, unique : true, dropDups : true},
-    birthday : { type : String, required : false},
-    gender : { type : String, required : false},
-    state : [{ type : Schema.Types.ObjectId, ref : 'State', default : 0 }],
-    city : [{ type : Schema.Types.ObjectId, ref : 'City', default : 0}],
+    email : { type : String, default : null},
+    birthday : { type : String, default : null},
+    gender : { type : String, default : null},
+    state : [{ type : Schema.Types.ObjectId, ref : 'State', default : null }],
+    city : [{ type : Schema.Types.ObjectId, ref : 'City', default : null}],
 }, {
     timestamps : true
 })

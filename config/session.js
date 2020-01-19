@@ -7,4 +7,5 @@ module.exports = {
     resave : false,
     saveUninitialized : true,
     store : new connectMongo({mongooseConnection : mongoose.connection}),
+    cookie : { path: '/', httpOnly: true, secure: false, maxAge: null }
 }

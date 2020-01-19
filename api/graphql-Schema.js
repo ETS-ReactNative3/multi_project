@@ -83,6 +83,7 @@ const typeDefs = gql`
         birthday : String,
         gender : Gender,
         phone : String!,
+        email : String,
         password : String!,
     }
 
@@ -102,8 +103,9 @@ const typeDefs = gql`
         number : String,
         birthday : String,
         gender : Gender,
-        phone : String,
-        password : String,
+        phone : String!,
+        email : String,
+        password : String!,
     }
 
     type UploadFile {
