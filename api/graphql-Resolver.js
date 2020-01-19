@@ -81,6 +81,24 @@ const resolvers = {
                 message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
             };
             
+            if(!person) {
+                const salt = await bcrypt.genSaltSync(15);
+                const hash = await bcrypt.hashSync(args.input.password, salt);
+                const user = await new User({
+                    phone : args.input.phone,
+                    password : hash,
+                    ...args.input
+                })
+                await user.save();
+                return {
+                    status : 200,
+                    message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
+                };
+            } else {
+                const error = new Error('این شماره تلفن قبلا در سیستم ثبت شده است!');
+                error.code = 401;
+                throw error
+            }
         },
 
         multimedia : async (param, args) => {
