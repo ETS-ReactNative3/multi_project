@@ -39,9 +39,7 @@ const removeLoadedFile = (fileProperty)=>{
   const newFile  = loadedFiles.filter(idFile=>idFile!==fileProperty);
   setLoadedFiles(newFile);
 }
-const removeAllLoadedFiles = ()=>{
-  setLoadedFiles([])
-}
+
 
     return (
       <div className="animated fadeIn">

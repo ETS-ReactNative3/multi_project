@@ -1,9 +1,28 @@
-import React, { Component } from 'react';
-import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Badge,Pagination,PaginationItem,PaginationLink  } from 'reactstrap';
+import React, { useContext, useEffect,useState } from 'react';
+import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Pagination,PaginationItem,PaginationLink  } from 'reactstrap';
+import {AuthContext} from '../../context/Auth/AuthContext';
+import GetToken from '../../context/Auth/GetToken';
+const Category =(props)=> {
 
-class Category extends Component {
-
-  render() {
+    const {dispatch} = useContext(AuthContext);
+    useEffect(()=>{
+        dispatch({type:'check',payload:props});
+        const token =  GetToken();
+        console.log(token)       
+    },[])
+    const [title,setTitle] = useState('');
+    const [lable,setLable] = useState('');
+    const [mainSubTitleFromServer,setMainSubTitleFromServe] = useState([]);
+    const [subTitleFromServer,setSubTitleFromServe] = useState([]);
+    const handleTitle =(event)=>{
+        setTitle(event.target.value)
+    }
+    const handleLable =(event)=>{
+        setLable(event.target.value)
+    }
+    const handleMainSubTitle=(event)=>{
+        console.log(event.target.value);
+    }
     return (
       <div className="animated fadeIn">
         <Row>
@@ -17,29 +36,38 @@ class Category extends Component {
                         <Col xs="3">
                             <FormGroup>
                             <Label htmlFor="title">عنوان</Label>
-                            <Input type="text" id="title" placeholder="عنوان را وارد کنید"  required/>
+                            <Input type="text" id="title"
+                             placeholder="عنوان را وارد کنید"
+                             value={title}
+                             onChange={handleTitle}
+                             required/>
                             </FormGroup>
                         </Col>
                         <Col xs="3">
                             <FormGroup>
                             <Label htmlFor="description">توضیحات</Label>
-                            <Input type="text" id="description" placeholder="در صورت نیاز توضیحات را وارد کنید" />
+                            <Input type="text" id="description"
+                             placeholder="در صورت نیاز توضیحات را وارد کنید"
+                             value={lable}
+                             onChange={handleLable}
+                              />
                             </FormGroup>
                         </Col>
                         <Col xs="3">
                             <FormGroup>
                             <Label htmlFor="category"> دسته اصلی</Label>
-                            <Input type="select" name="category" id="category">
+                            <Input type="select" name="category"
+                             id="category"
+                             onChange={handleMainSubTitle}
+                              >
                                 <option ></option>
-                                <option>2018</option>
-                                <option>2019</option>
-                                <option>2020</option>
-                                <option>2021</option>
-                                <option>2022</option>
-                                <option>2023</option>
-                                <option>2024</option>
-                                <option>2025</option>
-                                <option>2026</option>
+                                {
+                                    mainSubTitleFromServer.map((item,index)=>{
+                                        return(<option key={index} value={item.id}>{item.name}</option>)
+                                    })
+                                }
+                               
+                                
                             </Input>
                             </FormGroup>
                         </Col>
@@ -48,15 +76,11 @@ class Category extends Component {
                             <Label htmlFor="subcategory">زیردسته</Label>
                             <Input type="select" name="subcategory" id="subcategory">
                                 <option ></option>
-                                <option>2018</option>
-                                <option>2019</option>
-                                <option>2020</option>
-                                <option>2021</option>
-                                <option>2022</option>
-                                <option>2023</option>
-                                <option>2024</option>
-                                <option>2025</option>
-                                <option>2026</option>
+                                {
+                                    subTitleFromServer.map((item,index)=>{
+                                        return(<option key={index} value={item.id}>{item.name}</option>)
+                                    })
+                                }
                             </Input>
                             </FormGroup>
                         </Col>
@@ -141,7 +165,7 @@ class Category extends Component {
         </Row>
       </div>
     )
-  }
+  
 }
 
 export default Category;

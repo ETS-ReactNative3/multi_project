@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Badge,Pagination,PaginationItem,PaginationLink  } from 'reactstrap';
+import {  Card, CardBody, CardHeader, Col, Row,Button,Label,Input,FormGroup,CardFooter  } from 'reactstrap';
 import classes from './brand.module.css'
 const Brand =()=> {
     const [loadedFiles,setLoadedFiles] = useState({});
@@ -106,7 +106,7 @@ const Brand =()=> {
                             {
                                 arrayHolder.map((item,index)=>{
                                     return(
-                                     <div className={classes.brand} key={item.name} key={item.id}>
+                                     <div className={classes.brand}  key={item.id}>
                                      <span>{item.name} </span>
                                      <i className="fa fa-remove fa-lg " onClick={()=>deleteSubCategory(index,item)}></i>
                                      </div>
