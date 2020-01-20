@@ -39,6 +39,7 @@
     "reactstrap": "^8.0.0",
     "simple-line-icons": "^2.4.1",
     "yup": "^0.28.0"
+
   },
   "devDependencies": {
     "@babel/core": "^7.7.7",

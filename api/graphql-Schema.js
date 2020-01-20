@@ -4,7 +4,8 @@ const typeDefs = gql`
     type Query {
         login(input : LRInput) : Token!,
         getUsers : [User]!,
-        getProduct : [product]!
+        getProduct : [product!]!,
+        getCategory(page : Int, limit : Int) : [Category!]!
     }
 
     type Mutation {
@@ -15,8 +16,26 @@ const typeDefs = gql`
         brand(input : InputBrand) : operation!,
         product(input : InputProduct) : operation!,
         productSpecs(input : InputProductSpecs) : operation!,
-        productSpecsDetails(input : InputProductSpecsDetails) : operation!
-        productDetailsValue(input : InputProductDetailsValue) : operation!
+        productSpecsDetails(input : InputProductSpecsDetails) : operation!,
+        productDetailsValue(input : InputProductDetailsValue) : operation!,
+        UserForgetPassword(input : InputUserForgetPassword) : operation!,
+        UserResetPassword(input : InputUserResetPassword) : operation!,
+        ResetPassword(input : InputResetPassword) : operation!
+    }
+
+    input InputResetPassword {
+        phone : String!,
+        password : String!,
+        repassword : String!
+    }
+
+    input InputUserResetPassword {
+        phone : String!,
+        code : String
+    }
+
+    input InputUserForgetPassword {
+        phone : String!
     }
 
     input InputProductSpecs {
@@ -121,6 +140,19 @@ const typeDefs = gql`
         ename : String!,
         details : [ID!]!,
         image : [String!]!
+    }
+
+    type Category {
+        _id : ID
+        name : String!,
+        label : String,
+        parent : Parent,
+    }
+
+    type Parent {
+        _id : ID,
+        name : String!,
+        label : String,
     }
 `;
 

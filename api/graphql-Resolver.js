@@ -2,6 +2,7 @@ const User = require('app/models/users');
 const bcrypt = require('bcryptjs');
 const ImageSize = require('image-size');
 const FileType = require('file-type');
+// const uniquestring = require('unique-string');
 
 const Multimedia = require('app/models/multimedia');
 const Category = require('app/models/category');
@@ -11,13 +12,14 @@ const Product = require('app/models/product');
 const Productspecs = require('app/models/p-specs');
 const Productdetails = require('app/models/p-details');
 const Details = require('app/models/details');
+const Passwordreset = require('app/models/password-reset');
 
 const resolvers = {
     Query : {
         login : async (param, args, { secretID }) => {
-            const user = await User.findOne({ phone : args.input.phone});
+            const user = await User.findOne({ phone : args.input.phone, level : true});
             if(!user) {
-                const error = new Error('کاربری با این مشخصات در سیستم ثبت نام نکرده است');
+                const error = new Error('اطلاعات کاربری که از آن برای ورود به حساب کاربری خود استفاده می کنید نامعتبر است!');
                 error.code = 401;
                 throw error
             }
@@ -49,11 +51,18 @@ const resolvers = {
         getProduct : async (param, args) => {
             const producs = await Product.find({});
             return producs
+        },
+
+        getCategory : async (param, args) => {
+            let page = args.page || 1;
+            let limit = args.limit || 10;
+            const categorys = await Category.find({}).skip((page - 1) * limit).limit(limit).populate('parent').exec();
+            return categorys
         }
     },
 
     Mutation : {
-        register : async (param, args) => {
+        register : async (param, args) => {            
             const person = await User.findOne({ phone : args.input.phone});
         
             if(!person) {
@@ -62,8 +71,9 @@ const resolvers = {
                 const user = await new User({
                     phone : args.input.phone,
                     password : hash,
-                    ...args.input
-                })
+                    ...args
+                });
+                console.log(user);
                 await user.save();
                 return {
                     status : 200,
@@ -76,7 +86,8 @@ const resolvers = {
             }
         },
 
-        multimedia : async (param, args) => {
+        multimedia : async (param, args, { check }) => {
+            console.log(check);
             const { createReadStream, filename } = await args.file;
             const type = await FileType.fromFile(args.file);
             const stream = createReadStream();
@@ -104,157 +115,272 @@ const resolvers = {
 
         },
 
-        category : async (param, args) => {
-            const category = await new Category({
-                name : args.input.name,
-                label : args.input.label,
-                parent : args.input.parent,
-                subcategory : args.input.subcategory
-            })
+        category : async (param, args, { check }) => {
+            if(check) {
+                const category = await new Category({
+                    name : args.input.name,
+                    label : args.input.label,
+                    parent : args.input.parent,
+                    subcategory : args.input.subcategory
+                })
 
-            await category.save(err => {
-                if(err) {
-                    const error = new Error('امکان اضافه کردن این دسته بندی وجود ندارد.');
-                    error.code = 401;
-                    throw error;
+                await category.save(err => {
+                    if(err) {
+                        const error = new Error('Invalid request!');
+                        error.code = 401;
+                        throw error;
+                    }
+                })
+
+                return {
+                    status : 200,
+                    message : 'دسته بندی مورد نظر ایجاد شد.'
                 }
-            })
-
-            return {
-                status : 200,
-                message : 'دسته بندی مورد نظر ایجاد شد.'
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
             }
         },
 
-        survey : async (param, args) => {
-            const ser = await new Survey({
-                category : args.input.category,
-                name : args.input.name,
-                label : args.input.label
-            })
-
-            await ser.save(err => {
-                if(err) {
-                    const error = new Error('امکان ایجاد فیلد نظرسنجی برای این دسته بندی وجود ندارد.');
-                    error.code = 401;
-                    throw error;
+        survey : async (param, args, { check }) => {
+            if(check) {
+                const ser = await new Survey({
+                    category : args.input.category,
+                    name : args.input.name,
+                    label : args.input.label
+                })
+    
+                await ser.save(err => {
+                    if(err) {
+                        const error = new Error('امکان ایجاد فیلد نظرسنجی برای این دسته بندی وجود ندارد.');
+                        error.code = 401;
+                        throw error;
+                    }
+                })
+    
+                return {
+                    status : 200,
+                    message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
                 }
-            })
-
-            return {
-                status : 200,
-                message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
             }
         },
 
-        brand : async (param, args) => {
-            const brand = await new Brand({
-                category : args.input.category,
-                name : args.input.name,
-                label : args.input.label,
-                image : args.input.image
+        brand : async (param, args, { check }) => {
+            if(check) { 
+                const brand = await new Brand({
+                    category : args.input.category,
+                    name : args.input.name,
+                    label : args.input.label,
+                    image : args.input.image
+                });
+    
+                await brand.save(err => {
+                    if(err) {
+                        const error = new Error('امکان ثبت برند مورد نظر برای این دسته بندی وجود ندارد.');
+                        error.code = 401;
+                        throw error;
+                    }
+                })
+    
+                return {
+                    status : 200,
+                    message : 'برند برای دسته بندی مورد نظر ثبت شد.'
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        product : async (param, args, { check }) => {
+            if(check) {
+                const details = await saveDetailsValue(args.input.details);
+                const pro = await Product({
+                     fname : args.input.fname,
+                     ename : args.input.ename,
+                     details : details,
+                     image : args.input.image
+                })
+    
+                await pro.save(err => {
+                    if(err) {
+                        const error = new Error('امکان درج محصول جدید وجود ندارد.');
+                        error.code = 401;
+                        throw error;
+                    }
+                });
+    
+                return {
+                    status : 200,
+                    message : 'محصول مورد نظر ثبت شد.'
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        productSpecs : async (param, args, { check }) => {
+            if(check) {
+                const ProSpecs = await new Productspecs({
+                    category : args.input.category,
+                    specs : args.input.specs,
+                    label : args.input.label
+                })
+    
+                await ProSpecs.save(err => {
+                    if(err) {
+                        const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
+                        error.code = 401;
+                        throw error;
+                    }
+                });
+    
+                return {
+                    status : 200,
+                    message : 'لیست اصلی مربوط به مشخصات محصول ذخیره شد.'
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        productSpecsDetails : async (param, args, { check }) => {
+            if(check) {
+                const ProSpecsDetails = await new Productdetails({
+                    specs : args.input.specs,
+                    name : args.input.name,
+                    label : args.input.label
+                })
+    
+                ProSpecsDetails.save(err => {
+                    if(err) {
+                        const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
+                        error.code = 401;
+                        throw error;
+                    }
+                });
+    
+                return {
+                    status : 200,
+                    message : 'لیست جزئیات مربوط به مشخصات محصول ذخیره شد.'
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        productDetailsValue : async (param, args, { check }) => {
+            if(check) {
+                const detail = await new Details({
+                    p_details : args.input.p_details,
+                    value : args.input.value,
+                    label : args.input.label
+                })
+    
+                await detail.save(err =>{
+                    if(err) {
+                        const error = new Error('امکان درج جزئیات مشخصات محصول وجود ندارد.');
+                        error.code = 401;
+                        throw error;
+                    }
+                })
+    
+                return {
+                    status : 200,
+                    message : 'ok'
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UserForgetPassword : async (param, args) => {
+            const user = await User.findOne({ phone : args.input.phone});
+            if(!user) {
+                const error = new Error('کاربری با این شماره تلفن در سیستم ثبت نام نکرده است.');
+                error.code = 401;
+                throw error;
+            }
+
+            const password_reset = await new Passwordreset({
+                phone : args.input.phone,
+                code : Math.floor(Math.random() * (9999 - 999)) + 999
             });
 
-            await brand.save(err => {
-                if(err) {
-                    const error = new Error('امکان ثبت برند مورد نظر برای این دسته بندی وجود ندارد.');
-                    error.code = 401;
-                    throw error;
-                }
-            })
-
-            return {
-                status : 200,
-                message : 'برند برای دسته بندی مورد نظر ثبت شد.'
-            }
-        },
-
-        product : async (param, args) => {
-            const details = await saveDetailsValue(args.input.details);
-            const pro = await Product({
-                 fname : args.input.fname,
-                 ename : args.input.ename,
-                 details : details,
-                 image : args.input.image
-            })
-
-            await pro.save(err => {
-                if(err) {
-                    const error = new Error('امکان درج محصول جدید وجود ندارد.');
-                    error.code = 401;
-                    throw error;
-                }
-            });
-
-            return {
-                status : 200,
-                message : 'محصول مورد نظر ثبت شد.'
-            }
-        },
-
-        productSpecs : async (param, args) => {
-            const ProSpecs = await new Productspecs({
-                category : args.input.category,
-                specs : args.input.specs,
-                label : args.input.label
-            })
-
-            await ProSpecs.save(err => {
+            await password_reset.save(err => {
                 if(err) {
                     const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
                     error.code = 401;
                     throw error;
                 }
-            });
+            })
+
+            // send SMS
 
             return {
                 status : 200,
-                message : 'لیست اصلی مربوط به مشخصات محصول ذخیره شد.'
+                message : 'عبارت امنیتی تغییر گذر واژه برای شما ارسال شد.'
             }
         },
 
-        productSpecsDetails : async (param, args) => {
-            const ProSpecs = await new Productdetails({
-                specs : args.input.specs,
-                name : args.input.name,
-                label : args.input.label
-            })
+        UserResetPassword : async (param, args) => {
+            const check = await Passwordreset.findOne({$and : [{ phone : args.input.phone}, { code : args.input.code}]});
+            if(!check) {
+                const error = new Error('امکان تغییر پسورد برای این حساب کاربری وجود ندارد.');
+                error.code = 401;
+                throw error;
+            }
 
-            ProSpecs.save(err => {
-                if(err) {
-                    const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
-                    error.code = 401;
-                    throw error;
-                }
-            });
+            if(check.use) {
+                const error = new Error('این کد تغییر گذر واژه قبلا استفاده شده است!');
+                error.code = 401;
+                throw error;
+            }
 
             return {
                 status : 200,
-                message : 'لیست جزئیات مربوط به مشخصات محصول ذخیره شد.'
+                message : 'می توانید از طریق فرم زیر گذر واژه خود را تغییر دهید.'
             }
         },
 
-        productDetailsValue : async (param, args) => {
-            const detail = await new Details({
-                p_details : args.input.p_details,
-                value : args.input.value,
-                label : args.input.label
-            })
-
-            await detail.save(err =>{
-                if(err) {
-                    const error = new Error('امکان درج جزئیات مشخصات محصول وجود ندارد.');
+        ResetPassword : async (param, args) => {
+        
+            if(args.input.password === args.input.repassword) {
+                
+                const salt = await bcrypt.genSaltSync(15);
+                const hash = await bcrypt.hashSync(args.input.password, salt);
+                const user = await User.findOneAndUpdate({ phone : args.input.phone}, { $set : { password : hash}});
+                
+                if(!user) {
+                    const error = new Error('گاربری با این شماره همراه درسیستم ثبت نام نکرده است.');
                     error.code = 401;
                     throw error;
                 }
-            })
 
-            return {
-                status : 200,
-                message : 'ok'
+                await Passwordreset.findOneAndUpdate({ phone  : args.input.phone}, { $set : { use : true}});
+
+                return {
+                    status : 200,
+                    message : 'گذر واژه تغییر کرد. می توانید وارد حساب کاربری خود شوید.'
+                }
             }
-        }
-    }
+        },
+
+    },
 }
 
 let saveDetailsValue = async (args) => {
