@@ -5,14 +5,20 @@ const mongoosePaginate = require('mongoose-paginate');
 const Category = Schema({
     name : { type : String, required : true},
     label : { type : String},
-    parent : { type : mongoose.Types.ObjectId, ref : 'Category', default : undefined},
-    subcategory : { type : mongoose.Types.ObjectId, ref : 'Category', default : undefined}
+    parent : { type : Schema.Types.ObjectId, ref : 'Category', default : null},
 }, {
     timestamps : true,
-    toJSON : true
+    toJSON : { virtuals : true}
 });
 
 Category.plugin(mongoosePaginate);
+
+Category.virtual('p', {
+    ref : 'Category',
+    localField : '_id',
+    foreignField : 'parent'
+})
+
 
 
 module.exports = mongoose.model('Category' , Category);

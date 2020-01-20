@@ -26,15 +26,12 @@ User.statics.CreateToken = async ({id, phone}, secretID, exp) => {
 }
 
 User.statics.CheckToken = async (req, secretID) => {
+    const errors = [];
     const token = req.headers['token'];
     if(token) {
         try {
             return await jwt.verify(token, secretID);
-        } catch (e) {
-            const error = new Error('این درخواست اعتبار ندارد لطفا از اطلاعات مربوط به خود استفاده کنید')
-            error.code = 401;
-            throw error;
-        }
+        } catch (e) {}
     } else {
         return null;
     }
