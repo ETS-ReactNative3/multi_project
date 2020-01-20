@@ -53,11 +53,17 @@ const resolvers = {
             return producs
         },
 
-        getCategory : async (param, args) => {
-            let page = args.page || 1;
-            let limit = args.limit || 10;
-            const categorys = await Category.find({}).skip((page - 1) * limit).limit(limit).populate('parent').exec();
-            return categorys
+        getCategory : async (param, args, { check }) => {
+            if(check) {
+                let page = args.page || 1;
+                let limit = args.limit || 10;
+                const categorys = await Category.find({}).skip((page - 1) * limit).limit(limit).populate('parent').exec();
+                return categorys
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         }
     },
 
