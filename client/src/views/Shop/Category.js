@@ -2,13 +2,37 @@ import React, { useContext, useEffect,useState } from 'react';
 import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Pagination,PaginationItem,PaginationLink  } from 'reactstrap';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
+import axios from 'axios'
 const Category =(props)=> {
 
     const {dispatch} = useContext(AuthContext);
     useEffect(()=>{
         dispatch({type:'check',payload:props});
         const token =  GetToken();
-        console.log(token)       
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{token:token},
+            data: {
+              query: `
+              query {
+                getCategory {
+                  _id,
+                  name,
+                  label
+                  parent {
+                    name
+                    label
+                  }
+                }
+              }
+                `
+          }
+        }).then((result) => {
+          console.log(result.data.data);
+        }).catch(error=>{
+          console.log(error)
+        });      
     },[])
     const [title,setTitle] = useState('');
     const [lable,setLable] = useState('');
