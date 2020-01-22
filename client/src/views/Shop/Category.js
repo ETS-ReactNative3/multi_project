@@ -12,7 +12,7 @@ const Category =(props)=> {
         axios({
             url: '/',
             method: 'post',
-            headers:{token:token},
+            headers:{'token':`${token}`},
             data: {
               query: `
               query {
@@ -29,7 +29,10 @@ const Category =(props)=> {
                 `
           }
         }).then((result) => {
-          console.log(result.data.data);
+          if(result.data.errors){
+            dispatch({type:'logout',payload:props});
+          }
+          console.log(result.data.data)
         }).catch(error=>{
           console.log(error)
         });      

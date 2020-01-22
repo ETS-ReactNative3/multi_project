@@ -15,7 +15,8 @@ const authReducer = (state,action)=>{
             
         case 'logout':
         {
-            localStorage.removeItem('user')
+            localStorage.removeItem('user');
+            action.payload.history.replace('/')
             break;
         }
         case 'check':{

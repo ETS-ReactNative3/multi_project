@@ -1,6 +1,10 @@
 
 const GetToken = ()=>{
     const userInfo = JSON.parse(localStorage.getItem('user'));
-    return(userInfo.authenticated);
+    if(userInfo){
+        return(userInfo.authenticated);
+    }
+    return false;
+    
 }
 export default GetToken;

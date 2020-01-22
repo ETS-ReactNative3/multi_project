@@ -25,9 +25,7 @@ const Login =(props)=> {
     }
     
   }
-  const handleLogin=()=>{
-    
-  }
+  
     return (
       <div className="app flex-row align-items-center">
         <Container>
