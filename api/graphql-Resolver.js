@@ -53,12 +53,24 @@ const resolvers = {
             return producs
         },
 
-        getCategory : async (param, args, { check }) => {
+        getAllCategory : async (param, args, { check }) => {
             if(check) {
-                let page = args.page || 1;
-                let limit = args.limit || 10;
-                const categorys = await Category.find({}).skip((page - 1) * limit).limit(limit).populate('parent').exec();
-                return categorys
+                if(args.input.mainCategory == true) {
+                    let page = args.page || 1;
+                    let limit = args.limit || 10;
+                    const categorys = await Category.find({ parent : null }).skip((page - 1) * limit).limit(limit).populate('parent').exec();
+                    return categorys
+                } else if (args.input.parentCategory == true) {
+                        let page = args.page || 1;
+                        let limit = args.limit || 10;
+                        const categorys = await Category.find({ parent : args.input.catId }).skip((page - 1) * limit).limit(limit).populate('parent').exec();
+                        return categorys
+                } else {
+                    let page = args.page || 1;
+                    let limit = args.limit || 10;
+                    const categorys = await Category.find({}).skip((page - 1) * limit).limit(limit).populate('parent').exec();
+                    return categorys
+                }
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;

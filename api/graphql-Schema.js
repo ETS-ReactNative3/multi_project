@@ -5,7 +5,7 @@ const typeDefs = gql`
         login(input : LRInput) : Token!,
         getUsers : [User]!,
         getProduct : [product!]!,
-        getCategory(page : Int, limit : Int) : [Category!]!
+        getAllCategory(input : InputgetCategory) : [Category!]!
     }
 
     type Mutation {
@@ -21,6 +21,14 @@ const typeDefs = gql`
         UserForgetPassword(input : InputUserForgetPassword) : operation!,
         UserResetPassword(input : InputUserResetPassword) : operation!,
         ResetPassword(input : InputResetPassword) : operation!
+    }
+
+    input InputgetCategory {
+        catId : ID
+        page : Int,
+        limit : Int,
+        mainCategory : Boolean,
+        parentCategory : Boolean,
     }
 
     input InputResetPassword {
