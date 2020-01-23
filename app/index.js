@@ -25,19 +25,20 @@ module.exports = class Application {
                 return err;
             }
 
-            const data = err.originalError.data;
-            const code = err.originalError.code || 500;
-            const message = err.message || 'error';
+            const data =  err.originalError.data;
+            const code =  err.originalError.code || 500;
+            const message =  err.message || 'error';
 
             return { data, status : code, message};
         }, 
-            context : async ({req}) => {
-                        const secretID = 'asdasw!@#ASdjshxwe.xfisdyf6%$qwsdahgsd#$';
-                        let check = await User.CheckToken(req, secretID);
-                        return {
-                            check,
-                            secretID
-                        }
+            context : async ({ req }) => {
+
+                    const secretID = 'asdasw!@#ASdjshxwe.xfisdyf6%$qwsdahgsd#$';
+                    let check = await User.CheckToken(req, secretID);
+                    return {
+                        check,
+                        secretID
+                    }
             }
     });
         server.applyMiddleware({ app });
