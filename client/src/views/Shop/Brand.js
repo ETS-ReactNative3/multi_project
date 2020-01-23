@@ -1,17 +1,62 @@
-import React, { useState } from 'react';
-import {  Card, CardBody, CardHeader, Col, Row,Button,Label,Input,FormGroup,CardFooter  } from 'reactstrap';
-import classes from './brand.module.css'
-const Brand =()=> {
+import React, { useState, useEffect, useContext } from 'react';
+import {  Card, CardBody, CardHeader, Col, Row,Button,Label,Input,FormGroup,CardFooter,Spinner,Table,Pagination,PaginationItem,PaginationLink  } from 'reactstrap';
+import classes from './brand.module.css';
+import {AuthContext} from '../../context/Auth/AuthContext';
+import GetToken from '../../context/Auth/GetToken';
+import axios from 'axios'
+
+const Brand =(props)=> {
+    const [result, setResult] = useState([
+        {_id:'52154esdrfd552',name:'Apple',
+        parent:[
+            {_id:'215453',name:'گوشی موبایل'},
+            {_id:'215454',name:'تبلت'},
+            {_id:'215455',name:'لپ تاب'},
+        ],
+        pic:'https://contrarianedge.com/wp-content/uploads/2014/04/apple.jpg',
+        description:'پول ندارم یکی از محصولات این برند رو داشته باشم'
+         }
+    ]);
+    const [loading, setLoading] = useState(false);
     const [loadedFiles,setLoadedFiles] = useState({});
-    const [subCategoryFromServer,setSubCategoryFromServer] = useState([
-        {id:1, name:'گوشی موبایل'},
-        {id:2,name:'واقعیت مجازی'},
-        {id:3.,name:'مچ بند و ساعت هوشمند'},
-        {id:4,name:'لوازم جانبی دوربین'},
-        {id:5,name:'لپ تاب'},
-        {id:6,name:'تبلت '},
-    ])
-    const [arrayHolder,setArrayHolder] = useState([])
+    const [categoryFromServer,setCategoryFromServer] = useState([]);
+    const [subCategoryFromServer,setSubCategoryFromServer] = useState([]);
+    const [arrayHolder,setArrayHolder] = useState([]);
+    const [title,setTitle] = useState('');
+    const [lable,setLable] = useState('');
+    const [categoryValue,setCategoryValue] = useState('');
+    const {dispatch} = useContext(AuthContext);
+    const token =  GetToken();
+    useEffect(()=>{
+        dispatch({type:'check',payload:props});
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+              query getAllCategory($page : Int, $limit : Int, $mainCategory : Boolean, $parentCategory : Boolean, $catId : ID) {
+                getAllCategory(input : {page : $page, limit : $limit, mainCategory : $mainCategory, parentCategory : $parentCategory, catId : $catId}) {
+                  _id,
+                  name,
+                }
+              }      
+                `,
+                variables :{
+                    "page": 1,
+                    "limit": 30,
+                    "mainCategory": true,
+                    "parentCategory": false,
+                    "catId": null
+                }
+          }
+        }).then((result) => {
+            const {getAllCategory} = result.data.data;
+            setCategoryFromServer(getAllCategory);
+        }).catch(error=>{
+          console.log(error)
+        });      
+    },[])
     const onFileLoad=(event)=>{
     const file = event.currentTarget.files[0];
     let fileReader = new FileReader();
@@ -38,7 +83,7 @@ const Brand =()=> {
     }
     const addSubCategory = (event)=>{    
         const categoryIndex = subCategoryFromServer.findIndex(subCategory=>{
-            return subCategory.id==event.target.value;
+            return subCategory._id==event.target.value;
         })
         console.log(categoryIndex)
         const subCat = {...subCategoryFromServer[categoryIndex]};
@@ -57,7 +102,72 @@ const Brand =()=> {
         response.push(item);
         setSubCategoryFromServer(response)
     }
-
+    const handleTitle =(event)=>{
+        setTitle(event.target.value)
+    }
+    const handleLable =(event)=>{
+        setLable(event.target.value)
+    }
+    const handleCategoryValue=(event)=>{
+        setCategoryValue(event.target.value);
+        console.log(event.target.value)
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+              query getAllCategory($page : Int, $limit : Int, $mainCategory : Boolean, $parentCategory : Boolean, $catId : ID) {
+                getAllCategory(input : {page : $page, limit : $limit, mainCategory : $mainCategory, parentCategory : $parentCategory, catId : $catId}) {
+                  _id,
+                  name,               
+                }
+              }      
+                `,
+                variables :{
+                    "page": 1,
+                    "limit": 30,
+                    "mainCategory": false,
+                    "parentCategory": true,
+                    "catId": event.target.value
+                }
+          }
+        }).then((result) => {
+            const {getAllCategory} = result.data.data;
+            setSubCategoryFromServer(getAllCategory)
+        }).catch(error=>{
+          console.log(error)
+        });
+    }
+    const handleSubmit=()=>{
+        const newArray =[];
+        for(var i=0;i<arrayHolder.length;i++){
+            newArray.push({
+                category:arrayHolder[i]._id
+            })
+        }
+        console.log(newArray);
+        console.log(loadedFiles)
+       /* axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+              mutation {
+                brand(input : {category : "${newArray}", name : "${title}", label : "${lable}", image : "${loadedFiles}"}) {
+                  status
+                }
+              }      
+                `
+          }
+        }).then((result) => {
+            console.log(result);
+        }).catch(error=>{
+          console.log(error)
+        }); 
+        */
+    }
     return (
       <div className="animated fadeIn">
         <Row>
@@ -71,18 +181,43 @@ const Brand =()=> {
                         <Col xs="6">
                             <FormGroup>
                             <Label htmlFor="title">عنوان</Label>
-                            <Input type="text" id="title" placeholder="عنوان را وارد کنید"  required/>
+                            <Input type="text" id="title" 
+                              placeholder="عنوان را وارد کنید"
+                              value={title}
+                              onChange={handleTitle}
+                              required/>
                             </FormGroup>
                         </Col>
                         <Col xs="6">
                             <FormGroup>
                             <Label htmlFor="description">توضیحات</Label>
-                            <Input type="text" id="description" placeholder="در صورت نیاز توضیحات را وارد کنید" />
+                            <Input type="text" id="description"
+                             placeholder="در صورت نیاز توضیحات را وارد کنید"
+                             value={lable}
+                             onChange={handleLable}
+                              />
                             </FormGroup>
                         </Col>
-                        <Col xs="4">
+                        <Col xs="6">
                             <FormGroup>
-                            <Label htmlFor="category"> دسته ها</Label>
+                            <Label htmlFor="category"> دسته ها</Label>   
+                            <Input type="select" name="subcategory" 
+                                id="subcategory"
+                                value={categoryValue}
+                                onChange={handleCategoryValue}
+                                >
+                                <option ></option>
+                                {
+                                    categoryFromServer.map((item,index)=>{
+                                        return(<option key={index} value={item._id}>{item.name}</option>)
+                                    })
+                                }
+                            </Input>
+                            </FormGroup>
+                        </Col>
+                        <Col xs="6">
+                            <FormGroup>
+                            <Label htmlFor="category"> زیر دسته</Label>
                             <Input type="select" name="multiple-select"
                              id="multiple-select"
                              multiple
@@ -91,7 +226,7 @@ const Brand =()=> {
                               {
                                   subCategoryFromServer.map((subcat)=>{
                                       return(
-                                        <option key={subcat.id} value={subcat.id}>{subcat.name}</option>
+                                        <option key={subcat._id} value={subcat._id}>{subcat.name}</option>
                                       )
                                   })
                               }
@@ -101,12 +236,12 @@ const Brand =()=> {
                             </FormGroup>
                         </Col>
                         {
-                           arrayHolder.length!==0 && <Col xs="8" className={classes.brandSection}>
+                           arrayHolder.length!==0 && <Col xs="6" className={classes.brandSection}>
                             
                             {
                                 arrayHolder.map((item,index)=>{
                                     return(
-                                     <div className={classes.brand}  key={item.id}>
+                                     <div className={classes.brand}  key={item._id}>
                                      <span>{item.name} </span>
                                      <i className="fa fa-remove fa-lg " onClick={()=>deleteSubCategory(index,item)}></i>
                                      </div>
@@ -118,7 +253,7 @@ const Brand =()=> {
                             </Col>
                         }
                         
-                        <Col xs="4">
+                        <Col xs="6">
                                 <Label htmlFor="file-multiple-input">
                                      <div className={classes.fileSelection}>انتخاب عکس</div>
                                 </Label>
@@ -136,10 +271,85 @@ const Brand =()=> {
                     </FormGroup>
                 </CardBody>
                 <CardFooter>
-                <Button type="submit" size="sm" color="primary" onClick={()=>console.log(arrayHolder)}><strong>ثبت</strong> </Button>
+                <Button type="submit" size="sm" color="primary" onClick={handleSubmit}><strong>ثبت</strong> </Button>
               </CardFooter>
               </Card>
-             
+              <Card>
+                <CardHeader>                   
+                        <strong>لیست برندها</strong>
+                </CardHeader>
+                <CardBody>
+                    {
+                        loading ?<center ><Spinner animation="border" role="status" /></center>
+                        
+                     :
+                      <Table responsive >
+                      <thead>
+                          <tr>
+                              <th>نام برند</th>
+                              <th>دسته های مرتبط</th>
+                              <th>عکس</th>
+                              <th>توضیحات</th>
+                              <th>عملیات</th>                                
+                          </tr>
+                      </thead>
+                      
+                          
+                        <tbody>
+                        {
+                            
+                            result.map(item=>{
+                                return(
+                            <tr key={item._id}>
+                                <td>{item.name}</td>
+                                <td>
+                                    
+                                    {item.parent.map(subCat=>
+                                        <React.Fragment key={subCat._id}>
+                                            <span >{subCat.name}</span><br />
+                                        </React.Fragment>
+                                      
+                                        )
+                                    }
+                                    
+                                </td>
+                                <td><img src={item.pic} alt={item.name}  className={classes.Preview}/></td>
+                                <td>{item.description}</td>
+                                <td>
+                                    <Row>
+                                    <Col xs="3">
+                                         <Button type="submit" size="sm" color="primary"><strong>ویرایش</strong> </Button>
+                                    </Col>
+                                    <Col xs="3">
+                                        <Button type="submit" size="sm" color="danger"><strong>حذف</strong> </Button>
+                                    </Col>
+                                    </Row>
+                                </td>          
+                             </tr>
+                                )
+                                
+                            })
+                        }
+                   
+                     
+                    </tbody>
+                      
+                      
+                  </Table>
+                    }
+                    
+                    <Pagination>
+                        <PaginationItem disabled><PaginationLink previous tag="button">Prev</PaginationLink></PaginationItem>
+                        <PaginationItem active>
+                            <PaginationLink tag="button">1</PaginationLink>
+                        </PaginationItem>
+                        <PaginationItem><PaginationLink tag="button">2</PaginationLink></PaginationItem>
+                        <PaginationItem><PaginationLink tag="button">3</PaginationLink></PaginationItem>
+                        <PaginationItem><PaginationLink tag="button">4</PaginationLink></PaginationItem>
+                        <PaginationItem><PaginationLink next tag="button">Next</PaginationLink></PaginationItem>
+                    </Pagination>
+                </CardBody>
+              </Card>
           </Col>
         </Row>
       </div>

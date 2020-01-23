@@ -1,46 +1,106 @@
 import React, { useContext, useEffect,useState } from 'react';
-import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Pagination,PaginationItem,PaginationLink  } from 'reactstrap';
+import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Pagination,PaginationItem,PaginationLink,Spinner  } from 'reactstrap';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
 import axios from 'axios'
 const Category =(props)=> {
-
+    const [title,setTitle] = useState('');
+    const [lable,setLable] = useState('');
+    const [mainSubTitleFromServer,setMainSubTitleFromServe] = useState([]);
+    const [subTitleFromServer,setSubTitleFromServe] = useState([]);
+    const [mainCategory,setMainCategory] = useState(false);
+    const [parentCategory,setParentCategory] = useState(false);
+    const [catId,setCatId] = useState(null);
+    const [mainSubTitleValue,setMainSubTitleValue] = useState('');
+    const [subTitleValue,setSubTitleValue] = useState('');
+    const [result, setResult] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [isSubmit, setIsSubmit] = useState(false);
+    const [message, setMessage] = useState('')
     const {dispatch} = useContext(AuthContext);
+    const token =  GetToken();
     useEffect(()=>{
         dispatch({type:'check',payload:props});
-        const token =  GetToken();
         axios({
             url: '/',
             method: 'post',
             headers:{'token':`${token}`},
             data: {
               query: `
-              query {
-                getCategory {
+              query getAllCategory($page : Int, $limit : Int, $mainCategory : Boolean, $parentCategory : Boolean, $catId : ID) {
+                getAllCategory(input : {page : $page, limit : $limit, mainCategory : $mainCategory, parentCategory : $parentCategory, catId : $catId}) {
                   _id,
                   name,
-                  label
+                  label,
                   parent {
                     name
-                    label
                   }
                 }
-              }
-                `
+              }      
+                `,
+                variables :{
+                    "page": 1,
+                    "limit": 10,
+                    "mainCategory": mainCategory,
+                    "parentCategory": parentCategory,
+                    "catId": catId
+                }
           }
         }).then((result) => {
           if(result.data.errors){
             dispatch({type:'logout',payload:props});
           }
-          console.log(result.data.data)
+          
+          else if(mainCategory){
+            setMainSubTitleFromServe(result.data.data.getAllCategory)
+          }
+          else if(parentCategory){
+            setSubTitleFromServe(result.data.data.getAllCategory)
+          }
         }).catch(error=>{
           console.log(error)
         });      
-    },[])
-    const [title,setTitle] = useState('');
-    const [lable,setLable] = useState('');
-    const [mainSubTitleFromServer,setMainSubTitleFromServe] = useState([]);
-    const [subTitleFromServer,setSubTitleFromServe] = useState([]);
+    },[mainCategory])
+    useEffect(()=>{
+        dispatch({type:'check',payload:props});
+        setLoading(true);
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+              query getAllCategory($page : Int, $limit : Int, $mainCategory : Boolean, $parentCategory : Boolean, $catId : ID) {
+                getAllCategory(input : {page : $page, limit : $limit, mainCategory : $mainCategory, parentCategory : $parentCategory, catId : $catId}) {
+                  _id,
+                  name,
+                  label,
+                  parent {
+                    name
+                  }
+                }
+              }      
+                `,
+                variables :{
+                    "page": 1,
+                    "limit": 30,
+                    "mainCategory": false,
+                    "parentCategory": false,
+                    "catId": null
+                }
+          }
+        }).then((result) => {
+          if(result.data.errors){
+            dispatch({type:'logout',payload:props});
+          }
+            setResult(result.data.data.getAllCategory);  
+          setLoading(false);
+        }).catch(error=>{
+          console.log(error)
+        });      
+    },[isSubmit])
+   
+   
     const handleTitle =(event)=>{
         setTitle(event.target.value)
     }
@@ -48,7 +108,43 @@ const Category =(props)=> {
         setLable(event.target.value)
     }
     const handleMainSubTitle=(event)=>{
-        console.log(event.target.value);
+        setCatId(event.target.value);
+        setMainCategory(false);
+        setParentCategory(true);
+        setMainSubTitleValue(event.target.value)
+    }
+    const handleSubTitleValue=(event)=>{
+        setSubTitleValue(event.target.value)
+    }
+    const handleSubmit =()=>{
+        let parent='';
+        if(mainSubTitleValue!=='' && subTitleValue===''){
+            parent = mainSubTitleValue
+        }
+        else if(mainSubTitleValue!=='' &&subTitleValue!==''){
+            parent = subTitleValue
+        }
+        console.log(title+lable+parent)
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+               mutation {
+                   category(input : { name : "${title}", label : "${lable}", parent : "${parent}"}) {
+                     status
+                   }
+                 }     
+                `
+          }
+        }).then((result) => {
+            if(result.data.errors){
+                setMessage(result.data.errors[0].message);            
+            }
+            setIsSubmit(!isSubmit);
+            
+        }).catch(error=>console.log(error));
     }
     return (
       <div className="animated fadeIn">
@@ -57,9 +153,12 @@ const Category =(props)=> {
               <Card>
                 <CardHeader>         
                     <strong> اضافه کردن دسته بندی جدید</strong>
+                    <br />
+                    <span style={{color:'red'}}>{message}</span>
                 </CardHeader>
                 <CardBody>
                     <FormGroup row className="my-0">
+                      
                         <Col xs="3">
                             <FormGroup>
                             <Label htmlFor="title">عنوان</Label>
@@ -67,6 +166,7 @@ const Category =(props)=> {
                              placeholder="عنوان را وارد کنید"
                              value={title}
                              onChange={handleTitle}
+                             onBlur={()=>setMainCategory(true)}
                              required/>
                             </FormGroup>
                         </Col>
@@ -86,11 +186,12 @@ const Category =(props)=> {
                             <Input type="select" name="category"
                              id="category"
                              onChange={handleMainSubTitle}
+                             value={mainSubTitleValue}
                               >
                                 <option ></option>
                                 {
                                     mainSubTitleFromServer.map((item,index)=>{
-                                        return(<option key={index} value={item.id}>{item.name}</option>)
+                                        return(<option key={index} value={item._id}>{item.name}</option>)
                                     })
                                 }
                                
@@ -101,11 +202,15 @@ const Category =(props)=> {
                         <Col xs="3">
                         <FormGroup>
                             <Label htmlFor="subcategory">زیردسته</Label>
-                            <Input type="select" name="subcategory" id="subcategory">
+                            <Input type="select" name="subcategory" 
+                             id="subcategory"
+                             value={subTitleValue}
+                             onChange={handleSubTitleValue}
+                            >
                                 <option ></option>
                                 {
                                     subTitleFromServer.map((item,index)=>{
-                                        return(<option key={index} value={item.id}>{item.name}</option>)
+                                        return(<option key={index} value={item._id}>{item.name}</option>)
                                     })
                                 }
                             </Input>
@@ -114,7 +219,12 @@ const Category =(props)=> {
                     </FormGroup>
                 </CardBody>
                 <CardFooter>
-                <Button type="submit" size="sm" color="primary"><strong>ثبت</strong> </Button>
+                <Button type="submit" size="sm" 
+                 color="primary"
+                 onClick={handleSubmit}
+                >
+                    <strong>ثبت</strong> 
+                </Button>
               </CardFooter>
               </Card>
               <Card>
@@ -122,60 +232,55 @@ const Category =(props)=> {
                         <strong>لیست دسته بندی ها</strong>
                 </CardHeader>
                 <CardBody>
-                    <Table responsive >
-                        <thead>
-                        <tr>
-                            <th>نام دسته</th>
-                            <th>مسیر دسته</th>
-                            <th>عملیات</th>
-                            
-                        </tr>
-                        </thead>
+                    {
+                        loading ?<center ><Spinner animation="border" role="status" /></center>
+                        
+                     :
+                      <Table responsive >
+                      <thead>
+                          <tr>
+                              <th>نام دسته</th>
+                              <th>والد</th>
+                              <th>عملیات</th>                                
+                          </tr>
+                      </thead>
+                      
+                          
                         <tbody>
-                        <tr>
-                            <td>کالای دیجیتال</td>
-                            <td>دسته اصلی</td>
-                            <td>
-                                <Row>
-                                <Col xs="3">
-                                     <Button type="submit" size="sm" color="primary"><strong>ویرایش</strong> </Button>
-                                </Col>
-                                <Col xs="3">
-                                    <Button type="submit" size="sm" color="danger"><strong>حذف</strong> </Button>
-                                </Col>
-                                </Row>
-                            </td>          
-                         </tr>
-                         <tr>
-                            <td>گوشی موبایل</td>
-                            <td> کالای دیجیتال / گوشی موبایل</td>
-                            <td>
-                                <Row>
-                                <Col xs="3">
-                                     <Button type="submit" size="sm" color="primary"><strong>ویرایش</strong> </Button>
-                                </Col>
-                                <Col xs="3">
-                                    <Button type="submit" size="sm" color="danger"><strong>حذف</strong> </Button>
-                                </Col>
-                                </Row>
-                            </td>          
-                         </tr>
-                         <tr>
-                            <td>سامسونگ</td>
-                            <td> کالای دیجیتال / گوشی موبایل / سامسونگ</td> 
-                            <td>
-                                <Row>
-                                <Col xs="3">
-                                     <Button type="submit" size="sm" color="primary"><strong>ویرایش</strong> </Button>
-                                </Col>
-                                <Col xs="3">
-                                    <Button type="submit" size="sm" color="danger"><strong>حذف</strong> </Button>
-                                </Col>
-                                </Row>
-                            </td>          
-                         </tr>
-                        </tbody>
-                    </Table>
+                        {
+                            
+                            result.map(item=>{
+                                return(
+                            <tr key={item._id}>
+                                <td>{item.name}</td>
+                                <td>
+                                    
+                                    {item.parent ? item.parent.name: "دسته اصلی"}
+                                    
+                                </td>
+                                <td>
+                                    <Row>
+                                    <Col xs="3">
+                                         <Button type="submit" size="sm" color="primary"><strong>ویرایش</strong> </Button>
+                                    </Col>
+                                    <Col xs="3">
+                                        <Button type="submit" size="sm" color="danger"><strong>حذف</strong> </Button>
+                                    </Col>
+                                    </Row>
+                                </td>          
+                             </tr>
+                                )
+                                
+                            })
+                        }
+                   
+                     
+                    </tbody>
+                      
+                      
+                  </Table>
+                    }
+                    
                     <Pagination>
                         <PaginationItem disabled><PaginationLink previous tag="button">Prev</PaginationLink></PaginationItem>
                         <PaginationItem active>

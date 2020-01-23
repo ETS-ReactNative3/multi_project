@@ -75,3 +75,7 @@ input[type="file"] {
     left: -5px;
     top: -29px;
 }
+.modalImage{
+    width:600px;
+    height: 600px;
+}

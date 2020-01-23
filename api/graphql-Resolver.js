@@ -56,18 +56,18 @@ const resolvers = {
         getAllCategory : async (param, args, { check }) => {
             if(check) {
                 if(args.input.mainCategory == true) {
-                    let page = args.page || 1;
-                    let limit = args.limit || 10;
+                    let page = args.input.page || 1;
+                    let limit = args.input.limit || 10;
                     const categorys = await Category.find({ parent : null }).skip((page - 1) * limit).limit(limit).populate('parent').exec();
                     return categorys
                 } else if (args.input.parentCategory == true) {
-                        let page = args.page || 1;
-                        let limit = args.limit || 10;
+                        let page = args.input.page || 1;
+                        let limit = args.input.limit || 10;
                         const categorys = await Category.find({ parent : args.input.catId }).skip((page - 1) * limit).limit(limit).populate('parent').exec();
                         return categorys
                 } else {
-                    let page = args.page || 1;
-                    let limit = args.limit || 10;
+                    let page = args.input.page || 1;
+                    let limit = args.input.limit || 10;
                     const categorys = await Category.find({}).skip((page - 1) * limit).limit(limit).populate('parent').exec();
                     return categorys
                 }
@@ -139,7 +139,6 @@ const resolvers = {
                     name : args.input.name,
                     label : args.input.label,
                     parent : args.input.parent,
-                    subcategory : args.input.subcategory
                 })
 
                 await category.save(err => {
@@ -154,6 +153,7 @@ const resolvers = {
                     status : 200,
                     message : 'دسته بندی مورد نظر ایجاد شد.'
                 }
+
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
