@@ -2,7 +2,16 @@ const User = require('app/models/users');
 const bcrypt = require('bcryptjs');
 const ImageSize = require('image-size');
 const FileType = require('file-type');
+const mkdirp = require('mkdirp');
+const path = require('path');
+const fs = require('fs');
+
 // const uniquestring = require('unique-string');
+const nodemailer = require('nodemailer');
+const directTransport = require('nodemailer-direct-transport');
+const MailTime = require('mail-time');
+
+const MongoClient = require('mongodb').MongoClient;
 
 const Multimedia = require('app/models/multimedia');
 const Category = require('app/models/category');
@@ -32,7 +41,7 @@ const resolvers = {
             }
 
             return {
-                token : await User.CreateToken(user, secretID, '1h'),
+                token : await User.CreateToken(user, secretID, '10h'),
             }
         },
 
@@ -76,6 +85,91 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+        },
+
+
+        // senMail : async (param, args) => {
+        //     const transports = [];
+
+        //     const directTransportOpts = {
+        //         pool: false,
+        //         direct: true,
+        //         name: 'mail.example.com',
+        //         from: 'no-reply@example.com',
+        //       };
+        //       transports.push(nodemailer.createTransport(directTransport(directTransportOpts)));
+        //       // IMPORTANT: Copy-paste passed options from directTransport() to
+        //       // transport's "options" property, to make sure it's available to MailTime package:
+        //       transports[0].options = directTransportOpts;
+              
+        //         const email = ['m3hdi.sh71@gmail.com','hn.habibiyan@gmail.com','testesiiii@mail.com','miladmxm12@gmail.com','faribapanahpoore@rocketmail.com','kingamir_eh_2005@yahoo.com','errfgfdgtesttt@gmail.com','mohammad7979salehi@gmail.com']
+        //             // create reusable transporter object using the default SMTP transport
+        //         transports.push(nodemailer.createTransport({
+        //             pool: false,
+        //             direct: true,
+        //             host: 'smtp.mailtrap.io',
+        //             port: 587,
+        //             secure: false, // true for 465, false for other ports
+        //             auth: {
+        //                 user: '07b731ed3a1449', // generated ethereal user
+        //                 pass: 'f86bd85e55553e' // generated ethereal password
+        //             },
+        //             connectionTimeout: 30000,
+        //             greetingTimeout: 15000,
+        //             socketTimeout: 45000
+        //         }));
+
+        //         MongoClient.connect('mongodb://localhost', {useUnifiedTopology: true}, (error, client) => {
+        //             const db = client.db('Digikala');
+                   
+        //             const mailQueue = new MailTime({
+        //               db, // MongoDB
+        //               type: 'server',
+        //               strategy: 'balancer', // Transports will be used in round robin chain
+        //               transports,
+        //               maxTries : 60,
+        //               interval : 10,
+        //               revolvingInterval : 1536,
+        //               minRevolvingDelay : 512,
+        //               maxRevolvingDelay : 2048,
+        //               from(transport) {
+        //                 // To pass spam-filters `from` field should be correctly set
+        //                 // for each transport, check `transport` object for more options
+        //                 return '"Awesome App" <' + transport.options.from + '>';
+        //               },
+        //               concatEmails: true, // Concatenate emails to the same addressee
+        //               concatDelimiter: '<h1>{{{subject}}}</h1>', // Start each concatenated email with it's own subject
+        //               template: MailTime.Template // Use default template
+        //             });
+
+        //             for (let index = 0; index < email.length ; index++) {
+        //                 mailQueue.sendMail({
+        //                     to: `${email[index]}`,
+        //                     subject: 'You\'ve got an email!',
+        //                     text: 'Plain text message',
+        //                     html: '<h1>HTML</h1><p>Styled message</p>',
+        //                   });
+        //             }
+        //         });
+
+        //     return {
+        //         status : 200,
+        //         message : 'email send'
+        //     }
+
+        // }
+
+        getAllBrand : async (param, args, { check }) => {
+            let page = args.input.page || 1;
+            let limit = args.input.limit || 10;
+            if(args.input.getAll == true) {
+                const brands = await Brand.find({}).skip((page - 1) * limit).limit(limit);
+                return brands;
+            } else {
+                const brands = await Brand.find({category : args.input.category});
+                return brands
+            }
+
         }
     },
 
@@ -135,23 +229,22 @@ const resolvers = {
 
         category : async (param, args, { check }) => {
             if(check) {
-                const category = await new Category({
+                const category = await Category.create({
                     name : args.input.name,
                     label : args.input.label,
                     parent : args.input.parent,
                 })
-
-                await category.save(err => {
-                    if(err) {
-                        const error = new Error('Invalid request!');
-                        error.code = 401;
-                        throw error;
+                
+                if(!category) {
+                    const error = new Error('دسته بندی مورد نظر ذخیره نشد!');
+                    error.code = 401;
+                    throw error;
+                
+                } else {
+                    return {
+                        status : 200,
+                        message : 'دسته بندی مورد نظر ایجاد شد.'
                     }
-                })
-
-                return {
-                    status : 200,
-                    message : 'دسته بندی مورد نظر ایجاد شد.'
                 }
 
             } else {
@@ -190,25 +283,31 @@ const resolvers = {
 
         brand : async (param, args, { check }) => {
             if(check) { 
-                const brand = await new Brand({
+
+                const { createReadStream, filename } = await args.input.image;
+                const stream = createReadStream();
+                const { filePath } = await saveImage({ stream, filename});
+
+                const brand = await Brand.create({
                     category : args.input.category,
                     name : args.input.name,
                     label : args.input.label,
-                    image : args.input.image
+                    image : filePath
                 });
-    
-                await brand.save(err => {
+
+                if(!brand) {
                     if(err) {
                         const error = new Error('امکان ثبت برند مورد نظر برای این دسته بندی وجود ندارد.');
                         error.code = 401;
                         throw error;
                     }
-                })
-    
-                return {
-                    status : 200,
-                    message : 'برند برای دسته بندی مورد نظر ثبت شد.'
+                } else {
+                    return {
+                        status : 200,
+                        message : 'برند برای دسته بندی مورد نظر ثبت شد.'
+                    }
                 }
+
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
@@ -441,6 +540,22 @@ let getImageSize = (type) => {
             }
         })
     }
+}
+
+let saveImage = ({stream, filename}) => {
+    let date = new Date();
+    const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
+    mkdirp.sync(path.join(__dirname, `public/${dir}`));
+
+    const filePath = `${dir}/${filename}`;
+
+    return new Promise((resolve, reject) => {
+        stream
+            .pipe(fs.createWriteStream(path.join(__dirname, `/public/${filePath}`)))
+            .on('error', error => reject(error))
+            .on('finish', () => resolve({filePath}))
+    })
+
 }
 
 module.exports = resolvers;

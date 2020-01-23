@@ -5,7 +5,9 @@ const typeDefs = gql`
         login(input : LRInput) : Token!,
         getUsers : [User]!,
         getProduct : [product!]!,
-        getAllCategory(input : InputgetCategory) : [Category!]!
+        getAllCategory(input : InputgetCategory) : [Category!]!,
+        senMail : operation!,
+        getAllBrand(input : InputGetBrand) : [Brand!]!
     }
 
     type Mutation {
@@ -20,7 +22,15 @@ const typeDefs = gql`
         productDetailsValue(input : InputProductDetailsValue) : operation!,
         UserForgetPassword(input : InputUserForgetPassword) : operation!,
         UserResetPassword(input : InputUserResetPassword) : operation!,
-        ResetPassword(input : InputResetPassword) : operation!
+        ResetPassword(input : InputResetPassword) : operation!,
+    }
+
+
+    input InputGetBrand {
+        page : Int,
+        limit : Int,
+        category : ID,
+        getAll : Boolean
     }
 
     input InputgetCategory {
@@ -81,7 +91,7 @@ const typeDefs = gql`
         category : ID!,
         name : String!,
         label : String,
-        image : String!
+        image : Upload!
     }
 
     input InputSurvey {
@@ -161,6 +171,13 @@ const typeDefs = gql`
         _id : ID,
         name : String!,
         label : String,
+    }
+
+    type Brand {
+        category : ID,
+        name : String,
+        label : String,
+        image : String
     }
 `;
 
