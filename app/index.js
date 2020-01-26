@@ -4,6 +4,7 @@ const session = require('express-session');
 const { ApolloServer } = require('apollo-server-express');
 const typeDefs = require('api/graphql-Schema');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser')
 const resolvers = require('api/graphql-Resolver');
 const User = require('app/models/users');
 
@@ -52,6 +53,9 @@ module.exports = class Application {
         
         app.use(cors());
         app.use(express.static(config.layout.PUBLIC_DIR));
+        app.use(bodyParser.json({ limit: "50mb" }));
+        app.use(bodyParser.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }))
+
         // app.use(session({...config.session}));
         //app.use(cookieParser());
         // app.use(passport.initialize());

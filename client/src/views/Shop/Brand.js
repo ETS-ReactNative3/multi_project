@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import {  Card, CardBody, CardHeader, Col, Row,Button,Label,Input,FormGroup,CardFooter,Spinner,Table,Pagination,PaginationItem,PaginationLink  } from 'reactstrap';
+import {  Card, CardBody, CardHeader, Col, Row,Button,Label,Input,FormGroup,CardFooter,Spinner,Table,Pagination,PaginationItem,PaginationLink,Form  } from 'reactstrap';
 import classes from './brand.module.css';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
@@ -7,24 +7,17 @@ import axios from 'axios'
 
 const Brand =(props)=> {
     const [result, setResult] = useState([
-        {_id:'52154esdrfd552',name:'Apple',
-        parent:[
-            {_id:'215453',name:'گوشی موبایل'},
-            {_id:'215454',name:'تبلت'},
-            {_id:'215455',name:'لپ تاب'},
-        ],
-        pic:'https://contrarianedge.com/wp-content/uploads/2014/04/apple.jpg',
-        description:'پول ندارم یکی از محصولات این برند رو داشته باشم'
-         }
     ]);
     const [loading, setLoading] = useState(false);
-    const [loadedFiles,setLoadedFiles] = useState({});
     const [categoryFromServer,setCategoryFromServer] = useState([]);
     const [subCategoryFromServer,setSubCategoryFromServer] = useState([]);
     const [arrayHolder,setArrayHolder] = useState([]);
     const [title,setTitle] = useState('');
     const [lable,setLable] = useState('');
     const [categoryValue,setCategoryValue] = useState('');
+    const [message,setMessage] = useState('');
+    const [image, setImage] = useState('');
+    const [file, setFile] = useState('')
     const {dispatch} = useContext(AuthContext);
     const token =  GetToken();
     useEffect(()=>{
@@ -55,37 +48,55 @@ const Brand =(props)=> {
             setCategoryFromServer(getAllCategory);
         }).catch(error=>{
           console.log(error)
-        });      
+        }); 
+        
+        setLoading(true)
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+              query getAllBrand($page : Int, $limit : Int, $category : ID, $getAll : Boolean) {
+                getAllBrand(input : { page : $page, limit : $limit, category : $category, getAll : $getAll}) {
+                  _id,
+                  name,
+                  category {
+                    _id,
+                    name
+                  },
+                  image,
+                  label
+                }
+              }      
+                `,
+                variables :{
+                    "getAll": true,
+                    "category": null
+                  }
+          }
+        }).then((result) => {
+          const {getAllBrand} =result.data.data;
+          console.log(getAllBrand);
+          setLoading(false);
+          setResult(getAllBrand);
+        }).catch(error=>{
+          console.log(error)
+        });
+        
     },[])
-    const onFileLoad=(event)=>{
-    const file = event.currentTarget.files[0];
-    let fileReader = new FileReader();
-    fileReader.onload = ()=>{
-    console.log('image loaded:', fileReader.result);
-    const fileProperty={
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        data: fileReader.result 
+    
+    const handleChange= (e)=>{   
+         setFile(e.target.files[0]);
+         const  preview= URL.createObjectURL(e.target.files[0]);
+         setImage(preview);
     }
-    addLoadedFile(fileProperty)
-    }
-    fileReader.onabort = ()=>{
-        alert('Reading Aborted')
-    }
-    fileReader.onerror = ()=>{
-        alert('Reading Error')
-    }
-    fileReader.readAsDataURL(file)
-    }
-    const addLoadedFile = (fileProperty)=>{
-    setLoadedFiles(fileProperty)
-    }
+    
     const addSubCategory = (event)=>{    
         const categoryIndex = subCategoryFromServer.findIndex(subCategory=>{
             return subCategory._id==event.target.value;
         })
-        console.log(categoryIndex)
+        //console.log(categoryIndex)
         const subCat = {...subCategoryFromServer[categoryIndex]};
         const tempArray =[...arrayHolder];       
         tempArray.push(subCat);
@@ -110,7 +121,7 @@ const Brand =(props)=> {
     }
     const handleCategoryValue=(event)=>{
         setCategoryValue(event.target.value);
-        console.log(event.target.value)
+        //console.log(event.target.value)
         axios({
             url: '/',
             method: 'post',
@@ -139,42 +150,74 @@ const Brand =(props)=> {
           console.log(error)
         });
     }
-    const handleSubmit=()=>{
+    const handleSubmit=(e)=>{
+      e.preventDefault();
         const newArray =[];
         for(var i=0;i<arrayHolder.length;i++){
-            newArray.push({
-                category:arrayHolder[i]._id
-            })
+            newArray.push(arrayHolder[i]._id)
         }
-        console.log(newArray);
-        console.log(loadedFiles)
-       /* axios({
-            url: '/',
-            method: 'post',
-            headers:{'token':`${token}`},
-            data: {
-              query: `
-              mutation {
-                brand(input : {category : "${newArray}", name : "${title}", label : "${lable}", image : "${loadedFiles}"}) {
-                  status
-                }
-              }      
-                `
-          }
-        }).then((result) => {
-            console.log(result);
-        }).catch(error=>{
-          console.log(error)
-        }); 
-        */
+           console.log(newArray);
+           console.log(title);
+           console.log(lable)
+           console.log(file)
+           
+           
+           let data = {
+            query : `
+                   mutation addBrand($category : [ID]!, $name : String!, $label : String, $image : Upload!){
+                    brand(input : {category : $category, name : $name, label : $label, image : $image}) {
+                        status
+                    }
+                    }
+            `,
+            variables : {
+                "category" : newArray,
+                "name" :title,
+                "label" : lable,
+                "image" : null,
+            }
+        };
+
+        let map = {
+            0 : ['variables.image'],
+        }
+
+        
+        let formD = new FormData();
+        formD.append('operations' , JSON.stringify(data));
+        formD.append('map', JSON.stringify(map));
+        formD.append(0, file, file.name);
+
+        console.log(formD);
+
+        let optitons = {
+            method : 'POST',
+            headers : { 
+                'token' : `${token}`
+            },
+            body : formD
+        };
+
+        let url = 'http://localhost:4000/graphql';
+
+        fetch(url,optitons)
+            .then(res => res.json())
+            .then(res => console.log(res))
+            .catch(err => console.log(err));
+        
+      
+        
     }
     return (
       <div className="animated fadeIn">
         <Row>
           <Col xl={12} xs={12} md={12}>
+            <Form  encType="multipart/form-data" onSubmit={handleSubmit}>
               <Card>
                 <CardHeader>         
                     <strong> اضافه کردن  برند جدید</strong>
+                    <br />
+                    {message}
                 </CardHeader>
                 <CardBody>
                     <FormGroup row className="my-0">
@@ -259,21 +302,24 @@ const Brand =(props)=> {
                                 </Label>
                                 <Input type="file" id="file-multiple-input"
                                  name="file-multiple-input"  
-                                 onChange={onFileLoad}
-                                 multiple
+                                 onChange={handleChange}
+                                 
                                  /> 
                         
                         </Col>
                         
                         <Col xs="8">
-                            {loadedFiles && <img src={loadedFiles.data} alt={loadedFiles.name} className="Preview" />} 
+                            {image ? <img src={ image } alt={image} className="Preview" />:null}
+                             
                         </Col>
                     </FormGroup>
                 </CardBody>
                 <CardFooter>
-                <Button type="submit" size="sm" color="primary" onClick={handleSubmit}><strong>ثبت</strong> </Button>
+                <Button type="submit" size="sm" color="primary" ><strong>ثبت</strong> </Button>
               </CardFooter>
+              
               </Card>
+              </Form>
               <Card>
                 <CardHeader>                   
                         <strong>لیست برندها</strong>
@@ -304,7 +350,7 @@ const Brand =(props)=> {
                                 <td>{item.name}</td>
                                 <td>
                                     
-                                    {item.parent.map(subCat=>
+                                    {item.category.map(subCat=>
                                         <React.Fragment key={subCat._id}>
                                             <span >{subCat.name}</span><br />
                                         </React.Fragment>
@@ -313,8 +359,8 @@ const Brand =(props)=> {
                                     }
                                     
                                 </td>
-                                <td><img src={item.pic} alt={item.name}  className={classes.Preview}/></td>
-                                <td>{item.description}</td>
+                                <td><img src={`${process.env.DOMAIN}${item.image}`} alt={item.image}  className={classes.Preview}/></td>
+                                <td>{item.label}</td>
                                 <td>
                                     <Row>
                                     <Col xs="3">

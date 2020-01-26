@@ -88,7 +88,7 @@ const typeDefs = gql`
     }
 
     input InputBrand {
-        category : ID!,
+        category : [ID]!,
         name : String!,
         label : String,
         image : Upload!
@@ -104,7 +104,6 @@ const typeDefs = gql`
         name : String!,
         label : String,
         parent : ID,
-        subcategory : ID
     }
 
     type operation {
@@ -174,7 +173,8 @@ const typeDefs = gql`
     }
 
     type Brand {
-        category : ID,
+        _id: ID,
+        category : [Category],
         name : String,
         label : String,
         image : String

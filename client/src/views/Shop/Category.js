@@ -117,30 +117,36 @@ const Category =(props)=> {
         setSubTitleValue(event.target.value)
     }
     const handleSubmit =()=>{
-        let parent='';
+        let parent=null;
         if(mainSubTitleValue!=='' && subTitleValue===''){
             parent = mainSubTitleValue
         }
         else if(mainSubTitleValue!=='' &&subTitleValue!==''){
             parent = subTitleValue
         }
-        console.log(title+lable+parent)
+        console.log( parent)
         axios({
             url: '/',
             method: 'post',
             headers:{'token':`${token}`},
             data: {
               query: `
-               mutation {
-                   category(input : { name : "${title}", label : "${lable}", parent : "${parent}"}) {
+               mutation addcategory($name : String!, $label : String, $parent : ID) {
+                   category(input : { name : $name, label : $label, parent : $parent}) {
                      status
                    }
                  }     
-                `
+                `,
+                variables : {
+                  "name" : title,
+                  "label" : lable,
+                  "parent" : parent
+                }
           }
         }).then((result) => {
             if(result.data.errors){
-                setMessage(result.data.errors[0].message);            
+                console.log(result.data.errors);
+                //setMessage('ثبت اطلاعات با مشکل مواجه شده است');            
             }
             setIsSubmit(!isSubmit);
             

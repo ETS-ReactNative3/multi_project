@@ -1,21 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect,useContext } from 'react';
 import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Pagination,PaginationItem,PaginationLink  } from 'reactstrap';
 import classes from './scoring.module.css';
 import { Link } from 'react-router-dom';
-const Scoring=()=> {
+import {AuthContext} from '../../context/Auth/AuthContext';
+import GetToken from '../../context/Auth/GetToken';
+import axios from 'axios'
 
-  const[ownerState,setOwnerState] = useState([]);
+const Scoring=(props)=> {
+    const {dispatch} = useContext(AuthContext);
+    const [allCategory,setAllCategory] = useState([]);
+    const [subCategory,setSubCategory] = useState([]);
+    const[ownerState,setOwnerState] = useState([]);
+    const[subCategoryId,setSubCategoryId] = useState(null);
+    const [mainCategory,setMainCategory] = useState(true);
+    const [parentCategory,setParentCategory] = useState(false);
+    const [message,setMessage] = useState('')
+    const[ID,setID] = useState(null);
+    const token =  GetToken();
+    useEffect(()=>{
+        dispatch({type:'check',payload:props});
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+              query getAllCategory($page : Int, $limit : Int, $mainCategory : Boolean, $parentCategory : Boolean, $catId : ID) {
+                getAllCategory(input : {page : $page, limit : $limit, mainCategory : $mainCategory, parentCategory : $parentCategory, catId : $catId}) {
+                  _id,
+                  name,
+                }
+              }      
+                `,
+                variables :{
+                    "page": 1,
+                    "limit": 30,
+                    "mainCategory": mainCategory,
+                    "parentCategory": parentCategory,
+                    "catId": subCategoryId
+                }
+          }
+        }).then((result) => {
+            const {getAllCategory} = result.data.data;
+            if(result.data.errors){
+                setMessage('خطا در دریافت اطلاعات')
+              }
+           else if(mainCategory){
+                setAllCategory(getAllCategory);
+            }
+            else if(parentCategory){
+                console.log(getAllCategory);
+                setSubCategory(getAllCategory);
+            }
+            
+        }).catch(error=>{
+          console.log(error)
+        });
+    },[subCategoryId])
+ 
+
+  const getSubCategory =(event)=>{
+    setSubCategoryId(event.target.value);
+    console.log(subCategoryId);
+    setMainCategory(false);
+    setParentCategory(true);
+    
+    }
   const addField = ()=>{
       const newState = [...ownerState];
       newState.push({
           name:'',
-          lable:''
+          label:''
       });
       setOwnerState(newState)
   }
+
   const handleChange = (event,id)=>{
-   
-     
+    
       const field={...ownerState[id]};
       //console.log(student);
       field.name=event.target.value;
@@ -23,18 +84,48 @@ const Scoring=()=> {
       newOwnerState[id]=field;
       setOwnerState(newOwnerState);
   }
-  const handleChangeLable = (event,id)=>{
-   
-     
+  const handleChangeLabel = (event,id)=>{
+       
     const field={...ownerState[id]};
     //console.log(student);
-    field.lable=event.target.value;
+    field.label=event.target.value;
     const newOwnerState = [...ownerState];
     newOwnerState[id]=field;
     setOwnerState(newOwnerState);
 }
+const getId=(event)=>{
+    setID(event.target.value)
+}
 const onSubmitForm =()=>{
-    console.log(ownerState)
+    if(ownerState.length===0){
+        setMessage('حداقل باید یک مورد را وارد کنید');
+        return false;
+    }
+    console.log(ownerState+' '+ID);
+    axios({
+        url: '/',
+        method: 'post',
+        headers:{'token':`${token}`},
+        data: {
+          query: `
+          mutation addservey($category : ID!, $list : [Servey]!) {
+            survey(input : { categroy : $category, list : $list}) {
+              status,
+              message
+            }
+          }     
+            `,
+            variables :{
+                "category": ID,
+                "list": ownerState
+              }
+      }
+    }).then((result) => {
+        console.log(result.data);
+    }).catch(error=>{
+      console.log(error)
+    });
+
 }
     return (
       <div className="animated fadeIn">
@@ -43,27 +134,36 @@ const onSubmitForm =()=>{
               <Card>
                 <CardHeader>         
                     <strong>نحوه امتیاز دهی</strong>
+                    <br />
+                    <span style={{color:'red'}}>{message}</span>
                 </CardHeader>
                 <CardBody>
                     <FormGroup row className="my-0">
                       <Col xs="3">
                         <FormGroup>
                             <Label htmlFor="subcategory">دسته</Label>
-                            <Input type="select" name="subcategory" id="subcategory">
+                            <Input type="select" name="subcategory" id="subcategory" onChange={getSubCategory}>
                                 <option ></option>
-                                <option>2018</option>
-                                <option>2019</option>
-                                <option>2020</option>
-                                <option>2021</option>
-                                <option>2022</option>
-                                <option>2023</option>
-                                <option>2024</option>
-                                <option>2025</option>
-                                <option>2026</option>
+                                {
+                                    allCategory.map((item)=><option key={item._id} value={item._id}>{item.name}</option>)
+                                }
+                                
                             </Input>
                             </FormGroup>
-                        </Col>
-                        
+                      </Col>
+                      <Col xs="3">
+                        <FormGroup>
+                            <Label htmlFor="subcategory">دسته</Label>
+                            <Input type="select" name="subcategory" id="subcategory" onChange={getId}>
+                                <option ></option>
+                                {
+                                    subCategory.map((item)=><option key={item._id} value={item._id}>{item.name}</option>)
+                                }
+                                
+                                
+                            </Input>
+                            </FormGroup>
+                      </Col>
                         <Col xs="2" className={classes.addButton}>
                             <Button color="danger" className="btn-pill" onClick={addField}>
                                 <i className="fa fa-plus fa-lg"></i>
@@ -72,7 +172,7 @@ const onSubmitForm =()=>{
                     </FormGroup>
                     {ownerState.map((val,idx)=>{
                         const scoreId = `name-${idx}`;
-                        const lableId = `lable-${idx}`;
+                        const labelId = `label-${idx}`;
                         return(
                             <div  key={idx} style={{display:'flex'}}>
                                 
@@ -97,10 +197,10 @@ const onSubmitForm =()=>{
                                     <Label htmlFor="description">توضیحات</Label>
                                     <Input
                                      type="text"
-                                     id={lableId}
-                                     name={lableId}
-                                     value={val.lable}
-                                     onChange={(event)=>handleChangeLable(event,idx)}
+                                     id={labelId}
+                                     name={labelId}
+                                     value={val.label}
+                                     onChange={(event)=>handleChangeLabel(event,idx)}
                                       placeholder="در صورت نیاز توضیحات را وارد کنید"
                                        />
                                     </FormGroup>

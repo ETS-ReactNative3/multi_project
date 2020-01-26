@@ -8,8 +8,6 @@ const fs = require('fs');
 
 // const uniquestring = require('unique-string');
 const nodemailer = require('nodemailer');
-const directTransport = require('nodemailer-direct-transport');
-const MailTime = require('mail-time');
 
 const MongoClient = require('mongodb').MongoClient;
 
@@ -163,7 +161,7 @@ const resolvers = {
             let page = args.input.page || 1;
             let limit = args.input.limit || 10;
             if(args.input.getAll == true) {
-                const brands = await Brand.find({}).skip((page - 1) * limit).limit(limit);
+                const brands = await Brand.find({}).skip((page - 1) * limit).limit(limit).populate('category').exec();
                 return brands;
             } else {
                 const brands = await Brand.find({category : args.input.category});
@@ -185,7 +183,7 @@ const resolvers = {
                     password : hash,
                     ...args
                 });
-                console.log(user);
+                
                 await user.save();
                 return {
                     status : 200,
@@ -199,7 +197,7 @@ const resolvers = {
         },
 
         multimedia : async (param, args, { check }) => {
-            console.log(check);
+            
             const { createReadStream, filename } = await args.file;
             const type = await FileType.fromFile(args.file);
             const stream = createReadStream();
@@ -283,7 +281,6 @@ const resolvers = {
 
         brand : async (param, args, { check }) => {
             if(check) { 
-
                 const { createReadStream, filename } = await args.input.image;
                 const stream = createReadStream();
                 const { filePath } = await saveImage({ stream, filename});
