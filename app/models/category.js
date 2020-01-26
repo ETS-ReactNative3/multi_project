@@ -5,7 +5,7 @@ const mongoosePaginate = require('mongoose-paginate');
 const Category = Schema({
     name : { type : String, required : true},
     label : { type : String},
-    parent : { type : Schema.Types.ObjectId, ref : 'Category', default : null},
+    parent : { type : Schema.Types.ObjectId, ref : 'Category'},
 }, {
     timestamps : true,
     toJSON : { virtuals : true}

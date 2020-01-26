@@ -88,7 +88,7 @@ const typeDefs = gql`
     }
 
     input InputBrand {
-        category : ID!,
+        category : [ID]!,
         name : String!,
         label : String,
         image : Upload!
@@ -96,6 +96,10 @@ const typeDefs = gql`
 
     input InputSurvey {
         categroy : ID!,
+        list : [Servey]!
+    }
+
+    input Servey {
         name : String!,
         label : String
     }
@@ -174,7 +178,8 @@ const typeDefs = gql`
     }
 
     type Brand {
-        category : ID,
+        _id : ID,
+        category : [Category],
         name : String,
         label : String,
         image : String
