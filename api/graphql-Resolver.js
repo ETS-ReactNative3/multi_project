@@ -158,16 +158,21 @@ const resolvers = {
         // }
 
         getAllBrand : async (param, args, { check }) => {
-            let page = args.input.page || 1;
-            let limit = args.input.limit || 10;
-            if(args.input.getAll == true) {
-                const brands = await Brand.find({}).skip((page - 1) * limit).limit(limit).populate('category').exec();
-                return brands;
+            if(check) {
+                let page = args.input.page || 1;
+                let limit = args.input.limit || 10;
+                if(args.input.getAll == true) {
+                    const brands = await Brand.find({}).skip((page - 1) * limit).limit(limit).populate('category').exec();
+                    return brands;
+                } else {
+                    const brands = await Brand.find({category : args.input.category});
+                    return brands
+                }
             } else {
-                const brands = await Brand.find({category : args.input.category});
-                return brands
+                const error = new Error('این شماره تلفن قبلا در سیستم ثبت شده است!');
+                error.code = 401;
+                throw error;
             }
-
         }
     },
 
@@ -225,6 +230,7 @@ const resolvers = {
 
         },
 
+
         category : async (param, args, { check }) => {
             if(check) {
                 const category = await Category.create({
@@ -256,8 +262,7 @@ const resolvers = {
             if(check) {
                 const ser = await new Survey({
                     category : args.input.category,
-                    name : args.input.name,
-                    label : args.input.label
+                    list : args.input.list,
                 })
     
                 await ser.save(err => {

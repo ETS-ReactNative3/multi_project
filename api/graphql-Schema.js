@@ -96,6 +96,10 @@ const typeDefs = gql`
 
     input InputSurvey {
         categroy : ID!,
+        list : [Servey]!
+    }
+
+    input Servey {
         name : String!,
         label : String
     }
@@ -173,7 +177,7 @@ const typeDefs = gql`
     }
 
     type Brand {
-        _id: ID,
+        _id : ID,
         category : [Category],
         name : String,
         label : String,
