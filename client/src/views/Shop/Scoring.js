@@ -16,6 +16,7 @@ const Scoring=(props)=> {
     const [parentCategory,setParentCategory] = useState(false);
     const [message,setMessage] = useState('')
     const[ID,setID] = useState(null);
+    const [result,setResult] = useState([])
     const token =  GetToken();
     useEffect(()=>{
         dispatch({type:'check',payload:props});
@@ -57,6 +58,8 @@ const Scoring=(props)=> {
           console.log(error)
         });
     },[subCategoryId])
+
+    
  
 
   const getSubCategory =(event)=>{
@@ -121,11 +124,67 @@ const onSubmitForm =()=>{
               }
       }
     }).then((result) => {
-        console.log(result.data);
+        const {survey} =result.data.data;
+        setMessage(survey)
     }).catch(error=>{
       console.log(error)
     });
 
+}
+const getIdSubCategory=(event)=>{
+    axios({
+        url: '/',
+        method: 'post',
+        headers:{'token':`${token}`},
+        data: {
+          query: `
+          query getAllCategory($page : Int, $limit : Int, $mainCategory : Boolean, $parentCategory : Boolean, $catId : ID) {
+            getAllCategory(input : {page : $page, limit : $limit, mainCategory : $mainCategory, parentCategory : $parentCategory, catId : $catId}) {
+              _id,
+              name,
+            }
+          }      
+            `,
+            variables :{
+                "page": 1,
+                "limit": 30,
+                "mainCategory": false,
+                "parentCategory": true,
+                "catId": event.target.value
+            }
+      }
+    }).then((result) => {
+        const {getAllCategory} = result.data.data;
+        setResult(getAllCategory);
+    }).catch(error=>{
+      console.log(error)
+    });
+}
+const showModal=(subCatId)=>{
+  console.log(subCatId)
+  axios({
+    url: '/',
+    method: 'post',
+    headers:{'token':`${token}`},
+    data: {
+      query: `
+       query getAllSurvey ($categoryId : ID!){
+           getAllSurvey(categoryId : $categoryId) {
+             list {
+               name
+             }
+           }
+         }      
+        `,
+        variables :{
+          "categoryId":subCatId
+        }
+  }
+}).then((result) => {
+    console.log(result.data)
+}).catch(error=>{
+  console.log(error)
+});
 }
     return (
       <div className="animated fadeIn">
@@ -141,7 +200,7 @@ const onSubmitForm =()=>{
                     <FormGroup row className="my-0">
                       <Col xs="3">
                         <FormGroup>
-                            <Label htmlFor="subcategory">دسته</Label>
+                            <Label htmlFor="subcategory">دسته اصلی</Label>
                             <Input type="select" name="subcategory" id="subcategory" onChange={getSubCategory}>
                                 <option ></option>
                                 {
@@ -153,7 +212,7 @@ const onSubmitForm =()=>{
                       </Col>
                       <Col xs="3">
                         <FormGroup>
-                            <Label htmlFor="subcategory">دسته</Label>
+                            <Label htmlFor="subcategory">زیر دسته</Label>
                             <Input type="select" name="subcategory" id="subcategory" onChange={getId}>
                                 <option ></option>
                                 {
@@ -214,32 +273,53 @@ const onSubmitForm =()=>{
                 </CardFooter>
               </Card>
               <Card>
-                <CardHeader>                   
+                <CardHeader style={{display: 'flex',justifyContent: 'space-between'}}>                   
                         <strong>لیست دسته بندی ها</strong>
+                        <Col xs="5">
+                        <FormGroup style={{display: 'flex',justifyContent: 'space-between'}}>
+                            <Label htmlFor="subcategory">دسته اصلی</Label>
+                            <Input type="select" name="subcategory" id="subcategory" onChange={getIdSubCategory}>
+                                <option ></option>
+                                {
+                                    allCategory.map((item)=><option key={item._id} value={item._id}>{item.name}</option>)
+                                }
+                                
+                            </Input>
+                            </FormGroup>
+                      </Col>
                 </CardHeader>
                 <CardBody>
                     <Table responsive >
                         <thead>
                         <tr>
-                            <th>ردیف</th>
+                            
                             <th>نام دسته</th>
                             <th>عملیات</th>
                             
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>گوشی</td>
-                            <td>
-                                
-                                <Col xs="6">
-                                <Link to="/shop/scoring/1"> مشاهده معیار های امتیاز دهی </Link>
-                                </Col>
-                                
-                                
-                            </td>          
-                         </tr>
+                            {
+                                result.map(item=> 
+                                <tr key={item._id}>
+                                   
+                                    <td>{item.name}</td>
+                                    <td>
+                                        
+                                        <Col xs="6">
+                                            <span 
+                                            style={{color:'#63c2de',textDecoration:'underline',cursor:'pointer'}}
+                                            onClick={()=>showModal(item._id)}
+                                            >
+                                            مشاهده معیار های امتیاز دهی 
+                                            </span>
+                                        </Col>
+                                        
+                                        
+                                    </td>          
+                                 </tr>)
+                            }
+                       
                         
                         </tbody>
                     </Table>
