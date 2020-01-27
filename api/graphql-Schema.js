@@ -8,6 +8,7 @@ const typeDefs = gql`
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
         getAllBrand(input : InputGetBrand) : [Brand!]!
+        getAllSurvey(categoryId : ID!) : Survey!
     }
 
     type Mutation {
@@ -95,11 +96,11 @@ const typeDefs = gql`
     }
 
     input InputSurvey {
-        categroy : ID!,
-        list : [Servey]!
+        category : ID!,
+        list : [SurveyList]!
     }
 
-    input Servey {
+    input SurveyList {
         name : String!,
         label : String
     }
@@ -183,6 +184,15 @@ const typeDefs = gql`
         name : String,
         label : String,
         image : String
+    }
+
+    type Survey {
+        list : [SurveyOption]!
+    }
+
+    type SurveyOption {
+        name : String!,
+        label : String
     }
 `;
 

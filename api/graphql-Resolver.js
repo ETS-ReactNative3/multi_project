@@ -175,6 +175,23 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+        },
+
+        getAllSurvey : async (param, args, { check }) => {
+            if(check) {
+                const list = await Survey.findOne({ category : args.categoryId});
+                if(list) {
+                    return list
+                } else {
+                    const error = new Error('هیچ فیلد نظر سنجی برای این دسته بندی وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('این شماره تلفن قبلا در سیستم ثبت شده است!');
+                error.code = 401;
+                throw error;
+            }
         }
     },
 
@@ -261,23 +278,22 @@ const resolvers = {
 
         survey : async (param, args, { check }) => {
             if(check) {
-                const ser = await new Survey({
+                const ser = await Survey.create({
                     category : args.input.category,
                     list : args.input.list,
                 })
-    
-                await ser.save(err => {
-                    if(err) {
-                        const error = new Error('امکان ایجاد فیلد نظرسنجی برای این دسته بندی وجود ندارد.');
-                        error.code = 401;
-                        throw error;
+
+                if(!ser) {
+                    const error = new Error('امکان ایجاد فیلد نظرسنجی برای این دسته بندی وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                } else {
+                    return {
+                        status : 200,
+                        message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
                     }
-                })
-    
-                return {
-                    status : 200,
-                    message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
                 }
+
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
