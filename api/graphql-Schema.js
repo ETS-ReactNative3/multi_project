@@ -186,6 +186,7 @@ const typeDefs = gql`
     }
 
     type Survey {
+        category : ID
         list : [SurveyOption]!
     }
 
