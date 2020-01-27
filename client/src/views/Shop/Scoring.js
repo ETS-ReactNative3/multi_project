@@ -1,5 +1,5 @@
 import React, { useState,useEffect,useContext } from 'react';
-import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Pagination,PaginationItem,PaginationLink  } from 'reactstrap';
+import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Pagination,PaginationItem,PaginationLink,Modal, ModalHeader,ModalBody,ModalFooter   } from 'reactstrap';
 import classes from './scoring.module.css';
 import { Link } from 'react-router-dom';
 import {AuthContext} from '../../context/Auth/AuthContext';
@@ -16,7 +16,9 @@ const Scoring=(props)=> {
     const [parentCategory,setParentCategory] = useState(false);
     const [message,setMessage] = useState('')
     const[ID,setID] = useState(null);
-    const [result,setResult] = useState([])
+    const[modal,setModal] = useState(false);
+    const [result,setResult] = useState([]);
+    const[surveyInformation,serSurveyInformation] = useState([])
     const token =  GetToken();
     useEffect(()=>{
         dispatch({type:'check',payload:props});
@@ -111,8 +113,8 @@ const onSubmitForm =()=>{
         headers:{'token':`${token}`},
         data: {
           query: `
-          mutation addservey($category : ID!, $list : [Servey]!) {
-            survey(input : { categroy : $category, list : $list}) {
+          mutation addsurvey($category : ID!, $list : [SurveyList]!) {
+            survey(input : { category : $category, list : $list}) {
               status,
               message
             }
@@ -124,8 +126,9 @@ const onSubmitForm =()=>{
               }
       }
     }).then((result) => {
-        const {survey} =result.data.data;
-        setMessage(survey)
+        const {message} =result.data.data.survey;
+        console.log(result)
+        setMessage(message)
     }).catch(error=>{
       console.log(error)
     });
@@ -161,7 +164,6 @@ const getIdSubCategory=(event)=>{
     });
 }
 const showModal=(subCatId)=>{
-  console.log(subCatId)
   axios({
     url: '/',
     method: 'post',
@@ -171,20 +173,26 @@ const showModal=(subCatId)=>{
        query getAllSurvey ($categoryId : ID!){
            getAllSurvey(categoryId : $categoryId) {
              list {
-               name
-             }
+               name,
+               label
+             }          
            }
          }      
         `,
         variables :{
           "categoryId":subCatId
         }
-  }
-}).then((result) => {
-    console.log(result.data)
-}).catch(error=>{
-  console.log(error)
-});
+    }
+  }).then((result) => {
+      const {list} = result.data.data.getAllSurvey;
+      serSurveyInformation(list)
+      setModal(true)
+  }).catch(error=>{
+    console.log(error)
+  });
+}
+const toggleLarge=()=> {
+  setModal(!modal)
 }
     return (
       <div className="animated fadeIn">
@@ -333,6 +341,42 @@ const showModal=(subCatId)=>{
                         <PaginationItem><PaginationLink tag="button">4</PaginationLink></PaginationItem>
                         <PaginationItem><PaginationLink next tag="button">Next</PaginationLink></PaginationItem>
                     </Pagination>
+
+                    <Modal isOpen={modal} toggle={toggleLarge}
+                        className={'modal-lg ' + props.className}>
+                    <ModalHeader toggle={toggleLarge}>معیارهای امتیازدهی</ModalHeader>
+                    <ModalBody>
+                      {
+                        surveyInformation.map((item,index)=>
+                        <Row key={index}>                          
+                          <Col xl={6}>
+                            <FormGroup row>
+                              <Col md="3">
+                                <Label htmlFor="disabled-input">عنوان</Label>
+                              </Col>
+                              <Col xs="12" md="9">
+                                <Input type="text" id="disabled-input" name="disabled-input" placeholder={item.name} disabled />
+                              </Col>
+                            </FormGroup>
+                          </Col>
+                         <Col xl={6}>
+                         <FormGroup row>
+                              <Col md="3">
+                                <Label htmlFor="disabled-input">توضیحات</Label>
+                              </Col>
+                              <Col xs="12" md="9">
+                                <Input type="text" id="disabled-input" name="disabled-input" placeholder={item.label} disabled />
+                              </Col>
+                            </FormGroup>
+                           </Col>                                                
+                        </Row>
+                        )
+                      }
+                        
+                         
+                    </ModalBody>
+                    
+                    </Modal>
                 </CardBody>
               </Card>
           </Col>
