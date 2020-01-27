@@ -278,6 +278,19 @@ const resolvers = {
 
         survey : async (param, args, { check }) => {
             if(check) {
+                if(await Survey.findOne({category : args.input.category})) {
+                    const serveyUpdate = await Survey.updateOne({category : args.input.category}, { $push : { list : args.input.list}});
+                    if(!serveyUpdate) {
+                        const error = new Error('امکان ایجاد فیلد نظرسنجی برای این دسته بندی وجود ندارد.');
+                        error.code = 401;
+                        throw error;
+                    } else {
+                        return {
+                            status : 200,
+                            message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
+                        }
+                    }
+                }
                 const ser = await Survey.create({
                     category : args.input.category,
                     list : args.input.list,
