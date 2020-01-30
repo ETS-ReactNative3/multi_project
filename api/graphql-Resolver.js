@@ -415,24 +415,24 @@ const resolvers = {
 
         productSpecsDetails : async (param, args, { check }) => {
             if(check) {
-                const ProSpecsDetails = await new Productdetails({
+                const ProSpecsDetails = await Productdetails.create({
                     specs : args.input.specs,
                     name : args.input.name,
                     label : args.input.label
                 })
-    
-                ProSpecsDetails.save(err => {
-                    if(err) {
-                        const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
-                        error.code = 401;
-                        throw error;
+
+                if(!ProSpecsDetails) {
+                    const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                } else {
+                    return {
+                        _id : ProSpecsDetails._id,
+                        status : 200,
+                        message : 'لیست جزئیات مربوط به مشخصات محصول ذخیره شد.'
                     }
-                });
-    
-                return {
-                    status : 200,
-                    message : 'لیست جزئیات مربوط به مشخصات محصول ذخیره شد.'
                 }
+
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
