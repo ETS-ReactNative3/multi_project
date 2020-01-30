@@ -1,25 +1,152 @@
-import React, { useState } from 'react';
-import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter } from 'reactstrap';
+import React, { useState , useEffect, useContext} from 'react';
+import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Spinner  } from 'reactstrap';
 
-const SubSpecifications=()=> {
-    const [subCategoryFromServer,setSubCategoryFromServer] = useState([
-        {id:1, name:'گوشی موبایل'},
-        {id:2,name:'واقعیت مجازی'},
-        {id:3.,name:'مچ بند و ساعت هوشمند'},
-        {id:4,name:'لوازم جانبی دوربین'},
-        {id:5,name:'لپ تاب'},
-        {id:6,name:'تبلت '},
-    ])
-    const [subTitleFromServer,setSubTitleFromServer] = useState([
-        {id:1, name:'مشخصات کلی'},
-        {id:2,name:'پردازنده'},
-        {id:3.,name:'حافظه'},
-        {id:4,name:'صفحه نمایش'},
-        {id:5,name:'ارتباطات'},
-        {id:6,name:'دوربین '},
-        {id:7,name:'امکانات نرم افزاری '},
-        {id:8,name:'  سایر مشخصات '},
-    ])
+import {AuthContext} from '../../context/Auth/AuthContext';
+import GetToken from '../../context/Auth/GetToken';
+import axios from 'axios'
+const SubSpecifications=(props)=> {
+  const [allCategory,setAllCategory] = useState([]);
+  const [subCategory,setSubCategory] = useState([]);
+  const[subCategoryId,setSubCategoryId] = useState(null);
+  const [mainCategory,setMainCategory] = useState(true);
+  const [parentCategory,setParentCategory] = useState(false);
+  const [message,setMessage] = useState('');
+  const [title,setTitle] = useState('');
+  const[description,setDescription] = useState('');
+  const [loading,setLoadnig] = useState(false);
+  const [allProductSpecs,setAllProductSpecs] = useState([]);
+  const [titleId,setTitleId] = useState(null);
+  const {dispatch} = useContext(AuthContext);
+  const token =  GetToken();
+  const[ID,setID] = useState(null);
+  useEffect(()=>{
+    dispatch({type:'check',payload:props});
+    axios({
+        url: '/',
+        method: 'post',
+        headers:{'token':`${token}`},
+        data: {
+          query: `
+          query getAllCategory($page : Int, $limit : Int, $mainCategory : Boolean, $parentCategory : Boolean, $catId : ID) {
+            getAllCategory(input : {page : $page, limit : $limit, mainCategory : $mainCategory, parentCategory : $parentCategory, catId : $catId}) {
+              _id,
+              name,
+            }
+          }      
+            `,
+            variables :{
+                "page": 1,
+                "limit": 30,
+                "mainCategory": mainCategory,
+                "parentCategory": parentCategory,
+                "catId": subCategoryId
+            }
+      }
+    }).then((result) => {
+        const {getAllCategory} = result.data.data;
+        if(result.data.errors){
+            setMessage('خطا در دریافت اطلاعات')
+          }
+       else if(mainCategory){
+            setAllCategory(getAllCategory);
+        }
+        else if(parentCategory){
+            setSubCategory(getAllCategory);
+        }
+        
+    }).catch(error=>{
+      console.log(error)
+    });
+},[subCategoryId])
+  const getSubCategory =(event)=>{
+    setSubCategoryId(event.target.value);
+    setMainCategory(false);
+    setParentCategory(true);
+    }
+
+    const getId=(event)=>{
+      setID(event.target.value);    
+      axios({
+        url: '/',
+        method: 'post',
+        headers:{'token':`${token}`},
+        data: {
+          query: `
+          query getAllProductSpecs ($categoryId : ID!) {
+            getAllProductSpecs(categoryId : $categoryId) {
+              specs,
+              _id
+            }
+          }   
+            `,
+            variables :{
+              "categoryId": event.target.value
+            }
+      }
+      }).then((result) => {
+        if(result.data.errors){
+          setMessage('خطا در دریافت اطلاعات')
+        }
+        setAllProductSpecs(result.data.data.getAllProductSpecs);
+        setLoadnig(false);
+      }).catch(error=>{
+        console.log(error)
+      });
+    }
+    const getTitleId = (event)=>{
+      setTitleId(event.target.value);
+    }
+
+  const titleHandler=(event)=>{
+    setTitle(event.target.value);
+  }
+
+  const descriptionHandler = (event) =>{
+    setDescription(event.target.value);
+  }
+
+  const formHandler = ()=>{
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        mutation addProductSpecs ($category : ID!, $specs : String!, $label : String){
+          productSpecs(input : {category : $category, specs : $specs, label : $label}) {
+            status,
+            message,
+            _id
+          }
+        }    
+          `,
+          variables :{
+            "category": ID,
+            "specs": title,
+            "label": description
+          }
+    }
+    }).then((result) => {
+      if(result.data.errors){
+        setMessage('خطا در دریافت اطلاعات')
+      }
+      else{
+        setMessage(result.data.data.productSpecs.message);
+        const arrayHolder = [...allProductSpecs];
+        arrayHolder.push({
+          _id:result.data.data.productSpecs._id,
+          specs: title,
+          label: description
+        });
+        setAllProductSpecs(arrayHolder);
+        setTitle('');
+        setDescription('');
+      }
+
+    }).catch(error=>{
+      console.log(error)
+    });
+  }
     return (
       <div className="animated fadeIn">
         <Row>
@@ -27,50 +154,63 @@ const SubSpecifications=()=> {
               <Card>
                 <CardHeader>         
                     <strong> مشخصات </strong>
+                    <br />
+                    <span style={{color:'red'}}>{message}</span>
                 </CardHeader>
                 <CardBody>
-                    <FormGroup row className="my-0">
-                        
-                        
-                        <Col xs="4">
-                            <FormGroup>
-                            <Label htmlFor="category"> دسته اصلی</Label>
-                            <Input type="select" name="category" id="category">
-                            {
-                                  subCategoryFromServer.map((subcat)=>{
-                                      return(
-                                        <option key={subcat.id} value={subcat.id}>{subcat.name}</option>
-                                      )
-                                  })
-                              }
+                <FormGroup row className="my-0">
+                      <Col xs="2">
+                        <FormGroup>
+                            <Label htmlFor="subcategory">دسته اصلی</Label>
+                            <Input type="select" name="subcategory" id="subcategory" onChange={getSubCategory}>
+                                <option ></option>
+                                {
+                                    allCategory.map((item)=><option key={item._id} value={item._id}>{item.name}</option>)
+                                }
+                                
                             </Input>
                             </FormGroup>
-                        </Col>
-                        <Col xs="4">
-                            <FormGroup>
-                            <Label htmlFor="category"> عنوان اصلی</Label>
-                            <Input type="select" name="category" id="category">
-                            {
-                                  subTitleFromServer.map((subcat)=>{
-                                      return(
-                                        <option key={subcat.id} value={subcat.id}>{subcat.name}</option>
-                                      )
-                                  })
-                              }
+                      </Col>
+                      <Col xs="2">
+                        <FormGroup>
+                            <Label htmlFor="subcategory">زیر دسته</Label>
+                            <Input type="select" name="subcategory" id="subcategory" onChange={getId}>
+                                <option ></option>
+                                {
+                                    subCategory.map((item)=><option key={item._id} value={item._id}>{item.name}</option>)
+                                }
+                                
+                                
                             </Input>
                             </FormGroup>
-                        </Col>
-                        <Col xs="4">
-                            <FormGroup>
-                            <Label htmlFor="title">زیر عنوان</Label>
-                            <Input type="text" id="title" placeholder="عنوان را وارد کنید"  required/>
+                      </Col>
+                      <Col xs="2">
+                        <FormGroup>
+                            <Label htmlFor="subcategory">عنوان اصلی</Label>
+                            <Input type="select" name="subcategory" id="subcategory" onChange={getTitleId}>
+                                <option ></option>
+                                {
+                                  allProductSpecs.map((item)=><option key={item._id} value={item._id}>{item.specs}</option>)
+                                }
+                            </Input>
                             </FormGroup>
-                        </Col>
-                        
-                    </FormGroup>
+                      </Col>
+                      <Col xs="3">
+                          <FormGroup>
+                              <Label htmlFor="subcategory">عنوان</Label>
+                              <Input type="text" name="disabled-input" placeholder="عنوان " value={title} onChange={titleHandler} required  />
+                          </FormGroup>
+                      </Col>  
+                      <Col xs="3">
+                          <FormGroup>
+                              <Label htmlFor="subcategory">توضیحات</Label>
+                              <Input type="text" name="disabled-input" placeholder="توضیحات" value={description} onChange={descriptionHandler}  />
+                          </FormGroup>
+                      </Col>
+                  </FormGroup>
                 </CardBody>
                 <CardFooter>
-                <Button type="submit" size="sm" color="primary"><strong>ثبت</strong> </Button>
+                <Button type="submit" size="sm" color="primary" onClick={formHandler}><strong>ثبت</strong> </Button>
               </CardFooter>
               </Card>
               <Card>
@@ -78,91 +218,49 @@ const SubSpecifications=()=> {
                         <strong>لیست دسته بندی ها</strong>
                 </CardHeader>
                 <CardBody>
+                  {
+                    loading ? 
+                    <center><Spinner animation="grow" /></center>
+                     :
                     <Table responsive >
-                        <thead>
-                        <tr>
-                            <th> دسته</th>
-                            <th>   عنوان اصلی</th>
-                            <th>عنوان</th>
-                            <th>عملیات</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td>گوشی موبایل</td>
-                            <td> مشخصات کلی </td>
-                            <td>ابعاد</td>
-                            <td>          
-                              <Button type="submit" size="sm" color="danger" className="btn-pill"
-                              >
-                                ویرایش
-                               </Button>  
-                               
-                            </td>                              
-                         </tr> 
-                         <tr>
-                            <td>گوشی موبایل</td>
-                            <td> مشخصات کلی </td>
-                            <td>توضیحات سیم کارت</td>
-                            <td>          
-                              <Button type="submit" size="sm" color="danger" className="btn-pill"
-                              >
-                                ویرایش
-                               </Button>  
-                               
-                            </td>                              
-                         </tr>  
-                         <tr>
-                            <td>گوشی موبایل</td>
-                            <td> مشخصات کلی </td>
-                            <td>وزن</td>
-                            <td>          
-                              <Button type="submit" size="sm" color="danger" className="btn-pill"
-                              >
-                                ویرایش
-                               </Button>  
-                               
-                            </td>                              
-                         </tr>  
-                         <tr>
-                            <td>گوشی موبایل</td>
-                            <td> مشخصات کلی </td>
-                            <td>ساختار بدنه</td>
-                            <td>          
-                              <Button type="submit" size="sm" color="danger" className="btn-pill"
-                              >
-                                ویرایش
-                               </Button>  
-                               
-                            </td>                              
-                         </tr>   
-                         <tr>
-                            <td>گوشی موبایل</td>
-                            <td> مشخصات کلی </td>
-                            <td>ویژگی های خاص</td>
-                            <td>          
-                              <Button type="submit" size="sm" color="danger" className="btn-pill"
-                              >
-                                ویرایش
-                               </Button>  
-                               
-                            </td>                              
-                         </tr> 
-                         <tr>
-                            <td>گوشی موبایل</td>
-                            <td> مشخصات کلی </td>
-                            <td>تعداد سیم کارت~</td>
-                            <td>          
-                              <Button type="submit" size="sm" color="danger" className="btn-pill"
-                              >
-                                ویرایش
-                               </Button>  
-                               
-                            </td>                              
-                         </tr>                                                                                 
-                        </tbody>
-                    </Table>
+                    <thead>
+                    <tr>
+                        
+                        <th>عنوان</th>
+                        <th>توضیحات</th>
+                        <th>عملیات</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                      {
+                        allProductSpecs.map((item)=>
+                        <tr key={item._id}>
+                          <td>{item.specs}</td>
+                          <td>{item.label} </td>
+                          
+                          <td>          
+                            <Button type="submit" size="sm" color="primary" className="btn-pill"
+                            >
+                              ویرایش
+                            </Button>  
+                            <Button type="submit" size="sm" color="danger" className="btn-pill"
+                            >
+                              حذف
+                            </Button>  
+                            
+                          </td>  
+                                                
+                       </tr> 
+                        )
+                      }
+                        
+                     
+                                                                        
+                    </tbody>
+                </Table>
+                  }
+                   
                     
                 </CardBody>
               </Card>

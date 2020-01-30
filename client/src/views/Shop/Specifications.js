@@ -67,7 +67,6 @@ const Specifications=(props)=> {
     const getId=(event)=>{
       setID(event.target.value);
       setLoadnig(true);
-      console.log(event.target.value);
       axios({
         url: '/',
         method: 'post',
@@ -115,7 +114,8 @@ const Specifications=(props)=> {
         mutation addProductSpecs ($category : ID!, $specs : String!, $label : String){
           productSpecs(input : {category : $category, specs : $specs, label : $label}) {
             status,
-            message
+            message,
+            _id
           }
         }    
           `,
@@ -132,14 +132,14 @@ const Specifications=(props)=> {
       else{
         setMessage(result.data.data.productSpecs.message);
         const arrayHolder = [...allProductSpecs];
-        let tempTime = new Date();
-        const id = tempTime.getTime();
         arrayHolder.push({
-          _id:id,
+          _id:result.data.data.productSpecs._id,
           specs: title,
           label: description
         });
-        setAllProductSpecs(arrayHolder)
+        setAllProductSpecs(arrayHolder);
+        setTitle('');
+        setDescription('');
       }
 
     }).catch(error=>{
