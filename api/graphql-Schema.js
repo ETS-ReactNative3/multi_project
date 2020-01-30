@@ -19,7 +19,7 @@ const typeDefs = gql`
         survey(input : InputSurvey) : operation!,
         brand(input : InputBrand) : operation!,
         product(input : InputProduct) : operation!,
-        productSpecs(input : InputProductSpecs) : operation!,
+        productSpecs(input : InputProductSpecs) : ProductSpecsOperation!,
         productSpecsDetails(input : InputProductSpecsDetails) : operation!,
         productDetailsValue(input : InputProductDetailsValue) : operation!,
         UserForgetPassword(input : InputUserForgetPassword) : operation!,
@@ -113,6 +113,12 @@ const typeDefs = gql`
     }
 
     type operation {
+        status : Int,
+        message : String
+    }
+
+    type ProductSpecsOperation {
+        _id : ID,
         status : Int,
         message : String
     }
