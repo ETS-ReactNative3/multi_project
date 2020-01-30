@@ -190,6 +190,17 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+        },
+
+        getAllProductSpecs : async (param, args, { check }) => {
+            if(check) {
+                const specs = await Productspecs.find({ category : args.categoryId});
+                return specs
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         }
     },
 
@@ -377,24 +388,23 @@ const resolvers = {
 
         productSpecs : async (param, args, { check }) => {
             if(check) {
-                const ProSpecs = await new Productspecs({
+                const ProSpecs = await Productspecs.create({
                     category : args.input.category,
                     specs : args.input.specs,
                     label : args.input.label
                 })
-    
-                await ProSpecs.save(err => {
-                    if(err) {
-                        const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
-                        error.code = 401;
-                        throw error;
+
+                if(!ProSpecs) {
+                    const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                } else {
+                    return {
+                        status : 200,
+                        message : 'لیست اصلی مربوط به مشخصات محصول ذخیره شد.'
                     }
-                });
-    
-                return {
-                    status : 200,
-                    message : 'لیست اصلی مربوط به مشخصات محصول ذخیره شد.'
                 }
+
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
