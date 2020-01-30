@@ -63,6 +63,7 @@ const Specifications=(props)=> {
     setParentCategory(true);
     
     }
+
     const getId=(event)=>{
       setID(event.target.value);
       setLoadnig(true);
@@ -89,19 +90,21 @@ const Specifications=(props)=> {
         if(result.data.errors){
           setMessage('خطا در دریافت اطلاعات')
         }
-        console.log(result.data.data.getAllProductSpecs);
         setAllProductSpecs(result.data.data.getAllProductSpecs);
-  
+        setLoadnig(false);
       }).catch(error=>{
         console.log(error)
       });
     }
+
   const titleHandler=(event)=>{
     setTitle(event.target.value);
   }
+
   const descriptionHandler = (event) =>{
     setDescription(event.target.value);
   }
+
   const formHandler = ()=>{
     axios({
       url: '/',
@@ -128,6 +131,15 @@ const Specifications=(props)=> {
       }
       else{
         setMessage(result.data.data.productSpecs.message);
+        const arrayHolder = [...allProductSpecs];
+        let tempTime = new Date();
+        const id = tempTime.getTime();
+        arrayHolder.push({
+          _id:id,
+          specs: title,
+          label: description
+        });
+        setAllProductSpecs(arrayHolder)
       }
 
     }).catch(error=>{
@@ -201,29 +213,36 @@ const Specifications=(props)=> {
                     <Table responsive >
                     <thead>
                     <tr>
-                        <th> دسته</th>
-                        <th>عنوان</th>
                         
+                        <th>عنوان</th>
+                        <th>توضیحات</th>
                         <th>عملیات</th>
                         <th></th>
                     </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                          <td>گوشی موبایل</td>
-                          <td>
-                              مشخصات کلی
-                          </td>
+                      {
+                        allProductSpecs.map((item)=>
+                        <tr key={item._id}>
+                          <td>{item.specs}</td>
+                          <td>{item.label} </td>
                           
                           <td>          
-                            <Button type="submit" size="sm" color="danger" className="btn-pill"
+                            <Button type="submit" size="sm" color="primary" className="btn-pill"
                             >
                               ویرایش
                             </Button>  
+                            <Button type="submit" size="sm" color="danger" className="btn-pill"
+                            >
+                              حذف
+                            </Button>  
                             
                           </td>  
-                                                  
-                      </tr>   
+                                                
+                       </tr> 
+                        )
+                      }
+                        
                      
                                                                         
                     </tbody>
