@@ -198,6 +198,7 @@ const typeDefs = gql`
     }
 
     type Specs {
+        _id : ID!
         category : ID!
         specs : String!,
         label : String
