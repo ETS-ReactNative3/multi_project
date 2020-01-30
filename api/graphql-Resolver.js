@@ -402,6 +402,7 @@ const resolvers = {
                     throw error;
                 } else {
                     return {
+                        _id : ProSpecs._id,
                         status : 200,
                         message : 'لیست اصلی مربوط به مشخصات محصول ذخیره شد.'
                     }
