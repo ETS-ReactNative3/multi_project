@@ -197,7 +197,28 @@ const resolvers = {
         getAllProductSpecs : async (param, args, { check }) => {
             if(check) {
                 const specs = await Productspecs.find({ category : args.categoryId});
+                if(!specs) {
+                    const error = new Error('برای دسسته بندی مورد نظر اطلاعاتی وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
                 return specs
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        getAllProductSpecsDetails : async (param, args, { check }) => {
+            if(check) {
+                const specs_details = await Productdetails.find({ specs : args.specsId});
+                if(!specs_details) {
+                    const error = new Error('برای این دسته بندی و جزئیات آن اطلاعاتی ثبت نشده است!');
+                    error.code = 401;
+                    throw error;
+                }
+                return specs_details
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
