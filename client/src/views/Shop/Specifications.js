@@ -14,6 +14,7 @@ const Specifications=(props)=> {
   const [title,setTitle] = useState('');
   const[description,setDescription] = useState('');
   const [loading,setLoadnig] = useState(false);
+  const [allProductSpecs,setAllProductSpecs] = useState([]);
   const {dispatch} = useContext(AuthContext);
   const token =  GetToken();
   const[ID,setID] = useState(null);
@@ -65,6 +66,7 @@ const Specifications=(props)=> {
     const getId=(event)=>{
       setID(event.target.value);
       setLoadnig(true);
+      console.log(event.target.value);
       axios({
         url: '/',
         method: 'post',
@@ -73,7 +75,9 @@ const Specifications=(props)=> {
           query: `
           query getAllProductSpecs ($categoryId : ID!) {
             getAllProductSpecs(categoryId : $categoryId) {
-              specs
+              specs,
+              label,
+              _id
             }
           }   
             `,
@@ -85,7 +89,8 @@ const Specifications=(props)=> {
         if(result.data.errors){
           setMessage('خطا در دریافت اطلاعات')
         }
-        console.log(result.data)
+        console.log(result.data.data.getAllProductSpecs);
+        setAllProductSpecs(result.data.data.getAllProductSpecs);
   
       }).catch(error=>{
         console.log(error)
@@ -112,7 +117,7 @@ const Specifications=(props)=> {
         }    
           `,
           variables :{
-            "category": subCategoryId,
+            "category": ID,
             "specs": title,
             "label": description
           }
@@ -204,21 +209,21 @@ const Specifications=(props)=> {
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>گوشی موبایل</td>
-                        <td>
-                            مشخصات کلی
-                        </td>
-                        
-                        <td>          
-                          <Button type="submit" size="sm" color="danger" className="btn-pill"
-                          >
-                            ویرایش
-                           </Button>  
-                           
-                        </td>  
-                                                
-                     </tr>   
+                      <tr>
+                          <td>گوشی موبایل</td>
+                          <td>
+                              مشخصات کلی
+                          </td>
+                          
+                          <td>          
+                            <Button type="submit" size="sm" color="danger" className="btn-pill"
+                            >
+                              ویرایش
+                            </Button>  
+                            
+                          </td>  
+                                                  
+                      </tr>   
                      
                                                                         
                     </tbody>
