@@ -19,8 +19,8 @@ const typeDefs = gql`
         survey(input : InputSurvey) : operation!,
         brand(input : InputBrand) : operation!,
         product(input : InputProduct) : operation!,
-        productSpecs(input : InputProductSpecs) : ProductSpecsOperation!,
-        productSpecsDetails(input : InputProductSpecsDetails) : operation!,
+        productSpecs(input : InputProductSpecs) : ProductOperation!,
+        productSpecsDetails(input : InputProductSpecsDetails) : ProductOperation!,
         productDetailsValue(input : InputProductDetailsValue) : operation!,
         UserForgetPassword(input : InputUserForgetPassword) : operation!,
         UserResetPassword(input : InputUserResetPassword) : operation!,
@@ -118,7 +118,7 @@ const typeDefs = gql`
         message : String
     }
 
-    type ProductSpecsOperation {
+    type ProductOperation {
         _id : ID,
         status : Int,
         message : String
