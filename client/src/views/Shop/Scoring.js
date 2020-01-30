@@ -194,6 +194,12 @@ const showModal=(subCatId)=>{
 const toggleLarge=()=> {
   setModal(!modal)
 }
+const deleteSurvey=(index)=>{
+  const items = [...surveyInformation];
+  items.splice(index , 1);
+  serSurveyInformation(items)
+}
+
     return (
       <div className="animated fadeIn">
         <Row>
@@ -349,26 +355,29 @@ const toggleLarge=()=> {
                       {
                         surveyInformation.map((item,index)=>
                         <Row key={index}>                          
-                          <Col xl={6}>
+                          <Col xl={5}>
                             <FormGroup row>
                               <Col md="3">
-                                <Label htmlFor="disabled-input">عنوان</Label>
+                                <Label>عنوان</Label>
                               </Col>
                               <Col xs="12" md="9">
-                                <Input type="text" id="disabled-input" name="disabled-input" placeholder={item.name} disabled />
+                                <Input type="text" name="disabled-input" placeholder={item.name} disabled />
                               </Col>
                             </FormGroup>
                           </Col>
-                         <Col xl={6}>
+                         <Col xl={5}>
                          <FormGroup row>
                               <Col md="3">
-                                <Label htmlFor="disabled-input">توضیحات</Label>
+                                <Label >توضیحات</Label>
                               </Col>
                               <Col xs="12" md="9">
-                                <Input type="text" id="disabled-input" name="disabled-input" placeholder={item.label} disabled />
+                                <Input type="text"  name="disabled-input" placeholder={item.label} disabled />
                               </Col>
                             </FormGroup>
-                           </Col>                                                
+                           </Col>
+                           <Col xl={2}>
+                            <Button type="submit" size="sm" color="danger" onClick={()=>deleteSurvey(index)}><strong>حذف</strong> </Button>
+                           </Col>                                               
                         </Row>
                         )
                       }
