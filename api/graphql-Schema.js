@@ -10,6 +10,7 @@ const typeDefs = gql`
         getAllBrand(input : InputGetBrand) : [Brand!]!
         getAllSurvey(categoryId : ID!) : Survey!
         getAllProductSpecs(categoryId : ID!) : [Specs!]!
+        getAllProductSpecsDetails(specsId : ID!) : [SpecsDetails!]!
     }
 
     type Mutation {
@@ -206,6 +207,13 @@ const typeDefs = gql`
         _id : ID!
         category : ID!
         specs : String!,
+        label : String
+    }
+
+    type SpecsDetails {
+        _id : ID!,
+        specs : ID!,
+        name : String!,
         label : String
     }
 `;
