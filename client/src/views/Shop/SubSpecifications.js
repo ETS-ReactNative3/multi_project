@@ -66,35 +66,37 @@ const SubSpecifications=(props)=> {
 
     const getId=(event)=>{
       setID(event.target.value);    
+      
+    }
+    const getTitleId = (event)=>{
+      setTitleId(event.target.value);
       axios({
         url: '/',
         method: 'post',
         headers:{'token':`${token}`},
         data: {
           query: `
-          query getAllProductSpecs ($categoryId : ID!) {
-            getAllProductSpecs(categoryId : $categoryId) {
-              specs,
-              _id
+          query getAllProductSpecsDetails($specsId : ID!) {
+            getAllProductSpecsDetails(specsId : $specsId) {
+              _id,
+              name
             }
-          }   
+          } 
             `,
             variables :{
-              "categoryId": event.target.value
+              "specsId": event.target.value
             }
       }
       }).then((result) => {
         if(result.data.errors){
           setMessage('خطا در دریافت اطلاعات')
         }
-        setAllProductSpecs(result.data.data.getAllProductSpecs);
+        console.log(result.data.data);
+        //setAllProductSpecs(result.data.data.getAllProductSpecs);
         setLoadnig(false);
       }).catch(error=>{
         console.log(error)
-      });
-    }
-    const getTitleId = (event)=>{
-      setTitleId(event.target.value);
+      })
     }
 
   const titleHandler=(event)=>{
@@ -112,17 +114,17 @@ const SubSpecifications=(props)=> {
       headers:{'token':`${token}`},
       data: {
         query: `
-        mutation addProductSpecs ($category : ID!, $specs : String!, $label : String){
-          productSpecs(input : {category : $category, specs : $specs, label : $label}) {
+        mutation addProductSpecsDetails($specs : ID!, $name : String!, $label : String) {
+          productSpecsDetails(input : { specs : $specs, name : $name, label : $label}) {
+            _id,
             status,
-            message,
-            _id
+            message
           }
         }    
           `,
           variables :{
-            "category": ID,
-            "specs": title,
+            "specs": titleId,
+            "name": title,
             "label": description
           }
     }
@@ -131,7 +133,8 @@ const SubSpecifications=(props)=> {
         setMessage('خطا در دریافت اطلاعات')
       }
       else{
-        setMessage(result.data.data.productSpecs.message);
+        setMessage(result.data.data.productSpecsDetails.message);
+        console.log(result.data.data.productSpecsDetails);
         const arrayHolder = [...allProductSpecs];
         arrayHolder.push({
           _id:result.data.data.productSpecs._id,
