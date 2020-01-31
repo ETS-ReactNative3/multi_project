@@ -18,6 +18,8 @@ const Category = require('app/models/category');
 const Survey = require('app/models/survey');
 const Brand = require('app/models/brand');
 const Product = require('app/models/product');
+const Seller = require('app/models/seller');
+const Warranty = require('app/models/warranty');
 const Productspecs = require('app/models/p-specs');
 const Productdetails = require('app/models/p-details');
 const Details = require('app/models/details');
@@ -382,26 +384,38 @@ const resolvers = {
 
         product : async (param, args, { check }) => {
             if(check) {
+
                 const details = await saveDetailsValue(args.input.details);
-                const pro = await Product({
+                // const { createReadStream, filename } = await args.input.image;
+                // const stream = createReadStream();
+                // const { filePath } = await saveImage({ stream, filename});
+                console.log(args.input)
+                const pro = await Product.create({
                      fname : args.input.fname,
                      ename : args.input.ename,
+                     brand : args.input.brand,
+                     category : args.input.category,
+                     attribute : args.input.attribute,
+                     discount : args.input.discount,
+                     stock : args.input.stock,
+                     description : args.input.description,
                      details : details,
-                     image : args.input.image
+                     image : "aaa"
                 })
     
-                await pro.save(err => {
+                if(!pro) {
                     if(err) {
                         const error = new Error('امکان درج محصول جدید وجود ندارد.');
                         error.code = 401;
                         throw error;
                     }
-                });
-    
-                return {
-                    status : 200,
-                    message : 'محصول مورد نظر ثبت شد.'
+                } else {
+                    return {
+                        status : 200,
+                        message : 'محصول مورد نظر ثبت شد.'
+                    }
                 }
+    
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
@@ -490,6 +504,63 @@ const resolvers = {
             }
         },
 
+        seller : async (param, args, { check }) => {
+            if(check) {
+                const seller = await Seller({
+                    category : args.category,
+                    name : args.name,
+                    label : args.label
+                })
+
+                if(!seller) {
+                    if(err) {
+                        const error = new Error('امکان درج فروشنده جدید وجود ندارد.');
+                        error.code = 401;
+                        throw error;
+                    }
+                } else {
+                    return {
+                        _id : seller._id,
+                        status : 200,
+                        message : 'ok'
+                    }
+                }
+    
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        warranty : async (param, args, { check }) => {
+            if(check) {
+                const warr = await Warranty({
+                    name : args.name,
+                    label : args.label
+                })
+
+                if(!warr) {
+                    if(err) {
+                        const error = new Error('امکان گارانتی مورد نظر وجود ندارد.');
+                        error.code = 401;
+                        throw error;
+                    }
+                } else {
+                    return {
+                        _id : warr._id,
+                        status : 200,
+                        message : 'ok'
+                    }
+                }
+    
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
         UserForgetPassword : async (param, args) => {
             const user = await User.findOne({ phone : args.input.phone});
             if(!user) {
@@ -570,6 +641,8 @@ let saveDetailsValue = async (args) => {
     for (let index = 0; index < args.length; index++) {
         const element = args[index];
                     const op = await new Details({
+                        seller : element.seller,
+                        warranty : element.warranty,
                         p_details : element.p_details,
                         value : element.value,
                         label : element.label
