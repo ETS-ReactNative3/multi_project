@@ -14,9 +14,52 @@ const AddProduct = (props)=>{
   const [parentCategory,setParentCategory] = useState(false);
   const[catId,setCatId] = useState(null);
   const [subCatId,setSubCatId] = useState(null);
+  const [sellers,setSellers] = useState([]);
+  const [warranty,setWarranty] = useState([]);
+  const [brands,setBrands] = useState([]);
+  const [thirdSubCategory,setThirdSubCategory] = useState([]);
+  const [specs,setSpecs] = useState([]);
+  const [info,setInfo] = useState([]);
+  const [sellerId,setSellerId] = useState(null);
+  const [warrantyId,setWarrantyId] = useState(null);
+  const [color,setColor] = useState('');
+  const [numberOfProducts,setNumberOfProducts] = useState(1);
+  const [price,setPrice] = useState(0);
+  const[discountedPrice,setDiscountedPrice] = useState(0);
+  const[thirdSubCatId,setThirdSubCatId] = useState(null);
   const {dispatch} = useContext(AuthContext);
   const token =  GetToken();
 
+  useEffect(()=>{
+    dispatch({type:'check',payload:props});
+    axios({
+        url: '/',
+        method: 'post',
+        headers:{'token':`${token}`},
+        data: {
+          query: `
+          query getAllSWarranty {
+            getAllWarranty {
+              _id,
+              name,
+              label
+            }
+          }      
+            `
+      }
+    }).then((result) => {
+      if(result.data.errors){
+        setMessage('خطا در دریافت اطلاعات  گارانتی ها')
+      }
+      else{
+          setWarranty(result.data.data.getAllWarranty);
+         
+      }
+      
+    }).catch(error=>{
+      console.log(error)
+    });      
+},[])
   useEffect(()=>{
     dispatch({type:'check',payload:props});
     axios({
@@ -70,13 +113,169 @@ const AddProduct = (props)=>{
     setCatId(event.target.value);
     setMainCategory(false);
     setParentCategory(true);
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        query addProductInfo($categoryId : ID, $getSubCategory : Boolean!, $subCategoryId : ID){
+          getAddProductInfo(categoryId : $categoryId, getSubCategory : $getSubCategory, subCategoryId : $subCategoryId) {
+            sellers {
+              _id,
+              name
+            },
+            
+            brands {
+              _id,
+              name
+            }
+            
+            subcats {
+              _id,
+              name
+            }
+          }
+        }      
+          `,
+          variables :{
+            "categoryId":event.target.value,
+            "getSubCategory": false,
+            "subCategoryId": null
+          }
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      setMessage('خطا در دریافت اطلاعات فروشندگان')
+    }
+    setSellers(result.data.data.getAddProductInfo.sellers)           
+  }).catch(error=>{
+    console.log(error)
+  })
   }
   const subCategoryHandler = (event)=>{
     setSubCatId(event.target.value);
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        query addProductInfo($categoryId : ID, $getSubCategory : Boolean!, $subCategoryId : ID){
+          getAddProductInfo(categoryId : $categoryId, getSubCategory : $getSubCategory, subCategoryId : $subCategoryId) {
+            specs {
+              _id,
+              specs,
+              details {
+                _id,
+                name
+              }
+            },
+            
+            brands {
+              _id,
+              name
+            },
+            
+            subcats {
+              _id,
+              name
+            },
 
+          }
+        }      
+          `,
+          variables :{
+            "categoryId": null,
+            "getSubCategory": true,
+            "subCategoryId": event.target.value
+          }
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      setMessage('خطا در دریافت اطلاعات برندها')
+    }
+    else{
+      const {specs,brands,subcats}= result.data.data.getAddProductInfo ;     
+      setBrands(brands);
+      setThirdSubCategory(subcats);
+      for(var i=0;i<specs.length;i++){
+        for(var j=0;j<specs[i].details.length;j++)
+          specs[i].details[j].value=""
+      }
+      setSpecs(specs);
+      
+    }
+   
+  }).catch(error=>{
+    console.log(error)
+  })
+  }
+  const thirdSubCategoryHandler=(event)=>{
+    setThirdSubCatId(event.target.value);
   }
 
+  const handleChangeSpecName=(event,specId,id)=>{
+    const tempSpecs ={...specs[specId]}
+    const tempSpecsDetail = {...tempSpecs.details[id]};
+    tempSpecsDetail.value = event.target.value;
+    const newstate = [...specs];
+    newstate[specId].details[id] = tempSpecsDetail
+    setSpecs(newstate);
+  }
+  const warrantyHandler =(event)=>{
+    setWarrantyId(event.target.value);
+  }
+  const sellerHandler = (event)=>{
+    setSellerId(event.target.value)
+  }
+  const colorHandler = (event)=>{
+    setColor(event.target.value)
+  }
+  const numberOfProductsHandler = (event)=>{
+    setNumberOfProducts(event.target.value)
+  }
+  const priceHandler = (event)=>{
+    setPrice(event.target.value)
+  }
+  const discountedPriceHandler = (event)=>{
+    setDiscountedPrice(event.target.value)
+  }
   
+  const addButton =()=>{
+    const arrayHolder = [...info];
+    arrayHolder.push({
+      sellers:sellerId,
+      warranty:warrantyId,
+      price:price,
+      stoock:numberOfProducts,
+      discount:discountedPrice,
+      color:color
+    })
+    setInfo(arrayHolder);
+    
+  }
+  const getNameSeller =(id)=>{
+    const newData = sellers.filter((item)=>{
+      const itemData = item._id;
+      const textData = id;
+      return itemData.indexOf(textData)>-1
+    })
+    return newData[0].name ;
+  }
+  const getNameWarranty = (id)=>{
+    const newData = warranty.filter((item)=>{
+      const itemData = item._id;
+      const textData = id;
+      return itemData.indexOf(textData)>-1
+    })
+    return newData[0].name;
+  }
+  const deleteItemInfo = (index)=>{
+    const infoItems = [...info];
+    infoItems.splice(index , 1);
+    setInfo(infoItems);
+  }
     return(
         <div className="animated fadeIn">
         <Row>
@@ -147,10 +346,19 @@ const AddProduct = (props)=>{
                   </Col>
                   <Col xs="3">
                     <FormGroup>
-                      <Label htmlFor="ccyear">زیر دسته دوم</Label>
-                      <Input type="select" name="ccyear" id="ccyear">
-                        <option>دوربین عکاسی دیجیتال </option>
-                        <option>دوربین ورزشی و فیلم برداری</option>
+                      <Label htmlFor=" thirddubcategory">زیر دسته دوم</Label>
+                      <Input 
+                        type="select" 
+                        name="thirddubcategory" 
+                        id="thirddubcategory"
+                        onChange={thirdSubCategoryHandler}
+                      >
+                      <option></option>
+                        {
+                              thirdSubCategory.map((item,index)=>{
+                                  return(<option key={index} value={item._id}>{item.name}</option>)
+                               })
+                          } 
                       </Input>
                     </FormGroup>
                   </Col>
@@ -158,8 +366,12 @@ const AddProduct = (props)=>{
                     <FormGroup>
                       <Label htmlFor="ccyears">برند</Label>
                       <Input type="select" name="ccyears" id="ccyears">
-                        <option>سونی</option>
-                        <option>نیکون</option>
+                      <option></option>
+                        {
+                              brands.map((item,index)=>{
+                                  return(<option key={index} value={item._id}>{item.name}</option>)
+                               })
+                          }  
                       </Input>
                     </FormGroup>
                   </Col>
@@ -169,18 +381,34 @@ const AddProduct = (props)=>{
                   <Col xs="4">
                       <FormGroup>
                         <Label htmlFor="seller">فروشنده</Label>
-                        <Input type="select" name="seller" id="ccyears">
-                          <option>دیجی کالا</option>
-                          <option>دی جی لند</option>
+                        <Input
+                         type="select"
+                         name="seller"
+                         id="seller"
+                         onChange={sellerHandler}
+                         required
+                          >
+                          <option> </option>
+                          {
+                            sellers.map((item)=> <option key={item._id}  value={item._id}>{item.name}</option>)
+                          }                        
                         </Input>
                       </FormGroup>
                   </Col>
                   <Col xs="4">
                       <FormGroup>
-                        <Label htmlFor="seller">گارانتی</Label>
-                        <Input type="select" name="seller" id="ccyears">
-                          <option> 18 ماهه دریا</option>
-                          <option> 24 ماهه سودا</option>
+                        <Label htmlFor="Warranty">گارانتی</Label>
+                        <Input
+                          type="select"
+                          name="Warranty"
+                          id="Warranty"
+                          onChange={warrantyHandler}
+                          required
+                        >
+                          <option> </option>
+                          {
+                            warranty.map((item)=> <option key={item._id}  value={item._id}>{item.name}</option>)
+                          } 
                         </Input>
                       </FormGroup>
                   </Col>
@@ -194,7 +422,8 @@ const AddProduct = (props)=>{
                             name="color"
                             id="exampleColor"
                             placeholder="color placeholder"
-                            onChange={(event)=>console.log(event.target.value)}
+                            onChange={colorHandler}
+                            required
                             />
                         </FormGroup>
                     </Col>
@@ -206,6 +435,9 @@ const AddProduct = (props)=>{
                             name="number"
                             id="exampleNumber"
                             placeholder="تعداد محصول"
+                            value={numberOfProducts}
+                            onChange={numberOfProductsHandler}
+                            required
                             />
                         </FormGroup>
                     </Col>
@@ -217,6 +449,9 @@ const AddProduct = (props)=>{
                             name="price"
                             id="price"
                             placeholder=" قیمت محصول"
+                            value={price}
+                            onChange={priceHandler}
+                            required
                             />
                         </FormGroup>
                     </Col>
@@ -228,19 +463,166 @@ const AddProduct = (props)=>{
                             name="priceOff"
                             id="priceOff"
                             placeholder="قیمت محصول با تخفیف" 
+                            value={discountedPrice}
+                            onChange={discountedPriceHandler}
+                            required
                             />
                         </FormGroup>
                     </Col>
                     <Col xs="1" style={{display:'flex',justifyContent:'center',alignItems:'flex-end'}}>
                         <FormGroup>
-                            <Label></Label>
-                            <Button color="danger" className="btn-pill">
+                            <Button color="danger" className="btn-pill" onClick={addButton} >
                                  <i className="fa fa-plus fa-lg"></i>
                             </Button>
                         </FormGroup>
                     </Col>
                 </Row>
+                
+                {
+                  //show item entered
+                  info.map((item,index)=>
+                  {
+                    let nameSeller = getNameSeller(item.sellers);
+                    let nameWarranty = getNameWarranty(item.warranty);
+                    return(
+                    <Row key={index}>
+                      <Col xs="2">
+                          <FormGroup>
+                              <Label for="exampleNumber">فروشنده</Label>
+                              <Input
+                              type="text"
+                              name="number"
+                              id="exampleNumber"
+                              value={nameSeller}
+                              disabled
+                              onChange={sellerHandler}
+                              />
+                          </FormGroup>
+                      </Col>
+                      <Col xs="2">
+                          <FormGroup>
+                              <Label for="exampleNumber">گارانتی</Label>
+                              <Input
+                              type="text"
+                              name="number"
+                              id="exampleNumber"
+                              value={nameWarranty}
+                              disabled
+                              onChange={warrantyHandler}
+                              />
+                          </FormGroup>
+                      </Col>
+                      <Col xl="2">
+                        <FormGroup>
+                            <Label for="exampleNumber">رنگ</Label>
+                          <Input
+                                type="color"
+                                name="color"
+                                id="exampleColor"
+                                placeholder="color placeholder"
+                                value={item.color}
+                                onChange={colorHandler}
+                                />
+                        </FormGroup>
+                      </Col>
+                      <Col xs="1">
+                          <FormGroup>
+                              <Label for="exampleNumber">تعداد</Label>
+                              <Input
+                              type="text"
+                              name="number"
+                              id="exampleNumber"
+                              value={item.stoock}
+                              disabled
+                              onChange={numberOfProductsHandler}
+                              />
+                          </FormGroup>
+                      </Col>
+                      <Col xs="2">
+                          <FormGroup>
+                              <Label for="exampleNumber">قیمت</Label>
+                              <Input
+                              type="text"
+                              name="number"
+                              id="exampleNumber"
+                              value={item.price}
+                              disabled
+                              onChange={priceHandler}
+                              />
+                          </FormGroup>
+                      </Col>
+                      <Col xs="2">
+                          <FormGroup>
+                              <Label for="exampleNumber">قیمت با تخفیف</Label>
+                              <Input
+                              type="text"
+                              name="number"
+                              id="exampleNumber"
+                              value={item.discount}
+                              disabled
+                              onChange={discountedPriceHandler}
+                              />
+                          </FormGroup>
+                      </Col>
+                      <Col xs="1" style={{display:'flex',justifyContent:'center',alignItems:'flex-end'}}>
+                        <FormGroup>
+                            <Button color="danger" className="btn-pill" onClick={()=>deleteItemInfo(index)} >
+                                 <i className="fa fa-trash fa-lg"></i>
+                            </Button>
+                        </FormGroup>
+                    </Col>
+                    </Row>
+                    )
+                  }
+                    
+                  )
+                }
                 <hr />
+                {
+                  //show specs item
+                  specs.map((spec,idx)=>
+                    <Card key={spec._id}> 
+                      <CardHeader>
+                        {spec.specs}
+                      </CardHeader>
+                      <CardBody>
+                          {
+                            spec.details.map((item,index)=>
+                            {
+                              const Id = `name-${item._id}`;
+                              return(
+                                <Row key={item._id}>
+                                <Col xl="6">
+                                  <FormGroup>
+                                  <Input 
+                                    type="text" 
+                                    placeholder="نام محصول را وارد کنید"
+                                    disabled
+                                    value={item.name} 
+                                  />
+                                  </FormGroup>
+                                </Col>
+                                <Col xl="6">
+                                  <FormGroup>
+                                  <Input 
+                                    type="text" 
+                                    value={item.value} 
+                                    id={Id}
+                                    name={Id}
+                                    onChange={(event)=>handleChangeSpecName(event,idx,index)}
+                                  />
+                                  </FormGroup>
+                                </Col>
+                              </Row> 
+                              )
+                            }  
+                            )
+                          }
+                      </CardBody>
+                  </Card>
+                  )
+                }
+                
               </CardBody>
             </Card>
           </Col>

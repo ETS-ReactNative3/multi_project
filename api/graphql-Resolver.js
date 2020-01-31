@@ -264,24 +264,21 @@ const resolvers = {
             if(check) {
 
                 if(args.getSubCategory == true && args.subCategoryId != null) {
-                    const subcats = await Category.find({parent : args,subCategoryId});
+                    const subcats = await Category.find({parent : args.subCategoryId});
                     const brands = await Brand.find({category : args.subCategoryId});
+                    const specs = await Productspecs.find({category : args.subCategoryId}).populate('details').exec();
                     return {
                         subcats,
-                        brands
+                        brands,
+                        specs
                     }
                 }
 
                 else if(args.getSubCategory == false && args.categoryId != null) {
                     const sellers = await Seller.find({category : args.categoryId});
-                        
-                    if(!sellers) {
-                        const error = new Error('هیچ فروشنده ای در این دسته بندی قرار ندارد!');
-                        error.code = 401;
-                        throw error;
-                    } else {
-                        return sellers
-                    }
+                    return {
+                        sellers
+                    };
                 } else {
                     const error = new Error('درخواست شما اعتبار لازم را نداید!');
                     error.code = 401;

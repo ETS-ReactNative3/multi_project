@@ -228,7 +228,8 @@ const typeDefs = gql`
         _id : ID!
         category : ID!
         specs : String!,
-        label : String
+        label : String,
+        details : [SpecsDetails]
     }
 
     type SpecsDetails {
@@ -254,7 +255,8 @@ const typeDefs = gql`
     type addProductInfo {
         sellers : [Seller],
         brands : [Brand],
-        subcats : [Category]
+        subcats : [Category],
+        specs : [Specs]
     }
 `;
 
