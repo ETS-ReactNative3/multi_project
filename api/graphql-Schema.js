@@ -13,6 +13,7 @@ const typeDefs = gql`
         getAllProductSpecsDetails(specsId : ID!) : [SpecsDetails!]!
         getAllSeller(category : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
+        getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
     }
 
     type Mutation {
@@ -249,6 +250,12 @@ const typeDefs = gql`
         _id : ID,
         name : String,
         label : String
+    }
+
+    type addProductInfo {
+        sellers : [Seller],
+        brands : [Brand],
+        subcats : [Category]
     }
 `;
 

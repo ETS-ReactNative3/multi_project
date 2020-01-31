@@ -259,6 +259,42 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+        },
+
+        getAddProductInfo : async (parm, args, { check }) => {
+
+            if(check) {
+
+                if(args.getSubCategory == true && args.subCategoryId != null) {
+                    const subcats = await Category.find({parent : args,subCategoryId});
+                    const brands = await Brand.find({category : args.subCategoryId});
+                    return {
+                        subcats,
+                        brands
+                    }
+                }
+
+                else if(args.getSubCategory == false && args.categoryId != null) {
+                    const sellers = await Seller.find({category : args.categoryId});
+                        
+                    if(!sellers) {
+                        const error = new Error('هیچ فروشنده ای در این دسته بندی قرار ندارد!');
+                        error.code = 401;
+                        throw error;
+                    } else {
+                        return sellers
+                    }
+                } else {
+                    const error = new Error('درخواست شما اعتبار لازم را نداید!');
+                    error.code = 401;
+                    throw error;
+                }
+
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         }
     },
 
