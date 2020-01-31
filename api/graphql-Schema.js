@@ -11,6 +11,8 @@ const typeDefs = gql`
         getAllSurvey(categoryId : ID!) : Survey!
         getAllProductSpecs(categoryId : ID!) : [Specs!]!
         getAllProductSpecsDetails(specsId : ID!) : [SpecsDetails!]!
+        getAllSeller(category : ID!) : [Seller!]!
+        getAllWarranty : [Warranty!]!
     }
 
     type Mutation {
@@ -233,6 +235,19 @@ const typeDefs = gql`
         _id : ID!,
         specs : ID!,
         name : String!,
+        label : String
+    }
+
+    type Seller {
+        _id : ID
+        category : ID,
+        name : String,
+        label : String
+    }
+
+    type Warranty {
+        _id : ID,
+        name : String,
         label : String
     }
 `;

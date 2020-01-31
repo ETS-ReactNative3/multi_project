@@ -226,6 +226,39 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+        },
+
+        getAllSeller : async (param, args, { check }) => {
+            if(check) {
+                const sellers = await Seller.find({ category : args.category});
+                if(!seller) {
+                    const error = new Error('برای این دسته بندی فروشنده ای ثبت نشده است!');
+                    error.code = 401;
+                    throw error;
+                } else {
+                    return sellers;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        getAllWarranty : async (param, args, { check }) => {
+            if(check) {
+                const warrantys = await Warranty.find();
+                if(!warrantys) {
+                    const error = new Error('هیچ گارانتی ثبت نشده است!');
+                    error.code = 401;
+                    throw error;
+                }
+                return warrantys;
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         }
     },
 
