@@ -266,11 +266,13 @@ const resolvers = {
             if(check) {
 
                 if(args.getSubCategory == true && args.subCategoryId != null) {
-                    const subcats = await Category.find({parent : args,subCategoryId});
+                    const subcats = await Category.find({parent : args.subCategoryId});
                     const brands = await Brand.find({category : args.subCategoryId});
+                    const specs = await Productspecs.find({category : args.subCategoryId}).populate('details').exec();
                     return {
                         subcats,
-                        brands
+                        brands,
+                        specs
                     }
                 }
 
@@ -465,8 +467,6 @@ const resolvers = {
                      brand : args.input.brand,
                      category : args.input.category,
                      attribute : args.input.attribute,
-                     discount : args.input.discount,
-                     stock : args.input.stock,
                      description : args.input.description,
                      details : details,
                      image : "aaa"

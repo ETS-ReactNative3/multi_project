@@ -90,9 +90,7 @@ const typeDefs = gql`
         attribute : [InputAttribute],
         description : String!,
         rate : Int,
-        discount : Int,
         details : [InputDetails!]!,
-        stock : Int!,
         image : [String]
     }
 
@@ -107,7 +105,8 @@ const typeDefs = gql`
         warranty : ID!,
         color : String!,
         price : Int!,
-        stock : Int!
+        stock : Int!,
+        discount : Int
     }
 
     input InputBrand {
@@ -229,14 +228,15 @@ const typeDefs = gql`
         _id : ID!
         category : ID!
         specs : String!,
-        label : String
+        label : String,
+        details : [SpecsDetails]
     }
 
     type SpecsDetails {
         _id : ID!,
         specs : ID!,
         name : String!,
-        label : String
+        label : String,
     }
 
     type Seller {
@@ -255,7 +255,8 @@ const typeDefs = gql`
     type addProductInfo {
         sellers : [Seller],
         brands : [Brand],
-        subcats : [Category]
+        subcats : [Category],
+        specs : [Specs]
     }
 `;
 
