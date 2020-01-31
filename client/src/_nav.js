@@ -193,17 +193,23 @@ export default {
     },
     {
       name: 'محصولات',
-      url: '/icons',
+      url: '/products',
       icon: 'icon-star',
       children: [
         {
-          name: 'CoreUI Icons',
-          url: '/icons/coreui-icons',
+          name: 'اضافه کردن محصول',
+          url: '/products/addproduct',
           icon: 'icon-star',
-          badge: {
-            variant: 'info',
-            text: 'NEW',
-          },
+        },
+        {
+          name: 'فروشنده ها',
+          url: '/products/seller',
+          icon: 'icon-star',
+        },
+        {
+          name: 'گارانتی',
+          url: '/products/warranty',
+          icon: 'icon-star',
         },
         {
           name: 'Flags',

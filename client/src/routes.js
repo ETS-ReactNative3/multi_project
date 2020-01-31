@@ -46,6 +46,9 @@ const Scoring = React.lazy(() => import('./views/Shop/Scoring'));
 const ScoringItem = React.lazy(() => import('./views/Shop/ScoringItem'));
 const Specifications = React.lazy(() => import('./views/Shop/Specifications'));
 const SubSpecifications = React.lazy(() => import('./views/Shop/SubSpecifications'));
+const AddProduct  = React.lazy(() => import('./views/Products/AddProduct'));
+const Seller  = React.lazy(() => import('./views/Products/Seller'));
+const Warranty  = React.lazy(() => import('./views/Products/Warranty'));
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
   
@@ -82,11 +85,14 @@ const routes = [
   { path: '/buttons/button-dropdowns', name: 'Button Dropdowns', component: ButtonDropdowns },
   { path: '/buttons/button-groups', name: 'Button Groups', component: ButtonGroups },
   { path: '/buttons/brand-buttons', name: 'Brand Buttons', component: BrandButtons },
-  { path: '/icons', exact: true, name: 'محصولات', component: CoreUIIcons },
-  { path: '/icons/coreui-icons', name: 'CoreUI Icons', component: CoreUIIcons },
-  { path: '/icons/flags', name: 'Flags', component: Flags },
-  { path: '/icons/font-awesome', name: 'Font Awesome', component: FontAwesome },
-  { path: '/icons/simple-line-icons', name: 'Simple Line Icons', component: SimpleLineIcons },
+  { path: '/products', exact: true, name: 'محصولات', component: AddProduct },
+  { path: '/products/addproduct', exact: true, name: 'محصولات', component: AddProduct },
+  { path: '/products/seller', exact: true, name: 'فروشنده ها', component: Seller },
+  { path: '/products/warranty', exact: true, name: 'گارانتی', component: Warranty },
+  { path: '/products/coreui-icons', name: 'CoreUI Icons', component: CoreUIIcons },
+  { path: '/products/flags', name: 'Flags', component: Flags },
+  { path: '/products/font-awesome', name: 'Font Awesome', component: FontAwesome },
+  { path: '/products/simple-line-icons', name: 'Simple Line Icons', component: SimpleLineIcons },
   { path: '/notifications', exact: true, name: 'مالی و فروش', component: Alerts },
   { path: '/notifications/alerts', name: 'Alerts', component: Alerts },
   { path: '/notifications/badges', name: 'Badges', component: Badges },

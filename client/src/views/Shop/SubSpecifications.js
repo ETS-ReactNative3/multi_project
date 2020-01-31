@@ -16,6 +16,7 @@ const SubSpecifications=(props)=> {
   const [loading,setLoadnig] = useState(false);
   const [allProductSpecs,setAllProductSpecs] = useState([]);
   const [titleId,setTitleId] = useState(null);
+  const [AllProductSpecsDetails,setAllProductSpecsDetails] = useState([]);
   const {dispatch} = useContext(AuthContext);
   const token =  GetToken();
   const[ID,setID] = useState(null);
@@ -66,7 +67,32 @@ const SubSpecifications=(props)=> {
 
     const getId=(event)=>{
       setID(event.target.value);    
-      
+      axios({
+        url: '/',
+        method: 'post',
+        headers:{'token':`${token}`},
+        data: {
+          query: `
+          query getAllProductSpecs ($categoryId : ID!) {
+            getAllProductSpecs(categoryId : $categoryId) {
+              specs,
+              _id
+            }
+          }   
+            `,
+            variables :{
+              "categoryId": event.target.value
+            }
+      }
+      }).then((result) => {
+        if(result.data.errors){
+          setMessage('خطا در دریافت اطلاعات')
+        }
+        setAllProductSpecs(result.data.data.getAllProductSpecs);
+        setLoadnig(false);
+      }).catch(error=>{
+        console.log(error)
+      });
     }
     const getTitleId = (event)=>{
       setTitleId(event.target.value);
@@ -79,9 +105,10 @@ const SubSpecifications=(props)=> {
           query getAllProductSpecsDetails($specsId : ID!) {
             getAllProductSpecsDetails(specsId : $specsId) {
               _id,
-              name
+              name,
+              label
             }
-          } 
+          }   
             `,
             variables :{
               "specsId": event.target.value
@@ -91,9 +118,7 @@ const SubSpecifications=(props)=> {
         if(result.data.errors){
           setMessage('خطا در دریافت اطلاعات')
         }
-        console.log(result.data.data);
-        //setAllProductSpecs(result.data.data.getAllProductSpecs);
-        setLoadnig(false);
+        setAllProductSpecsDetails(result.data.data.getAllProductSpecsDetails);
       }).catch(error=>{
         console.log(error)
       })
@@ -134,14 +159,13 @@ const SubSpecifications=(props)=> {
       }
       else{
         setMessage(result.data.data.productSpecsDetails.message);
-        console.log(result.data.data.productSpecsDetails);
-        const arrayHolder = [...allProductSpecs];
+        const arrayHolder = [...AllProductSpecsDetails];
         arrayHolder.push({
-          _id:result.data.data.productSpecs._id,
-          specs: title,
+          _id:result.data.data.productSpecsDetails._id,
+          name: title,
           label: description
         });
-        setAllProductSpecs(arrayHolder);
+        setAllProductSpecsDetails(arrayHolder);
         setTitle('');
         setDescription('');
       }
@@ -237,9 +261,9 @@ const SubSpecifications=(props)=> {
                     </thead>
                     <tbody>
                       {
-                        allProductSpecs.map((item)=>
+                        AllProductSpecsDetails.map((item)=>
                         <tr key={item._id}>
-                          <td>{item.specs}</td>
+                          <td>{item.name}</td>
                           <td>{item.label} </td>
                           
                           <td>          
