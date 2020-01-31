@@ -229,7 +229,7 @@ const resolvers = {
         getAllSeller : async (param, args, { check }) => {
             if(check) {
                 const sellers = await Seller.find({ category : args.category});
-                if(!seller) {
+                if(!sellers) {
                     const error = new Error('برای این دسته بندی فروشنده ای ثبت نشده است!');
                     error.code = 401;
                     throw error;
@@ -537,7 +537,7 @@ const resolvers = {
 
         seller : async (param, args, { check }) => {
             if(check) {
-                const seller = await Seller({
+                const seller = await Seller.create({
                     category : args.category,
                     name : args.name,
                     label : args.label
@@ -566,7 +566,7 @@ const resolvers = {
 
         warranty : async (param, args, { check }) => {
             if(check) {
-                const warr = await Warranty({
+                const warr = await Warranty.create({
                     name : args.name,
                     label : args.label
                 })

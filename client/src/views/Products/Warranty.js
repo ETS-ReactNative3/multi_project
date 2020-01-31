@@ -7,8 +7,42 @@ const Warranty = (props)=>{
     const [title,setTitle] = useState('');
     const [lable,setLable] = useState('');
     const [loading,setLoading] = useState(false);
+    const [resultServer,setResult] = useState([])
+    const[message,setMessage] = useState('')
     const {dispatch} = useContext(AuthContext);
     const token =  GetToken();
+
+    useEffect(()=>{
+        dispatch({type:'check',payload:props});
+        setLoading(true);
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+              query getAllSWarranty {
+                getAllWarranty {
+                  _id,
+                  name,
+                  label
+                }
+              }      
+                `
+          }
+        }).then((result) => {
+          if(result.data.errors){
+            setMessage('خطا در دریافت اطلاعات  گارانتی ها')
+          }
+          else{
+              setResult(result.data.data.getAllWarranty);
+              setLoading(false);
+          }
+          
+        }).catch(error=>{
+          console.log(error)
+        });      
+    },[])
 
     const handleTitle =(event)=>{
         setTitle(event.target.value)
@@ -17,6 +51,45 @@ const Warranty = (props)=>{
         setLable(event.target.value)
     }
     const handleSubmit =()=>{
+        dispatch({type:'check',payload:props});
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+              mutation addWarranty($name : String!, $label : String) {
+                warranty(name : $name, label : $label) {
+                  _id,
+                  status,
+                  message
+                }
+              }   
+                `,
+                variables :{
+                        "name": title,
+                        "label": lable         
+                }
+          }
+        }).then((result) => {
+          if(result.data.errors){
+            setMessage('خطلا در ثبت اطلاعات گارانتی جدید جدید')
+          }
+          else{
+              setMessage('اطلاعات گارانتی جدید با موفقیت اضافه شده');
+              const arrayHolder = [...resultServer];
+              arrayHolder.push({
+                  _id:result.data.data.warranty._id,
+                  name:title,
+                  label:lable
+              })
+              setResult(arrayHolder);
+              setTitle('');
+              setLable('')
+           }
+        }).catch(error=>{
+          console.log(error)
+        });
     }
     
 return(
@@ -80,9 +153,11 @@ return(
                           </tr>
                       </thead>                              
                         <tbody>
-                            <tr >
-                                <td></td>
-                                <td></td>
+                            {
+                                resultServer.map((item)=>
+                                <tr key={item._id}>
+                                <td>{item.name}</td>
+                                <td>{item.label}</td>
                                 <td>
                                     <Row>
                                     <Col xs="3">
@@ -93,7 +168,9 @@ return(
                                     </Col>
                                     </Row>
                                 </td>          
-                             </tr>                    
+                             </tr> )
+                            }
+                                               
                     </tbody>                
                   </Table>
                     }                    

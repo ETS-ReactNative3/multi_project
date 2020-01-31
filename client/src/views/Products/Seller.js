@@ -9,6 +9,8 @@ const Seller = (props)=>{
     const [mainSubTitleValue,setMainSubTitleValue] = useState('');
     const [mainSubTitleFromServer,setMainSubTitleFromServe] = useState([]);
     const [loading,setLoading] = useState(false);
+    const [resultServer,setResult] = useState([])
+    const[message,setMessage] = useState('')
     const {dispatch} = useContext(AuthContext);
     const token =  GetToken();
     useEffect(()=>{
@@ -40,7 +42,7 @@ const Seller = (props)=>{
           }
         }).then((result) => {
           if(result.data.errors){
-            dispatch({type:'logout',payload:props});
+            setMessage('خطا در دریافت اطلاعات دسته بندی ها')
           }
           
             setMainSubTitleFromServe(result.data.data.getAllCategory)
@@ -50,7 +52,44 @@ const Seller = (props)=>{
         });      
     },[])
     const handleMainSubTitle=(event)=>{
-        setMainSubTitleValue(event.target.value)
+        if(event.target.value===''){
+            setMessage('یک دسته را انتخاب کنید');
+            return;
+        }
+        setMainSubTitleValue(event.target.value);
+        setLoading(true)
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+              query getAllSeller($categoryId : ID!) {
+                getAllSeller(category : $categoryId) {
+                  _id,
+                  name,
+                  label
+                }
+              }    
+                `,
+                variables :{
+                    "categoryId": event.target.value
+                }
+          }
+        }).then((result) => {
+          if(result.data.errors){
+            setMessage(result.data.errors[0].message)
+          }
+          else{
+            setResult(result.data.data.getAllSeller);
+            setLoading(false);
+            setTitle('');
+            setLable('')
+          }
+       
+        }).catch(error=>{
+            console.log(error)
+          });
     }
     const handleTitle =(event)=>{
         setTitle(event.target.value)
@@ -59,6 +98,47 @@ const Seller = (props)=>{
         setLable(event.target.value)
     }
     const handleSubmit =()=>{
+        //console.log(mainSubTitleValue+'/'+title+'/'+lable);
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+              mutation addSeller($category : ID!, $name : String!, $label : String) {
+                seller(category : $category, name : $name, label : $label) {
+                  _id,
+                  status,
+                  message
+                }
+              }     
+                `,
+                variables :{
+                    "category" : mainSubTitleValue,
+                    "name": title,
+                    "label": lable
+                }
+          }
+        }).then((result) => {
+          if(result.data.errors){
+            setMessage('خطلا در ثبت اطلاعات فروشنده جدید')
+          }
+          else{
+              setMessage('اطلاعات فروشنده جدید با موفقیت اضافه شده');
+              console.log(result.data.data.seller._id)
+              const arrayHolder = [...resultServer];
+              arrayHolder.push({
+                  _id:result.data.data.seller._id,
+                  name:title,
+                  label:lable
+              })
+              setResult(arrayHolder);
+              setTitle('');
+              setLable('')
+           }
+        }).catch(error=>{
+          console.log(error)
+        });
     }
     
 return(
@@ -68,6 +148,8 @@ return(
         <Card>
             <CardHeader>
                     <i className="fa fa-align-justify"></i> اضافه کردن فروشنده
+                    <br />
+                   <span style={{color:'red'}}>{message}</span> 
             </CardHeader>
             <CardBody>
                         <FormGroup row className="my-0">
@@ -134,15 +216,17 @@ return(
                       <Table responsive >
                       <thead>
                           <tr>
-                              <th>نام دسته</th>
                               <th>نام فروشنده</th>
+                              <th>توضیحات</th>
                               <th>عملیات</th>                                
                           </tr>
                       </thead>                              
                         <tbody>
-                            <tr >
-                                <td></td>
-                                <td></td>
+                            {
+                                resultServer.map((item)=>
+                                <tr key={item._id}>
+                                <td>{item.name}</td>
+                                <td>{item.label}</td>
                                 <td>
                                     <Row>
                                     <Col xs="3">
@@ -153,7 +237,10 @@ return(
                                     </Col>
                                     </Row>
                                 </td>          
-                             </tr>                    
+                             </tr> )
+                            
+                            }
+                                               
                     </tbody>                
                   </Table>
                     }                    
