@@ -26,6 +26,8 @@ const typeDefs = gql`
         UserForgetPassword(input : InputUserForgetPassword) : operation!,
         UserResetPassword(input : InputUserResetPassword) : operation!,
         ResetPassword(input : InputResetPassword) : operation!,
+        seller(category : ID!, name : String!, label : String) : operation!,
+        warranty(name : String!, label : String) : operation!
     }
 
 
@@ -80,14 +82,29 @@ const typeDefs = gql`
     input InputProduct {
         fname : String!,
         ename : String!,
+        category : ID!
+        brand : ID!,
+        attribute : [InputAttribute],
+        description : String!,
+        rate : Int,
+        discount : Int,
         details : [InputDetails!]!,
-        image : [String!]!
+        stock : Int!,
+        image : [String]
     }
 
     input InputDetails {
         p_details : ID!,
         value : String!,
         label : String
+    }
+
+    input InputAttribute {
+        seller : [ID!]!
+        warranty : ID!,
+        color : String!,
+        price : Int!,
+        stock : Int!
     }
 
     input InputBrand {
@@ -114,6 +131,7 @@ const typeDefs = gql`
     }
 
     type operation {
+        _id : ID,
         status : Int,
         message : String
     }
