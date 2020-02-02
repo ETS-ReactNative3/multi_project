@@ -60,8 +60,11 @@ const resolvers = {
         },
 
         getProduct : async (param, args) => {
-            const producs = await Product.find({});
-            return producs
+            let page = args.page || 1;
+            let limit = args.limit || 10;
+            const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute.seller'}, { path : 'attribute.warranty'}]});
+            // const producs = await Product.find({}).populate('attribute.seller');
+            return producs.docs
         },
 
         getAllCategory : async (param, args, { check }) => {
@@ -298,6 +301,7 @@ const resolvers = {
                 throw error;
             }
         }
+
     },
 
     Mutation : {
@@ -575,7 +579,7 @@ const resolvers = {
 
         seller : async (param, args, { check }) => {
             if(check) {
-                const seller = await Seller({
+                const seller = await Seller.create({
                     category : args.category,
                     name : args.name,
                     label : args.label
@@ -604,7 +608,7 @@ const resolvers = {
 
         warranty : async (param, args, { check }) => {
             if(check) {
-                const warr = await Warranty({
+                const warr = await Warranty.create({
                     name : args.name,
                     label : args.label
                 })

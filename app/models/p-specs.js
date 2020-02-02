@@ -18,4 +18,11 @@ ProductSpecs.virtual('details', {
     foreignField : 'specs'
 })
 
+ProductSpecs.virtual('p_category', {
+    ref : 'Category',
+    localField : 'category',
+    foreignField : '_id'
+})
+
+
 module.exports = mongoose.model('ProductSpecs', ProductSpecs);
