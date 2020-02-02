@@ -1,8 +1,11 @@
 import React,{useState, useEffect, useContext} from 'react';
-import { Card, CardBody, CardHeader, Col, Row, FormGroup,Label,Input,Button  } from 'reactstrap';
+import { Card, CardBody, CardHeader, Col, Row, FormGroup,Label,Input,Button,CustomInput } from 'reactstrap';
 import axios from 'axios';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
+import CKEditor from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import classes from './product.module.css';
 const AddProduct = (props)=>{
   const [name,setName] = useState('');
   const [englishName,setEnglishName] = useState('');
@@ -17,6 +20,7 @@ const AddProduct = (props)=>{
   const [sellers,setSellers] = useState([]);
   const [warranty,setWarranty] = useState([]);
   const [brands,setBrands] = useState([]);
+  const [brandId,setBrandId] = useState(null)
   const [thirdSubCategory,setThirdSubCategory] = useState([]);
   const [specs,setSpecs] = useState([]);
   const [info,setInfo] = useState([]);
@@ -27,6 +31,9 @@ const AddProduct = (props)=>{
   const [price,setPrice] = useState(0);
   const[discountedPrice,setDiscountedPrice] = useState(0);
   const[thirdSubCatId,setThirdSubCatId] = useState(null);
+  const [description,setDescription] = useState('');
+  const [image, setImage] = useState('');
+  const [file, setFile] = useState('');
   const {dispatch} = useContext(AuthContext);
   const token =  GetToken();
 
@@ -201,7 +208,11 @@ const AddProduct = (props)=>{
       setThirdSubCategory(subcats);
       for(var i=0;i<specs.length;i++){
         for(var j=0;j<specs[i].details.length;j++)
-          specs[i].details[j].value=""
+        {
+          specs[i].details[j].value="";
+          specs[i].details[j].label="";
+        }
+          
       }
       setSpecs(specs);
       
@@ -223,6 +234,14 @@ const AddProduct = (props)=>{
     newstate[specId].details[id] = tempSpecsDetail
     setSpecs(newstate);
   }
+  const handleChangeSpecLable =(event,specId,id)=>{
+    const tempSpecs ={...specs[specId]}
+    const tempSpecsDetail = {...tempSpecs.details[id]};
+    tempSpecsDetail.label = event.target.value;
+    const newstate = [...specs];
+    newstate[specId].details[id] = tempSpecsDetail;
+    setSpecs(newstate);
+  }
   const warrantyHandler =(event)=>{
     setWarrantyId(event.target.value);
   }
@@ -240,6 +259,9 @@ const AddProduct = (props)=>{
   }
   const discountedPriceHandler = (event)=>{
     setDiscountedPrice(event.target.value)
+  }
+  const brandHandler = (event)=>{
+    setBrandId(event.target.id)
   }
   
   const addButton =()=>{
@@ -275,6 +297,76 @@ const AddProduct = (props)=>{
     const infoItems = [...info];
     infoItems.splice(index , 1);
     setInfo(infoItems);
+  }
+  const descriptionHandler=(event,editor)=>{
+    const data = editor.getData();
+    setDescription(data);
+  }
+  const handleChangePicture= (e)=>{   
+    setFile(e.target.files[0]);
+    const  preview= URL.createObjectURL(e.target.files[0]);
+    setImage(preview);
+  }
+  const addProductHandler =()=>{
+    let IDforServer = null;
+    if(thirdSubCatId){
+      IDforServer = thirdSubCatId;
+    }
+    else{
+      IDforServer = subCatId;
+    }
+    const SpecArray =[]
+    specs.map(spec=>{
+      spec.details.map(item=>{
+        SpecArray.push({
+          _id:item._id,
+          value:item.value,
+          label:item.label
+        })
+        })
+      }
+    )
+    let data = {
+      query : `
+      mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute], $description : String!, $discount : Int, $details : [InputDetails!]!, $stock : Int!, $image : [String]) {
+        product(input : {fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, discount : $discount, details : $details, stock : $stock, image : $image }) {
+          status,
+          message
+        }
+      }
+      `,
+      variables : {
+        "fname" :name ,
+        "ename": englishNameHandler,
+        "category" : IDforServer,
+        "brand": brandId,
+        "attribute": [info],
+        "description": description,
+        "details": [SpecArray],
+        "image" : null,
+      }
+  };
+  let map = {
+      0 : ['variables.image'],
+  }
+  let formD = new FormData();
+  formD.append('operations' , JSON.stringify(data));
+  formD.append('map', JSON.stringify(map));
+  formD.append(0, file, file.name);
+
+  let optitons = {
+      method : 'POST',
+      headers : { 
+          'token' : `${token}`
+      },
+      body : formD
+  };
+
+  // let url = 'http://localhost:4000/graphql';
+  // fetch(url,optitons)
+  //     .then(res => res.json())
+  //     .then(res => console.log(res))
+  //     .catch(err => console.log(err));
   }
     return(
         <div className="animated fadeIn">
@@ -365,7 +457,12 @@ const AddProduct = (props)=>{
                   <Col xs="3">
                     <FormGroup>
                       <Label htmlFor="ccyears">برند</Label>
-                      <Input type="select" name="ccyears" id="ccyears">
+                      <Input 
+                       type="select" 
+                       name="ccyears" 
+                       id="ccyears"
+                       onChange={brandHandler}
+                       >
                       <option></option>
                         {
                               brands.map((item,index)=>{
@@ -457,7 +554,7 @@ const AddProduct = (props)=>{
                     </Col>
                     <Col xs="3">
                         <FormGroup>
-                            <Label for="priceOff">قیمت (تومان) با تخفیف</Label> 
+                            <Label for="priceOff"> درصد تخفیف</Label> 
                             <Input
                             type="number"
                             name="priceOff"
@@ -553,7 +650,7 @@ const AddProduct = (props)=>{
                       </Col>
                       <Col xs="2">
                           <FormGroup>
-                              <Label for="exampleNumber">قیمت با تخفیف</Label>
+                              <Label for="exampleNumber">درصد تخفیف</Label>
                               <Input
                               type="text"
                               name="number"
@@ -590,19 +687,19 @@ const AddProduct = (props)=>{
                             spec.details.map((item,index)=>
                             {
                               const Id = `name-${item._id}`;
+                              const LabelId = `label-${item._id}`;
                               return(
                                 <Row key={item._id}>
-                                <Col xl="6">
+                                <Col xl="4">
                                   <FormGroup>
                                   <Input 
                                     type="text" 
-                                    placeholder="نام محصول را وارد کنید"
                                     disabled
                                     value={item.name} 
                                   />
                                   </FormGroup>
                                 </Col>
-                                <Col xl="6">
+                                <Col xl="4">
                                   <FormGroup>
                                   <Input 
                                     type="text" 
@@ -610,6 +707,19 @@ const AddProduct = (props)=>{
                                     id={Id}
                                     name={Id}
                                     onChange={(event)=>handleChangeSpecName(event,idx,index)}
+                                    
+                                  />
+                                  </FormGroup>
+                                </Col>
+                                <Col xl="4">
+                                  <FormGroup>
+                                  <Input 
+                                    type="text" 
+                                    value={item.label} 
+                                    id={LabelId}
+                                    name={LabelId}
+                                    onChange={(event)=>handleChangeSpecLable(event,idx,index)}
+                                    placeholder="توضیحات در صورت نیاز"
                                   />
                                   </FormGroup>
                                 </Col>
@@ -622,7 +732,38 @@ const AddProduct = (props)=>{
                   </Card>
                   )
                 }
-                
+                <Row>
+                  <Col xl="12">
+                    <FormGroup>
+                        <Label for="ckEditor">توضیحات</Label>
+                        <CKEditor
+                          editor={ ClassicEditor }
+                          data={description}
+                          dir="rtl"
+                          onChange={ ( event, editor ) => descriptionHandler(event, editor)}
+                      />
+                    </FormGroup>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col xl="8">
+                    <FormGroup>
+                    <Label htmlFor="file-multiple-input">
+                        <div className={classes.fileSelection}>انتخاب عکس</div>
+                    </Label>
+                        <Input type="file" id="file-multiple-input"
+                            name="file-multiple-input"  
+                            onChange={handleChangePicture}
+                                  /> 
+                    </FormGroup>
+                  </Col>
+                  <Col xl="4">
+                    {image ? <img src={ image } alt={image} className={classes.preview} />:null}
+                  </Col>
+                </Row>
+                <Row>
+                  <Button color="success" size="lg" block onClick={addProductHandler}>ثبت محصول</Button>
+                </Row>
               </CardBody>
             </Card>
           </Col>
