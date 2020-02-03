@@ -16,3 +16,32 @@
 input[type="file"] {
     display: none;
 }
+.bothname{
+    display: flex;
+    flex-flow: column;
+}
+.bothname span{
+    margin-top:4px;
+}
+.bothname span:first-of-type{
+    font-weight: bold;
+}
+.productDetails img{
+    width:90px;
+    height:90px;
+}
+table tr{
+    text-align: center;
+}
+.opreation{
+    display: flex;
+    justify-content: space-around
+}
+.deleteButton{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.opreation a,a:hover{
+    color:#fff
+}

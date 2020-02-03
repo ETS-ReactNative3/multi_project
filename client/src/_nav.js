@@ -197,6 +197,11 @@ export default {
       icon: 'icon-star',
       children: [
         {
+          name: 'همه محصولات',
+          url: '/products/allproducts',
+          icon: 'icon-star',
+        },
+        {
           name: 'اضافه کردن محصول',
           url: '/products/addproduct',
           icon: 'icon-star',

@@ -6,7 +6,7 @@ import GetToken from '../../context/Auth/GetToken';
 import CKEditor from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import classes from './product.module.css';
-const AddProduct = (props)=>{
+const EditProduct = (props)=>{
   const [name,setName] = useState('');
   const [englishName,setEnglishName] = useState('');
   const [category,setCategory] = useState([]);
@@ -330,13 +330,16 @@ const AddProduct = (props)=>{
       // console.log(englishName);
       // console.log(IDforServer);
       // console.log(brandId);
-     // console.log(info);
+      console.log(info);
       // console.log(description);
       // console.log(SpecArray);
-      let data = 
-      {
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
         query: `
-        mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute], $description : String!, $details : [InputDetails!]!, $image : Upload) {
+        mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute], $description : String!, $details : [InputDetails!]!, $image : [String]) {
           product(input : {fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, image : $image }) {
             status,
             message
@@ -350,35 +353,10 @@ const AddProduct = (props)=>{
             "brand": brandId,
             "attribute": info,
             "description": description,
-            "details": SpecArray,
-            "image":null
+            "details": SpecArray
           }
     }
-    let map = {
-      0 : ['variables.image'],
-    }
-
-    
-    let formD = new FormData();
-    formD.append('operations' , JSON.stringify(data));
-    formD.append('map', JSON.stringify(map));
-    formD.append(0, file, file.name);
-    axios({
-      url: '/',
-      method: 'post',
-      headers:{
-        'token':`${token}`,
-      },
-      data: formD
-  }).then((result)=>{
-    if(result.data.errors){
-      setMessage('خطلا در ثبت اطلاعات محصول جدید')
-    }
-    else{
-      setMessage(result.data.data.product.message)
-    }
-   
-  })
+  }).then((result)=>console.log(result.data.data))
   .catch((error)=>console.log(error));
   
    }
@@ -389,8 +367,6 @@ const AddProduct = (props)=>{
             <Card>
               <CardHeader>
                 <i className="fa fa-align-justify"></i> اضافه کردن محصول
-                <br />
-                <span style={{color:'red'}}>{message}</span>
               </CardHeader>
               <CardBody>
                 <Row>
@@ -490,207 +466,8 @@ const AddProduct = (props)=>{
                   </Col>
                 </Row>
                 <hr style={{marginTop:'19px'}} />
-                <Row>
-                  <Col xs="4">
-                      <FormGroup>
-                        <Label htmlFor="seller">فروشنده</Label>
-                        <Input
-                         type="select"
-                         name="seller"
-                         id="seller"
-                         onChange={sellerHandler}
-                         required
-                          >
-                          <option> </option>
-                          {
-                            sellers.map((item)=> <option key={item._id}  value={item._id}>{item.name}</option>)
-                          }                        
-                        </Input>
-                      </FormGroup>
-                  </Col>
-                  <Col xs="4">
-                      <FormGroup>
-                        <Label htmlFor="Warranty">گارانتی</Label>
-                        <Input
-                          type="select"
-                          name="Warranty"
-                          id="Warranty"
-                          onChange={warrantyHandler}
-                          required
-                        >
-                          <option> </option>
-                          {
-                            warranty.map((item)=> <option key={item._id}  value={item._id}>{item.name}</option>)
-                          } 
-                        </Input>
-                      </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                    <Col xs="3">
-                        <FormGroup>
-                            <Label for="exampleColor">رنگ</Label>
-                            <Input
-                            type="color"
-                            name="color"
-                            id="exampleColor"
-                            placeholder="color placeholder"
-                            onChange={colorHandler}
-                            required
-                            />
-                        </FormGroup>
-                    </Col>
-                    <Col xs="2">
-                        <FormGroup>
-                            <Label for="exampleNumber">تعداد</Label>
-                            <Input
-                            type="number"
-                            name="number"
-                            id="exampleNumber"
-                            placeholder="تعداد محصول"
-                            value={numberOfProducts}
-                            onChange={numberOfProductsHandler}
-                            required
-                            />
-                        </FormGroup>
-                    </Col>
-                    <Col xs="3">
-                        <FormGroup>
-                            <Label for="price">قیمت (تومان)</Label>
-                            <Input
-                            type="number"
-                            name="price"
-                            id="price"
-                            placeholder=" قیمت محصول"
-                            value={price}
-                            onChange={priceHandler}
-                            required
-                            />
-                        </FormGroup>
-                    </Col>
-                    <Col xs="3">
-                        <FormGroup>
-                            <Label for="priceOff"> درصد تخفیف</Label> 
-                            <Input
-                            type="number"
-                            name="priceOff"
-                            id="priceOff"
-                            placeholder="قیمت محصول با تخفیف" 
-                            value={discountedPrice}
-                            onChange={discountedPriceHandler}
-                            required
-                            />
-                        </FormGroup>
-                    </Col>
-                    <Col xs="1" style={{display:'flex',justifyContent:'center',alignItems:'flex-end'}}>
-                        <FormGroup>
-                            <Button color="danger" className="btn-pill" onClick={addButton} >
-                                 <i className="fa fa-plus fa-lg"></i>
-                            </Button>
-                        </FormGroup>
-                    </Col>
-                </Row>
+               
                 
-                {
-                  //show item entered
-                  info.map((item,index)=>
-                  {
-                    let nameSeller = getNameSeller(item.seller);
-                    let nameWarranty = getNameWarranty(item.warranty);
-                    return(
-                    <Row key={index}>
-                      <Col xs="2">
-                          <FormGroup>
-                              <Label for="exampleNumber">فروشنده</Label>
-                              <Input
-                              type="text"
-                              name="number"
-                              id="exampleNumber"
-                              value={nameSeller}
-                              disabled
-                              onChange={sellerHandler}
-                              />
-                          </FormGroup>
-                      </Col>
-                      <Col xs="2">
-                          <FormGroup>
-                              <Label for="exampleNumber">گارانتی</Label>
-                              <Input
-                              type="text"
-                              name="number"
-                              id="exampleNumber"
-                              value={nameWarranty}
-                              disabled
-                              onChange={warrantyHandler}
-                              />
-                          </FormGroup>
-                      </Col>
-                      <Col xl="2">
-                        <FormGroup>
-                            <Label for="exampleNumber">رنگ</Label>
-                          <Input
-                                type="color"
-                                name="color"
-                                id="exampleColor"
-                                placeholder="color placeholder"
-                                value={item.color}
-                                onChange={colorHandler}
-                                />
-                        </FormGroup>
-                      </Col>
-                      <Col xs="1">
-                          <FormGroup>
-                              <Label for="exampleNumber">تعداد</Label>
-                              <Input
-                              type="text"
-                              name="number"
-                              id="exampleNumber"
-                              value={item.stock}
-                              disabled
-                              onChange={numberOfProductsHandler}
-                              />
-                          </FormGroup>
-                      </Col>
-                      <Col xs="2">
-                          <FormGroup>
-                              <Label for="exampleNumber">قیمت</Label>
-                              <Input
-                              type="text"
-                              name="number"
-                              id="exampleNumber"
-                              value={item.price}
-                              disabled
-                              onChange={priceHandler}
-                              />
-                          </FormGroup>
-                      </Col>
-                      <Col xs="2">
-                          <FormGroup>
-                              <Label for="exampleNumber">درصد تخفیف</Label>
-                              <Input
-                              type="text"
-                              name="number"
-                              id="exampleNumber"
-                              value={item.discount}
-                              disabled
-                              onChange={discountedPriceHandler}
-                              />
-                          </FormGroup>
-                      </Col>
-                      <Col xs="1" style={{display:'flex',justifyContent:'center',alignItems:'flex-end'}}>
-                        <FormGroup>
-                            <Button color="danger" className="btn-pill" onClick={()=>deleteItemInfo(index)} >
-                                 <i className="fa fa-trash fa-lg"></i>
-                            </Button>
-                        </FormGroup>
-                    </Col>
-                    </Row>
-                    )
-                  }
-                    
-                  )
-                }
-                <hr />
                 {
                   //show specs item
                   specs.map((spec,idx)=>
@@ -778,7 +555,7 @@ const AddProduct = (props)=>{
                   </Col>
                 </Row>
                 <Row>
-                  <Button color="success" size="lg" block onClick={addProductHandler}>ثبت محصول</Button>
+                  <Button color="success" size="lg" block onClick={addProductHandler}>ویرایش  محصول</Button>
                 </Row>
               </CardBody>
             </Card>
@@ -787,4 +564,4 @@ const AddProduct = (props)=>{
       </div>
     )
 }
-export default AddProduct;
+export default EditProduct;

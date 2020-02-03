@@ -452,12 +452,11 @@ const resolvers = {
 
         product : async (param, args, { check }) => {
             if(check) {
-
                 const details = await saveDetailsValue(args.input.details);
-                // const { createReadStream, filename } = await args.input.image;
-                // const stream = createReadStream();
-                // const { filePath } = await saveImage({ stream, filename});
-                console.log(args.input)
+                const { createReadStream, filename } = await args.input.image;
+                const stream = createReadStream();
+                const { filePath } = await saveImage({ stream, filename});
+                console.log(args.input.image)
                 const pro = await Product.create({
                      fname : args.input.fname,
                      ename : args.input.ename,
@@ -466,7 +465,7 @@ const resolvers = {
                      attribute : args.input.attribute,
                      description : args.input.description,
                      details : details,
-                     image : "aaa"
+                     image : filePath
                 })
     
                 if(!pro) {
@@ -707,8 +706,6 @@ let saveDetailsValue = async (args) => {
     for (let index = 0; index < args.length; index++) {
         const element = args[index];
                     const op = await new Details({
-                        seller : element.seller,
-                        warranty : element.warranty,
                         p_details : element.p_details,
                         value : element.value,
                         label : element.label

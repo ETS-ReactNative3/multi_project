@@ -91,7 +91,7 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [InputDetails!]!,
-        image : [String]
+        image : Upload
     }
 
     input InputDetails {
@@ -104,7 +104,7 @@ const typeDefs = gql`
         seller : ID!
         warranty : ID!,
         color : String!,
-        price : Int!,
+        price : String!,
         stock : Int!,
         discount : Int
     }
@@ -201,7 +201,7 @@ const typeDefs = gql`
         seller : Seller
         warranty : Warranty,
         color : String,
-        price : Int,
+        price : String,
         stock : Int,
         discount : Int
     }

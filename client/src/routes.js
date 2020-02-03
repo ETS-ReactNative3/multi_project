@@ -47,6 +47,8 @@ const ScoringItem = React.lazy(() => import('./views/Shop/ScoringItem'));
 const Specifications = React.lazy(() => import('./views/Shop/Specifications'));
 const SubSpecifications = React.lazy(() => import('./views/Shop/SubSpecifications'));
 const AddProduct  = React.lazy(() => import('./views/Products/AddProduct'));
+const Products  = React.lazy(() => import('./views/Products/Products'));
+const EditProduct  = React.lazy(() => import('./views/Products/EditProduct'));
 const Seller  = React.lazy(() => import('./views/Products/Seller'));
 const Warranty  = React.lazy(() => import('./views/Products/Warranty'));
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
@@ -87,6 +89,8 @@ const routes = [
   { path: '/buttons/brand-buttons', name: 'Brand Buttons', component: BrandButtons },
   { path: '/products', exact: true, name: 'محصولات', component: AddProduct },
   { path: '/products/addproduct', exact: true, name: 'محصولات', component: AddProduct },
+  { path: '/products/allproducts', exact: true, name: 'محصولات', component: Products },
+  { path: '/products/:productid', exact: true, name: 'محصولات', component: EditProduct },
   { path: '/products/seller', exact: true, name: 'فروشنده ها', component: Seller },
   { path: '/products/warranty', exact: true, name: 'گارانتی', component: Warranty },
   { path: '/products/coreui-icons', name: 'CoreUI Icons', component: CoreUIIcons },
