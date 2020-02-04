@@ -11,11 +11,11 @@ const AddProduct = (props)=>{
   const [englishName,setEnglishName] = useState('');
   const [category,setCategory] = useState([]);
   const [subCategory,setSubCategory] = useState([]);
-  const[message,setMessage] = useState('');
+  const [message,setMessage] = useState('');
   const [mainSubTitleFromServer,setMainSubTitleFromServe] = useState([]);
   const [mainCategory,setMainCategory] = useState(true);
   const [parentCategory,setParentCategory] = useState(false);
-  const[catId,setCatId] = useState(null);
+  const [catId,setCatId] = useState(null);
   const [subCatId,setSubCatId] = useState(null);
   const [sellers,setSellers] = useState([]);
   const [warranty,setWarranty] = useState([]);
@@ -29,8 +29,8 @@ const AddProduct = (props)=>{
   const [color,setColor] = useState('');
   const [numberOfProducts,setNumberOfProducts] = useState(1);
   const [price,setPrice] = useState(0);
-  const[discountedPrice,setDiscountedPrice] = useState(0);
-  const[thirdSubCatId,setThirdSubCatId] = useState(null);
+  const [discountedPrice,setDiscountedPrice] = useState(0);
+  const [thirdSubCatId,setThirdSubCatId] = useState(null);
   const [description,setDescription] = useState('');
   const [image, setImage] = useState('');
   const [file, setFile] = useState('');

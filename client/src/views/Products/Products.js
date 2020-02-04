@@ -1,9 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {Card,CardBody,CardHeader, Col, Row, Table, Button, Modal, ModalHeader,ModalBody,ModalFooter,Label,Input,FormGroup } from 'reactstrap';
 import { NavLink } from 'react-router-dom';
 import classes from './product.module.css';
-
+import axios from 'axios';
+import {AuthContext} from '../../context/Auth/AuthContext';
+import GetToken from '../../context/Auth/GetToken';
 const Products =(props)=> {
+  const {dispatch} = useContext(AuthContext);
+    const token =  GetToken();
+    const [message,setMessage] = useState('');
+  useEffect(()=>{  
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        query getProduct($page : Int, $limit : Int, $productId : ID) {
+          getProduct(page : $page, limit : $limit, productId : $productId){
+            fname,
+            ename,           
+            brand {
+              name
+            },
+            attribute {
+              seller {
+                name
+              }
+            },
+            rate,          
+            image
+          }
+        }     
+          `,
+          variables :{
+            "page": 1,
+            "limit": 10,
+            "productId": null
+          }
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      setMessage('خطا در دریافت اطلاعات  محصولات')
+    }
+    console.log(result.data)           
+  }).catch(error=>{
+    console.log(error)
+  })
+  },[])
   const[modal,setModal] = useState(false);
   const toggleLarge=()=> {
     setModal(!modal)
