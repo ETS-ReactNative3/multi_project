@@ -4,7 +4,7 @@ const typeDefs = gql`
     type Query {
         login(input : LRInput) : Token!,
         getUsers : [User]!,
-        getProduct(page : Int, limit : Int) : [product!]!,
+        getProduct(page : Int, limit : Int, productId : ID) : [product!]!,
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
         getAllBrand(input : InputGetBrand) : [Brand!]!
@@ -87,11 +87,11 @@ const typeDefs = gql`
         ename : String!,
         category : ID!
         brand : ID!,
-        attribute : [InputAttribute],
+        attribute : [InputAttribute!]!,
         description : String!,
         rate : Int,
         details : [InputDetails!]!,
-        image : [String]
+        image : Upload!
     }
 
     input InputDetails {
@@ -189,20 +189,20 @@ const typeDefs = gql`
     type product {
         fname : String,
         ename : String,
-        category : ID
-        brand : ID!,
+        category : Category
+        brand : Brand,
         attribute : [Attribute],
         description : String!,
         rate : Int,
         details : [Details],
-        image : [String]
+        image : String
     }
 
     type Attribute {
         seller : Seller
         warranty : Warranty,
         color : String,
-        price : Int,
+        price : String,
         stock : Int,
         discount : Int
     }

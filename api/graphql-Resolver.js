@@ -7,11 +7,11 @@ const path = require('path');
 const fs = require('fs');
 
 // const uniquestring = require('unique-string');
-const nodemailer = require('nodemailer');
-const directTransport = require('nodemailer-direct-transport');
-const MailTime = require('mail-time');
+// const nodemailer = require('nodemailer');
+// const directTransport = require('nodemailer-direct-transport');
+// const MailTime = require('mail-time');
 
-const MongoClient = require('mongodb').MongoClient;
+// const MongoClient = require('mongodb').MongoClient;
 
 const Multimedia = require('app/models/multimedia');
 const Category = require('app/models/category');
@@ -24,6 +24,7 @@ const Productspecs = require('app/models/p-specs');
 const Productdetails = require('app/models/p-details');
 const Details = require('app/models/details');
 const Passwordreset = require('app/models/password-reset');
+const Productattribute = require('app/models/p_attribute');
 
 const resolvers = {
     Query : {
@@ -62,7 +63,7 @@ const resolvers = {
         getProduct : async (param, args) => {
             let page = args.page || 1;
             let limit = args.limit || 10;
-            const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute.seller'}, { path : 'attribute.warranty'}]});
+            const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute.seller'}]});
             // const producs = await Product.find({}).populate('attribute.seller');
             return producs.docs
         },
@@ -357,7 +358,6 @@ const resolvers = {
 
         },
 
-
         category : async (param, args, { check }) => {
             if(check) {
                 const category = await Category.create({
@@ -460,33 +460,48 @@ const resolvers = {
         product : async (param, args, { check }) => {
             if(check) {
 
-                const details = await saveDetailsValue(args.input.details);
-                // const { createReadStream, filename } = await args.input.image;
-                // const stream = createReadStream();
-                // const { filePath } = await saveImage({ stream, filename});
-                console.log(args.input)
-                const pro = await Product.create({
-                     fname : args.input.fname,
-                     ename : args.input.ename,
-                     brand : args.input.brand,
-                     category : args.input.category,
-                     attribute : args.input.attribute,
-                     description : args.input.description,
-                     details : details,
-                     image : "aaa"
-                })
+                try {
+
+        
+                    const details = await saveDetailsValue(args.input.details);
+                    const attribute = await saveAttributeProduct(args.input.attribute);
+
+
+                    if(details == null || attribute == null) {
+                        return {
+                            status : 401,
+                            message : 'امکان درج محصول مورد نظر وجود ندارد!'
+                        }
+                    }
+
+                    const { createReadStream, filename } = await args.input.image;
+                    const stream = createReadStream();
+                    const { filePath } = await saveImage({ stream, filename});
+
+                    const pro = await Product.create({
+                         fname : args.input.fname,
+                         ename : args.input.ename,
+                         brand : args.input.brand,
+                         category : args.input.category,
+                         attribute : attribute,
+                         description : args.input.description,
+                         details : details,
+                         image : filePath
+                    })
+
+                        return {
+                            status : 200,
+                            message : 'محصول مورد نظر ثبت شد.'
+                        }
     
-                if(!pro) {
-                    if(err) {
-                        const error = new Error('امکان درج محصول جدید وجود ندارد.');
-                        error.code = 401;
-                        throw error;
-                    }
-                } else {
-                    return {
-                        status : 200,
-                        message : 'محصول مورد نظر ثبت شد.'
-                    }
+                } catch {
+                    deleteAttributeProduct(args.input.attribute)
+                    deleteDetailsValue(args.input.details);
+                    const { filename } = await args.input.image;
+                    await deleteImage({filename})
+                    const error = new Error('امکان درج محصول جدید وجود ندارد.');
+                    error.code = 401;
+                    throw error;
                 }
     
             } else {
@@ -704,35 +719,74 @@ const resolvers = {
                     message : 'گذر واژه تغییر کرد. می توانید وارد حساب کاربری خود شوید.'
                 }
             }
-        },
+        }
 
     },
 }
 
 let saveDetailsValue = async (args) => {
-    const arr = [];
+    try {
+        const arr = [];
+        for (let index = 0; index < args.length; index++) {
+            const element = args[index];
+                        const op = await Details.create({
+                            p_details : element.p_details,
+                            value : element.value,
+                            label : element.label
+                        })
+    
+                        arr[index] = op._id
+    
+        }
+        return arr;
+    } catch {
+        const error = new Error('امکان درج محصول جدید وجود ندارد.');
+        error.code = 401;
+        throw error;
+    }
+}
+
+let deleteDetailsValue = async (args) => {
     for (let index = 0; index < args.length; index++) {
         const element = args[index];
-                    const op = await new Details({
-                        seller : element.seller,
-                        warranty : element.warranty,
-                        p_details : element.p_details,
-                        value : element.value,
-                        label : element.label
-                    })
-
-                    await op.save(async err => {
-                                                if(err) {
-                                                    const error = new Error('امکان درج محصول جدید وجود ندارد.');
-                                                    error.code = 401;
-                                                    throw error;
-                                                } 
-                                            });
-
-                    arr[index] = op._id
-
+        await Details.deleteMany(element)
     }
-    return arr;
+
+    return
+}
+
+let saveAttributeProduct = async (args) => {
+    try {
+        const arr = [];
+        for (let index = 0; index < args.length; index++) {
+            const element = args[index];
+                        const pa = await Productattribute.create({
+                            seller : element.seller,
+                            warranty : element.warranty,
+                            color : element.color,
+                            price : element.price,
+                            discount : element.discount,
+                            stock : element.stock
+                        })
+
+                        arr[index] = pa._id
+    
+        }
+        return arr;
+    } catch {
+        const error = new Error('امکان درج محصول جدید وجود ندارد.');
+        error.code = 401;
+        throw error;
+    }
+    
+}
+
+let deleteAttributeProduct = async (args) => {
+    for (let index = 0; index < args.length; index++) {
+        const element = args[index];
+        await Productattribute.deleteMany(element)
+    }
+    return;
 }
 
 let getImageSize = (type) => {
@@ -756,7 +810,7 @@ let getImageSize = (type) => {
 let saveImage = ({stream, filename}) => {
     let date = new Date();
     const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
-    mkdirp.sync(path.join(__dirname, `public/${dir}`));
+    mkdirp.sync(path.join(__dirname, `./public/${dir}`));
 
     const filePath = `${dir}/${filename}`;
 
@@ -767,6 +821,14 @@ let saveImage = ({stream, filename}) => {
             .on('finish', () => resolve({filePath}))
     })
 
+}
+
+let deleteImage = async ({filename}) => {
+    let date = new Date();
+    const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
+    fs.unlinkSync(path.join(__dirname, `./public/${dir}/${filename}`));
+
+    return;
 }
 
 module.exports = resolvers;
