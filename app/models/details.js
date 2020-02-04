@@ -9,11 +9,10 @@ const Details = Schema({
     toJSON : { virtuals : true}
 });
 
-
-Details.virtual('p_Details', {
-    ref : 'ProductDetails',
-    localField : 'p_details',
-    foreignField : '_id'
-})
+// Details.virtual('p_Details', {
+//     ref : 'ProductDetails',
+//     localField : 'p_details',
+//     foreignField : '_id'
+// })
 
 module.exports = mongoose.model('Details', Details);

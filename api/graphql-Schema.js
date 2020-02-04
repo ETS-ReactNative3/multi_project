@@ -187,6 +187,7 @@ const typeDefs = gql`
     }
 
     type product {
+        _id : ID
         fname : String,
         ename : String,
         category : Category
@@ -195,7 +196,7 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [Details],
-        image : String
+        image : [String]
     }
 
     type Attribute {
@@ -208,7 +209,7 @@ const typeDefs = gql`
     }
 
     type Details {
-        p_details : ID!,
+        p_details : SpecsDetails,
         value : String!,
         label : String
     }
@@ -254,7 +255,7 @@ const typeDefs = gql`
 
     type SpecsDetails {
         _id : ID!,
-        specs : ID!,
+        specs : Specs,
         name : String!,
         label : String,
     }

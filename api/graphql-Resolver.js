@@ -60,12 +60,22 @@ const resolvers = {
             return users;
         },
 
-        getProduct : async (param, args) => {
-            let page = args.page || 1;
-            let limit = args.limit || 10;
-            const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute.seller'}]});
-            // const producs = await Product.find({}).populate('attribute.seller');
-            return producs.docs
+        getProduct : async (param, args, { check }) => {
+            if(check) {
+                if(args.productId == null) {
+                    let page = args.page || 1;
+                    let limit = args.limit || 10;
+                    const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                    return producs.docs
+                } else {
+                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent'}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
+                    return [product]
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         },
 
         getAllCategory : async (param, args, { check }) => {
