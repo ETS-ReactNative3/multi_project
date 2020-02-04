@@ -18,6 +18,7 @@ const Products =(props)=> {
         query: `
         query getProduct($page : Int, $limit : Int, $productId : ID) {
           getProduct(page : $page, limit : $limit, productId : $productId){
+            _id,
             fname,
             ename,           
             brand {

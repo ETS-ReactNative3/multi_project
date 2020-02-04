@@ -4,7 +4,7 @@ const typeDefs = gql`
     type Query {
         login(input : LRInput) : Token!,
         getUsers : [User]!,
-        getProduct(page : Int, limit : Int) : [product!]!,
+        getProduct(page : Int, limit : Int, productId : ID) : [product!]!,
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
         getAllBrand(input : InputGetBrand) : [Brand!]!
@@ -87,11 +87,11 @@ const typeDefs = gql`
         ename : String!,
         category : ID!
         brand : ID!,
-        attribute : [InputAttribute],
+        attribute : [InputAttribute!]!,
         description : String!,
         rate : Int,
         details : [InputDetails!]!,
-        image : Upload
+        image : Upload!
     }
 
     input InputDetails {
@@ -186,10 +186,11 @@ const typeDefs = gql`
     }
 
     type product {
+        _id : ID
         fname : String,
         ename : String,
-        category : ID
-        brand : ID!,
+        category : Category
+        brand : Brand,
         attribute : [Attribute],
         description : String!,
         rate : Int,
@@ -207,7 +208,7 @@ const typeDefs = gql`
     }
 
     type Details {
-        p_details : ID!,
+        p_details : SpecsDetails,
         value : String!,
         label : String
     }
@@ -253,7 +254,7 @@ const typeDefs = gql`
 
     type SpecsDetails {
         _id : ID!,
-        specs : ID!,
+        specs : Specs,
         name : String!,
         label : String,
     }
