@@ -11,7 +11,7 @@ const typeDefs = gql`
         getAllSurvey(categoryId : ID!) : Survey!
         getAllProductSpecs(categoryId : ID!) : [Specs!]!
         getAllProductSpecsDetails(specsId : ID!) : [SpecsDetails!]!
-        getAllSeller(category : ID!) : [Seller!]!
+        getAllSeller(categoryId : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
     }
@@ -31,6 +31,16 @@ const typeDefs = gql`
         ResetPassword(input : InputResetPassword) : operation!,
         seller(category : ID!, name : String!, label : String) : operation!,
         warranty(name : String!, label : String) : operation!
+
+
+        UpdateCategory(input : InputCategory) : operation!
+        UpdateBrand(input : InputBrand) : operation!,
+        UpdateProductSpecs(input : InputProductSpecs) : operation!,
+        UpdateProductSpecsDetails(input : InputProductSpecsDetails) : operation!,
+        UpdateSeller(category : ID!, name : String!, label : String) : operation!,
+        UpdateWarranty(name : String!, label : String) : operation!
+        UpdateProduct(input : InputProduct) : operation!
+
     }
 
 
@@ -65,12 +75,14 @@ const typeDefs = gql`
     }
 
     input InputProductSpecs {
+        id : ID
         category : ID!,
         specs : String!,
         label : String
     }
 
     input InputProductSpecsDetails {
+        id : ID
         specs : ID!,
         name : String!,
         label : String
@@ -110,6 +122,7 @@ const typeDefs = gql`
     }
 
     input InputBrand {
+        id : ID,
         category : [ID]!,
         name : String!,
         label : String,
@@ -127,10 +140,10 @@ const typeDefs = gql`
     }
 
     input InputCategory {
+        id : ID
         name : String!,
         label : String,
         parent : ID,
-        subcategory : ID
     }
 
     type operation {
@@ -209,6 +222,7 @@ const typeDefs = gql`
     }
 
     type Details {
+        _id : ID
         p_details : SpecsDetails,
         value : String!,
         label : String
@@ -216,15 +230,16 @@ const typeDefs = gql`
 
     type Category {
         _id : ID
-        name : String!,
+        name : String,
         label : String,
         parent : Parent,
     }
 
     type Parent {
         _id : ID,
-        name : String!,
+        name : String,
         label : String,
+        parent : Category
     }
 
     type Brand {

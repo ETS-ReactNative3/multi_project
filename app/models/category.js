@@ -6,6 +6,7 @@ const Category = Schema({
     name : { type : String, required : true},
     label : { type : String},
     parent : { type : Schema.Types.ObjectId, ref : 'Category'},
+    level : { type : String, required : true, default : 'L1'}
 }, {
     timestamps : true,
     toJSON : { virtuals : true}

@@ -68,7 +68,7 @@ const resolvers = {
                     const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
                     return producs.docs
                 } else {
-                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent'}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
+                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
                     return [product]
                 }
             } else {
@@ -244,8 +244,8 @@ const resolvers = {
 
         getAllSeller : async (param, args, { check }) => {
             if(check) {
-                const sellers = await Seller.find({ category : args.category});
-                if(!seller) {
+                const sellers = await Seller.find({ category : args.categoryId});
+                if(!sellers) {
                     const error = new Error('برای این دسته بندی فروشنده ای ثبت نشده است!');
                     error.code = 401;
                     throw error;
@@ -374,6 +374,7 @@ const resolvers = {
                     name : args.input.name,
                     label : args.input.label,
                     parent : args.input.parent,
+                    level : args.input.level
                 })
                 
                 if(!category) {
@@ -729,10 +730,222 @@ const resolvers = {
                     message : 'گذر واژه تغییر کرد. می توانید وارد حساب کاربری خود شوید.'
                 }
             }
+        },
+
+        // edit method for all section
+
+        UpdateCategory : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const cat = await Category.findByIdAndUpdate(args.input.id, {$set : {
+                        name : args.input.name,
+                        label : args.input.label,
+                        parent : args.input.parent
+                    }})
+                    if(!cat) {
+                        const error = new Error('این دسته بندی در سیستم ثبت نشده است.');
+                        error.code = 401;
+                        throw error;
+                    } else {
+                        return {
+                            status : 200,
+                            message : 'دسته بندی مورد نطر ویرایش شد.'
+                        }
+                    }
+
+                } catch {
+                    const error = new Error('امکان ویرایش دسته بندی وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdateBrand : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const img = "";
+                    if(args.input.image) {
+                        const { createReadStream, filename } = await args.input.image;
+                        const stream = createReadStream();
+                        const { filePath } = await saveImage({ stream, filename});
+                        img = filePath
+                    }
+
+                    const brand = await Brand.findByIdAndUpdate(args.input.id, { $set : {
+                        category : args.input.category,
+                        name : args.input.name,
+                        label : args.input.label,
+                        image : img == "" ? this.image : img
+                    }})
+
+                    if(!brand) {
+                        const error = new Error('چنین برندی در سیستم ثبت نشده است!');
+                        error.code = 401;
+                        throw error;
+                    } else {
+                        return {
+                            status : 200,
+                            message : 'برند مورد نطر ویرایش شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ویرایش برند وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdateProductSpecs : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const specs = await Productspecs.findByIdAndUpdate(args.input.id, { $set : {
+                        category : args.input.category,
+                        specs : args.input.specs,
+                        label : args.input.label
+                    }})
+
+                    if(!specs) {
+                        const error = new Error('چنین مشخصاتی برای محصول در سیستم ثبت نشده است!');
+                        error.code = 401;
+                        throw error;
+                    } else {
+                        return {
+                            status : 200,
+                            message : 'مشخصات محصول ویرایش شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ویرایش مشخصات محصول وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdateProductSpecsDetails : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const pd = await Productdetails.findByIdAndUpdate(args.input.id, { $set : {
+                        specs : args.input.specs,
+                        name : args.input.name,
+                        label : args.input.label
+                    }})
+
+                    if(!pd) {
+                        const error = new Error('چنین  موردی برای مشخصات مورد نظر در سیستم ثبت نشده است!');
+                        error.code = 401;
+                        throw error;
+                    } else {
+                        return {
+                            status : 200,
+                            message : 'جزئیات مشخصات مورد نظر ویرایش شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ویرایش جزئیات مشخصات محصول وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdateSeller : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const seller = await Seller.findByIdAndUpdate(args.input.id, { $set : {
+                        category : args.input.category,
+                        name : args.input.name,
+                        label : args.input.label
+                    }})
+
+                    if(!seller) {
+                        const error = new Error('چنین فروشنده ای در سیستم ثبت نشده است!');
+                        error.code = 401;
+                        throw error;
+                    } else {
+                        return {
+                            status : 200,
+                            message : 'فروشنده مورد نظر ویرایش شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ویرایش فروشنده وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdateWarranty : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const warranty = await Warranty.findByIdAndUpdate(args.input.id, { $set : {
+                        name : args.input.name,
+                        label : args.input.label
+                    }})
+
+                    if(!warranty) {
+                        const error = new Error('این گارانتی در سیستم ثبت نشده است!');
+                        error.code = 401;
+                        throw error;
+                    } else {
+                        return {
+                            status : 200,
+                            message : 'گارانتی مورد نظر ویرایش شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ویرایش گارانتی وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdateProduct : async (param, args, { check }) => {
+            if(check) {
+                try {
+
+                } catch {
+
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         }
 
     },
 }
+
+// other method -----------------------------------
 
 let saveDetailsValue = async (args) => {
     try {

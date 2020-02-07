@@ -12,10 +12,4 @@ const ProductDetails = Schema({
 
 ProductDetails.plugin(mongoosePaginate);
 
-ProductDetails.virtual('p_specs', {
-    ref : 'ProductSpecs',
-    localField : 'specs',
-    foreignField : '_id'
-})
-
 module.exports = mongoose.model('ProductDetails', ProductDetails);
