@@ -931,9 +931,61 @@ const resolvers = {
         UpdateProduct : async (param, args, { check }) => {
             if(check) {
                 try {
+                    if(args.input.product_attr == true) {
+                        const product_seller = await Productattribute.findByIdAndUpdate(args.input.id, { $set : {
+                            seller : args.input.seller,
+                            warranty : args.input.warranty,
+                            color : args.input.color,
+                            price : args.input.price,
+                            discount : args.input.discount,
+                            stock : args.input.stock
+                        }})
+    
+                        if(!product_seller) {
+                            const error = new Error('هیج آپشنی برای این محصول در سیستم ثبت نشده است!');
+                            error.code = 401;
+                            throw error;
+                        } else {
+                            return {
+                                status : 200,
+                                message : 'آپشن مورد نظر ویراش شد.'
+                            }
+                        }
+                    } else {
 
+                        const details = await updateDetailsValue(args.input.details);
+                        // update image path
+
+                        const { createReadStream, filename } = await args.input.image;
+                        const stream = createReadStream();
+                        const { filePath } = await updateImageProduct(args.input.id,{ stream, filename})
+
+                        const product = await Product.findByIdAndUpdate(args.input.id, { $set : {
+                            fname : args.input.fname,
+                            ename : args.input.ename,
+                            brand : args.input.brand,
+                            category : args.input.category,
+                            attribute : args.input.attribute,
+                            description : args.input.description,
+                            details : details,
+                            image : filePath
+                        }})
+
+                        if(!product) {
+                            const error = new Error('هیج محصولی با این مشخصات در سیستم ثبت نشده است!');
+                            error.code = 401;
+                            throw error;
+                        } else {
+                            return {
+                                status : 200,
+                                message : 'محصول مورد نظر ویرایش شد.'
+                            }
+                        }
+                    }
                 } catch {
-
+                    const error = new Error('امکان ویرایش محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
                 }
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
@@ -964,6 +1016,28 @@ let saveDetailsValue = async (args) => {
         return arr;
     } catch {
         const error = new Error('امکان درج محصول جدید وجود ندارد.');
+        error.code = 401;
+        throw error;
+    }
+}
+
+let updateDetailsValue = async (args) => {
+    try {
+        const arr = [];
+        for (let index = 0; index < args.length; index++) {
+            const element = args[index];
+                        const op = await Details.findByIdAndUpdate(element._id, { $set : {
+                            value : element.value,
+                            label : element.label
+                        }
+                    })
+    
+                        arr[index] = op._id
+    
+        }
+        return arr;
+    } catch {
+        const error = new Error('امکان ویرایش محصول وجود ندارد.');
         error.code = 401;
         throw error;
     }
@@ -1044,6 +1118,29 @@ let saveImage = ({stream, filename}) => {
             .on('finish', () => resolve({filePath}))
     })
 
+}
+
+let updateImageProduct = async (id, {stream, filename}) => {
+    let date = new Date();
+    const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
+    mkdirp.sync(path.join(__dirname, `./public/${dir}`));
+    const filePath = `${dir}/${filename}`;
+
+    const image_product = await Product.find({_id : id})
+    if(!image_product) {
+        const error = new Error('محصولی با این مشخصات در سیستم ثبت نشده است.');
+        error.code = 401;
+        throw error;
+    } else {
+        if(filePath === image_product.image[0]) {
+            return new Promise((resolve, reject) => {
+                stream
+                    .pipe(fs.createWriteStream(path.join(__dirname, `/public/${filePath}`)))
+                    .on('error', error => reject(error))
+                    .on('finish', () => resolve({filePath}))
+            })
+        }
+    }
 }
 
 let deleteImage = async ({filename}) => {

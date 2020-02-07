@@ -213,6 +213,7 @@ const typeDefs = gql`
     }
 
     type Attribute {
+        _id : ID,
         seller : Seller
         warranty : Warranty,
         color : String,
@@ -224,7 +225,7 @@ const typeDefs = gql`
     type Details {
         _id : ID
         p_details : SpecsDetails,
-        value : String!,
+        value : String,
         label : String
     }
 
