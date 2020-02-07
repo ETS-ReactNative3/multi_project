@@ -3,7 +3,8 @@ module.exports = {
     options : {
         useUnifiedTopology: true,
         useNewUrlParser: true,
-        useCreateIndex : true
+        useCreateIndex : true,
+        useFindAndModify : false
     }
 }
 

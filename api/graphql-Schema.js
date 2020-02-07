@@ -31,6 +31,16 @@ const typeDefs = gql`
         ResetPassword(input : InputResetPassword) : operation!,
         seller(category : ID!, name : String!, label : String) : operation!,
         warranty(name : String!, label : String) : operation!
+
+
+        UpdateCategory(input : InputCategory) : operation!
+        UpdateBrand(input : InputBrand) : operation!,
+        UpdateProductSpecs(input : InputProductSpecs) : operation!,
+        UpdateProductSpecsDetails(input : InputProductSpecsDetails) : operation!,
+        UpdateSeller(category : ID!, name : String!, label : String) : operation!,
+        UpdateWarranty(name : String!, label : String) : operation!
+        UpdateProduct(input : InputProduct) : operation!
+
     }
 
 
@@ -65,12 +75,14 @@ const typeDefs = gql`
     }
 
     input InputProductSpecs {
+        id : ID
         category : ID!,
         specs : String!,
         label : String
     }
 
     input InputProductSpecsDetails {
+        id : ID
         specs : ID!,
         name : String!,
         label : String
@@ -110,6 +122,7 @@ const typeDefs = gql`
     }
 
     input InputBrand {
+        id : ID,
         category : [ID]!,
         name : String!,
         label : String,
@@ -127,6 +140,7 @@ const typeDefs = gql`
     }
 
     input InputCategory {
+        id : ID
         name : String!,
         label : String,
         parent : ID,
@@ -199,7 +213,7 @@ const typeDefs = gql`
     }
 
     type Attribute {
-        _id :ID,
+        _id : ID,
         seller : Seller
         warranty : Warranty,
         color : String,
@@ -211,7 +225,7 @@ const typeDefs = gql`
     type Details {
         _id: ID,
         p_details : SpecsDetails,
-        value : String!,
+        value : String,
         label : String
     }
 

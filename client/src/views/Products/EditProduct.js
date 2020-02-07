@@ -27,11 +27,13 @@ const EditProduct = (props)=>{
   const [image, setImage] = useState('');
   const [imageServer,setImageServer] = useState(null);
   const [file, setFile] = useState('');
+  const [productId,setProductId] = useState(null)
   const [loading,setLoading] = useState(false);
   const {dispatch} = useContext(AuthContext);
   const token =  GetToken();
   useEffect(()=>{  
     const {productid} = props.match.params;
+    setProductId(productid)
     if(!productid){
       props.history.replace('/products')
     }
@@ -124,11 +126,13 @@ const EditProduct = (props)=>{
         setSubCategoryName(getProduct[0].category.parent.name);
         setThirdCategoryName(getProduct[0].category.name);
         specId =getProduct[0].category.parent._id;
+        setSubCatId(specId)
       }
       else if(!getProduct[0].category.parent.parent){
         setCategoryName(getProduct[0].category.parent.name);
         setSubCategoryName(getProduct[0].category.name);
         specId =getProduct[0].category._id
+        setSubCatId(specId);
       }
       axios({
         url: '/',
@@ -243,14 +247,8 @@ const EditProduct = (props)=>{
     
     
   }
-  const addProductHandler =()=>{
-    let IDforServer = null;
-    if(thirdSubCatId){
-      IDforServer = thirdSubCatId;
-    }
-    else{
-      IDforServer = subCatId;
-    }
+  const editProductHandler =()=>{
+    console.log(subCatId)
     const SpecArray =[];
     specs.map(spec=>{
       spec.details.map(item=>{
@@ -269,40 +267,66 @@ const EditProduct = (props)=>{
       console.log(info);
       // console.log(description);
       // console.log(SpecArray);
-    axios({
-      url: '/',
-      method: 'post',
-      headers:{'token':`${token}`},
-      data: {
+      let data ={
         query: `
-        mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute], $description : String!, $details : [InputDetails!]!, $image : [String]) {
-          product(input : {fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, image : $image }) {
+        mutation updateProduct($product_attr : Boolean, $id : ID, $fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute!]!, $description : String!, $details : [InputDetails!]!, $image : Upload!) {
+          UpdateProduct (input : {product_attr : $product_attr, id : $id, fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, image : $image}) {
             status,
             message
           }
-        }     
+        }    
           `,
           variables :{
+            "product_attr": false,
+            "id": productId,
             "fname" : name,
             "ename": englishName,
-            "category" : IDforServer,
+            "category" : subCatId,
             "brand": brandId,
             "attribute": info,
             "description": description,
-            "details": SpecArray
+            "details": SpecArray,
+            "image":null
           }
     }
-  }).then((result)=>console.log(result.data.data))
+    let map = {
+      0 : ['variables.image'],
+    }
+
+   let formD = new FormData();
+   formD.append('operations' , JSON.stringify(data));
+   if(image)
+   {
+     formD.append('map', JSON.stringify(map));
+     formD.append(0, file, file.name);
+   }
+   
+    console.log(formD)
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{
+        'token':`${token}`,
+      },
+      data: formD
+  }).then((result)=>{
+    if(result.data.errors){
+      console.log(result.data);
+      toast.error(`خطلا در ویرایش اطلاعات محصول ${name}` )
+    }
+    else{
+      toast.success(result.data.data.product.message)
+    }
+   
+  })
   .catch((error)=>console.log(error));
   
    }
-    if(loading)
-    {
-      return(<center><Spinner /></center>)
-    }
-    
-    else
+
+
+   
     return(
+      loading ?<center><Spinner /></center>:
         <div className="animated fadeIn">
         <Row>
           <Col xl={12}>
@@ -311,7 +335,7 @@ const EditProduct = (props)=>{
             </div>
             <Card>
               <CardHeader>
-                <i className="fa fa-align-justify"></i> ویرایش کردن محصول
+                <i className="fa fa-align-justify"></i>ویرایش محصول <span style={{color:'blue'}}>{name}</span>
               </CardHeader>
               <CardBody>
                 <Row>
@@ -597,7 +621,7 @@ const EditProduct = (props)=>{
                   </Col>
                 </Row>
                 <Row>
-                  <Button color="success" size="lg" block onClick={addProductHandler}>ویرایش  محصول</Button>
+                  <Button color="success" size="lg" block onClick={editProductHandler}>ویرایش  محصول</Button>
                 </Row>
               </CardBody>
             </Card>

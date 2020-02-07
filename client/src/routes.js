@@ -51,6 +51,7 @@ const Products  = React.lazy(() => import('./views/Products/Products'));
 const EditProduct  = React.lazy(() => import('./views/Products/EditProduct'));
 const Seller  = React.lazy(() => import('./views/Products/Seller'));
 const Warranty  = React.lazy(() => import('./views/Products/Warranty'));
+const Comments = React.lazy(() => import('./views/Comments/Comments'));
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
   
@@ -58,6 +59,7 @@ const routes = [
   { path: '/theme', exact: true, name: 'Theme', component: Colors },
   { path: '/theme/colors', name: 'Colors', component: Colors },
   { path: '/theme/typography', name: 'Typography', component: Typography },
+  { path: '/comments', exact: true, name: 'نظرات', component: Comments },
   { path: '/shop', exact: true, name: 'امور فروشگاه', component: Category },
   { path: '/shop/category', exact: true, name: 'دسته بندی ها', component: Category },
   { path: '/shop/brand', exact: true, name: ' برند ها', component: Brand },
