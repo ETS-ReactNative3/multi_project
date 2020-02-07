@@ -924,28 +924,6 @@ const resolvers = {
         UpdateProduct : async (param, args, { check }) => {
             if(check) {
                 try {
-                    if(args.input.product_attr == true) {
-                        const product_seller = await Productattribute.findByIdAndUpdate(args.input.id, { $set : {
-                            seller : args.input.seller,
-                            warranty : args.input.warranty,
-                            color : args.input.color,
-                            price : args.input.price,
-                            discount : args.input.discount,
-                            stock : args.input.stock
-                        }})
-    
-                        if(!product_seller) {
-                            const error = new Error('هیج آپشنی برای این محصول در سیستم ثبت نشده است!');
-                            error.code = 401;
-                            throw error;
-                        } else {
-                            return {
-                                status : 200,
-                                message : 'آپشن مورد نظر ویراش شد.'
-                            }
-                        }
-                    } else {
-
                         const details = await updateDetailsValue(args.input.details);
                         // update image path
 
@@ -974,9 +952,51 @@ const resolvers = {
                                 message : 'محصول مورد نظر ویرایش شد.'
                             }
                         }
-                    }
+
                 } catch {
                     const error = new Error('امکان ویرایش محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdateProducctAttribute : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const arr = [];
+                    for (let index = 0; index < args.length; index++) {
+                        const element = args.input.attribute[index];
+                                    const pa = await Productattribute.findByIdAndUpdate(element._id, { $set : {
+                                            seller : element.seller,
+                                            warranty : element.warranty,
+                                            color : element.color,
+                                            price : element.price,
+                                            discount : element.discount,
+                                            stock : element.stock
+                                        }
+                                    })
+            
+                                    arr[index] = pa._id
+                    }
+
+                    if(arr != null) {
+                        return {
+                            status : 401,
+                            message : 'امکان ویرایش وبژگی محصول وجود ندارد!'
+                        }
+                    } else {
+                        return {
+                            status : 200,
+                            message : 'ویژگی های محصول ویرایش شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ویرایش ویژگی های محصول وجود ندارد.');
                     error.code = 401;
                     throw error;
                 }
@@ -1019,7 +1039,7 @@ let updateDetailsValue = async (args) => {
         const arr = [];
         for (let index = 0; index < args.length; index++) {
             const element = args[index];
-                        const op = await Details.findByIdAndUpdate(element._id, { $set : {
+                        const op = await Details.findByIdAndUpdate(element.id, { $set : {
                             value : element.value,
                             label : element.label
                         }

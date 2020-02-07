@@ -39,7 +39,8 @@ const typeDefs = gql`
         UpdateProductSpecsDetails(input : InputProductSpecsDetails) : operation!,
         UpdateSeller(category : ID!, name : String!, label : String) : operation!,
         UpdateWarranty(name : String!, label : String) : operation!
-        UpdateProduct(input : InputProduct) : operation!
+        UpdateProduct(input : UpdateProduct) : operation!,
+        UpdateProducctAttribute(input : InputProductAttribute) : operation!
 
     }
 
@@ -94,7 +95,12 @@ const typeDefs = gql`
         label : String
     }
 
+    input InputProductAttribute {
+        attribute : [InputAttribute!]!
+    }
+
     input InputProduct {
+        id : ID,
         fname : String!,
         ename : String!,
         category : ID!
@@ -106,13 +112,28 @@ const typeDefs = gql`
         image : Upload!
     }
 
+    input UpdateProduct {
+        id : ID,
+        fname : String!,
+        ename : String!,
+        category : ID!
+        brand : ID!,
+        attribute : [ID]!,
+        description : String!,
+        rate : Int,
+        details : [InputDetails!]!,
+        image : Upload!
+    }
+
     input InputDetails {
+        id : ID
         p_details : ID!,
         value : String!,
         label : String
     }
 
     input InputAttribute {
+        id : ID
         seller : ID!
         warranty : ID!,
         color : String!,
