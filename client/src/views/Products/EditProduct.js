@@ -1,6 +1,9 @@
 import React,{useState, useEffect, useContext} from 'react';
-import { Card, CardBody, CardHeader, Col, Row, FormGroup,Label,Input,Button,CustomInput } from 'reactstrap';
+import { Card, CardBody, CardHeader, Col, Row, FormGroup,Label,Input,Button,Spinner } from 'reactstrap';
 import axios from 'axios';
+import {checkFileSize , checkMimeType} from '../Media/Funcs';
+import { ToastContainer,toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
 import CKEditor from '@ckeditor/ckeditor5-react';
@@ -9,106 +12,188 @@ import classes from './product.module.css';
 const EditProduct = (props)=>{
   const [name,setName] = useState('');
   const [englishName,setEnglishName] = useState('');
-  const [category,setCategory] = useState([]);
-  const [subCategory,setSubCategory] = useState([]);
-  const[message,setMessage] = useState('');
-  const [mainSubTitleFromServer,setMainSubTitleFromServe] = useState([]);
-  const [mainCategory,setMainCategory] = useState(true);
-  const [parentCategory,setParentCategory] = useState(false);
-  const[catId,setCatId] = useState(null);
+  const [categoryName,setCategoryName] = useState('');
+  const [subCategoryName,setSubCategoryName] = useState('');
+  const [thirdCategoryName,setThirdCategoryName] = useState('');
+  const [message,setMessage] = useState('');
   const [subCatId,setSubCatId] = useState(null);
-  const [sellers,setSellers] = useState([]);
-  const [warranty,setWarranty] = useState([]);
   const [brands,setBrands] = useState([]);
-  const [brandId,setBrandId] = useState(null)
-  const [thirdSubCategory,setThirdSubCategory] = useState([]);
+  const [brandId,setBrandId] = useState(null);
+  const [brandName,setBrandName] = useState('')
   const [specs,setSpecs] = useState([]);
   const [info,setInfo] = useState([]);
-  const [sellerId,setSellerId] = useState(null);
-  const [warrantyId,setWarrantyId] = useState(null);
-  const [color,setColor] = useState('');
-  const [numberOfProducts,setNumberOfProducts] = useState(1);
-  const [price,setPrice] = useState(0);
-  const[discountedPrice,setDiscountedPrice] = useState(0);
-  const[thirdSubCatId,setThirdSubCatId] = useState(null);
+  const [thirdSubCatId,setThirdSubCatId] = useState(null);
   const [description,setDescription] = useState('');
   const [image, setImage] = useState('');
+  const [imageServer,setImageServer] = useState(null);
   const [file, setFile] = useState('');
+  const [loading,setLoading] = useState(false);
   const {dispatch} = useContext(AuthContext);
   const token =  GetToken();
-
-  useEffect(()=>{
+  useEffect(()=>{  
+    const {productid} = props.match.params;
+    if(!productid){
+      props.history.replace('/products')
+    }
     dispatch({type:'check',payload:props});
+    setLoading(true)
     axios({
-        url: '/',
-        method: 'post',
-        headers:{'token':`${token}`},
-        data: {
-          query: `
-          query getAllSWarranty {
-            getAllWarranty {
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        query getProduct($page : Int, $limit : Int, $productId : ID) {
+          getProduct(page : $page, limit : $limit, productId : $productId){
+            _id,
+            fname,
+            ename,           
+            brand {
               _id,
-              name,
-              label
-            }
-          }      
-            `
-      }
-    }).then((result) => {
-      if(result.data.errors){
-        setMessage('خطا در دریافت اطلاعات  گارانتی ها')
-      }
-      else{
-          setWarranty(result.data.data.getAllWarranty);
-         
-      }
-      
-    }).catch(error=>{
-      console.log(error)
-    });      
-},[])
-  useEffect(()=>{
-    dispatch({type:'check',payload:props});
-    axios({
-        url: '/',
-        method: 'post',
-        headers:{'token':`${token}`},
-        data: {
-          query: `
-          query getAllCategory($page : Int, $limit : Int, $mainCategory : Boolean, $parentCategory : Boolean, $catId : ID) {
-            getAllCategory(input : {page : $page, limit : $limit, mainCategory : $mainCategory, parentCategory : $parentCategory, catId : $catId}) {
+              name
+            },
+            rate,          
+            image,
+            attribute{
               _id,
-              name,
-              label,
-              parent {
+              seller {
+                  _id,
+                  name,
+              },
+              warranty{
+                _id,
                 name
+              },
+              color,
+              discount,
+              stock,
+              price
+            },
+            description,
+            category{
+              _id,
+              name,
+              parent {
+                _id,
+                name
+                parent {
+                  _id,
+                	name
+                }
               }
+            },
+            details {
+              _id,
+              value,
+              label,
+              p_details {
+                _id,
+                name,               
+                specs {
+                  specs
+
+                }
+              }
+            }
+        }  
+      }  
+          `,
+          variables :{
+            "page": 1,
+            "limit": 10,
+            "productId": productid
+          }
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      toast.error('خطا در دریافت اطلاعات  محصولات')
+    }
+    else{
+      const {getProduct} = result.data.data;
+      console.log(getProduct[0]);
+      setName(getProduct[0].fname);
+      setEnglishName(getProduct[0].ename);
+      setBrandId(getProduct[0].brand._id);
+      setBrandName(getProduct[0].brand.name);
+      setImageServer(getProduct[0].image[0]);
+      setDescription(getProduct[0].description);
+      setInfo(getProduct[0].attribute);
+      let specId=null;
+      if(getProduct[0].category.parent.parent){
+        setCategoryName(getProduct[0].category.parent.parent.name);
+        setSubCategoryName(getProduct[0].category.parent.name);
+        setThirdCategoryName(getProduct[0].category.name);
+        specId =getProduct[0].category.parent._id;
+      }
+      else if(!getProduct[0].category.parent.parent){
+        setCategoryName(getProduct[0].category.parent.name);
+        setSubCategoryName(getProduct[0].category.name);
+        specId =getProduct[0].category._id
+      }
+      axios({
+        url: '/',
+        method: 'post',
+        headers:{'token':`${token}`},
+        data: {
+          query: `
+          query addProductInfo($categoryId : ID, $getSubCategory : Boolean!, $subCategoryId : ID){
+            getAddProductInfo(categoryId : $categoryId, getSubCategory : $getSubCategory, subCategoryId : $subCategoryId) {
+              specs {
+                _id,
+                specs,
+                details {
+                  _id,
+                  name
+                }
+              },
             }
           }      
             `,
             variables :{
-                "page": 1,
-                "limit": 10,
-                "mainCategory": mainCategory,
-                "parentCategory": parentCategory,
-                "catId": catId
+              "categoryId": null,
+              "getSubCategory": true,
+              "subCategoryId": specId
             }
       }
-    }).then((result) => {
-      if(result.data.errors){
-        setMessage('خطا در دریافت اطلاعات دسته بندی ها')
-      }
-      const {getAllCategory} = result.data.data;
-      if(mainCategory){
-        setMainSubTitleFromServe(getAllCategory)
-      }
-      else if(parentCategory){
-        setSubCategory(getAllCategory);
-      }            
-    }).catch(error=>{
-      console.log(error)
-    });      
-},[catId])
+      }).then((result) => {
+        if(result.data.errors){
+          setMessage('خطا در دریافت اطلاعات مشخصات')
+        }
+        else{
+          const {specs}= result.data.data.getAddProductInfo ;     
+          const productDetailes =    getProduct[0].details; 
+
+          for(var i=0;i<specs.length;i++){
+            for(var j=0;j<specs[i].details.length;j++)
+            {             
+                for(let c=0;c<productDetailes.length;c++){
+                  if(productDetailes[c].p_details._id  == specs[i].details[j]._id)
+                  {
+                    specs[i].details[j].value=productDetailes[c].value;
+                    specs[i].details[j].label=productDetailes[c].label;
+                  }
+
+                  
+                }
+            }
+              
+          }
+          console.log(specs);
+          setSpecs(specs); 
+        }
+      
+      }).catch(error=>{
+        console.log(error)
+      })     
+      
+      setLoading(false)
+    }
+             
+  }).catch(error=>{
+    console.log(error)
+  })
+  },[])
+  
 
   const nameHandler = (event)=>{
     setName(event.target.value)
@@ -116,115 +201,8 @@ const EditProduct = (props)=>{
   const englishNameHandler = (event)=>{
     setEnglishName(event.target.value)
   }
-  const categoryHandler = (event)=>{
-    setCatId(event.target.value);
-    setMainCategory(false);
-    setParentCategory(true);
-    axios({
-      url: '/',
-      method: 'post',
-      headers:{'token':`${token}`},
-      data: {
-        query: `
-        query addProductInfo($categoryId : ID, $getSubCategory : Boolean!, $subCategoryId : ID){
-          getAddProductInfo(categoryId : $categoryId, getSubCategory : $getSubCategory, subCategoryId : $subCategoryId) {
-            sellers {
-              _id,
-              name
-            },
-            
-            brands {
-              _id,
-              name
-            }
-            
-            subcats {
-              _id,
-              name
-            }
-          }
-        }      
-          `,
-          variables :{
-            "categoryId":event.target.value,
-            "getSubCategory": false,
-            "subCategoryId": null
-          }
-    }
-  }).then((result) => {
-    if(result.data.errors){
-      setMessage('خطا در دریافت اطلاعات فروشندگان')
-    }
-    setSellers(result.data.data.getAddProductInfo.sellers)           
-  }).catch(error=>{
-    console.log(error)
-  })
-  }
-  const subCategoryHandler = (event)=>{
-    setSubCatId(event.target.value);
-    axios({
-      url: '/',
-      method: 'post',
-      headers:{'token':`${token}`},
-      data: {
-        query: `
-        query addProductInfo($categoryId : ID, $getSubCategory : Boolean!, $subCategoryId : ID){
-          getAddProductInfo(categoryId : $categoryId, getSubCategory : $getSubCategory, subCategoryId : $subCategoryId) {
-            specs {
-              _id,
-              specs,
-              details {
-                _id,
-                name
-              }
-            },
-            
-            brands {
-              _id,
-              name
-            },
-            
-            subcats {
-              _id,
-              name
-            },
+  
 
-          }
-        }      
-          `,
-          variables :{
-            "categoryId": null,
-            "getSubCategory": true,
-            "subCategoryId": event.target.value
-          }
-    }
-  }).then((result) => {
-    if(result.data.errors){
-      setMessage('خطا در دریافت اطلاعات برندها')
-    }
-    else{
-      const {specs,brands,subcats}= result.data.data.getAddProductInfo ;     
-      setBrands(brands);
-      setThirdSubCategory(subcats);
-      for(var i=0;i<specs.length;i++){
-        for(var j=0;j<specs[i].details.length;j++)
-        {
-          specs[i].details[j].value="";
-          specs[i].details[j].label="";
-        }
-          
-      }
-      setSpecs(specs);
-      
-    }
-   
-  }).catch(error=>{
-    console.log(error)
-  })
-  }
-  const thirdSubCategoryHandler=(event)=>{
-    setThirdSubCatId(event.target.value);
-  }
 
   const handleChangeSpecName=(event,specId,id)=>{
     const tempSpecs ={...specs[specId]}
@@ -242,70 +220,28 @@ const EditProduct = (props)=>{
     newstate[specId].details[id] = tempSpecsDetail;
     setSpecs(newstate);
   }
-  const warrantyHandler =(event)=>{
-    setWarrantyId(event.target.value);
-  }
-  const sellerHandler = (event)=>{
-    setSellerId(event.target.value)
-  }
-  const colorHandler = (event)=>{
-    setColor(event.target.value)
-  }
-  const numberOfProductsHandler = (event)=>{
-    setNumberOfProducts(event.target.value)
-  }
-  const priceHandler = (event)=>{
-    setPrice(event.target.value)
-  }
-  const discountedPriceHandler = (event)=>{
-    setDiscountedPrice(event.target.value)
-  }
+ 
+  
   const brandHandler = (event)=>{
     setBrandId(event.target.value)
   }
   
-  const addButton =()=>{
-    const arrayHolder = [...info];
-    arrayHolder.push({
-      seller:sellerId,
-      warranty:warrantyId,
-      price:price,
-      stock: parseInt(numberOfProducts),
-      discount: parseInt(discountedPrice),
-      color:color
-    })
-    setInfo(arrayHolder);
-    
-  }
-  const getNameSeller =(id)=>{
-    const newData = sellers.filter((item)=>{
-      const itemData = item._id;
-      const textData = id;
-      return itemData.indexOf(textData)>-1
-    })
-    return newData[0].name ;
-  }
-  const getNameWarranty = (id)=>{
-    const newData = warranty.filter((item)=>{
-      const itemData = item._id;
-      const textData = id;
-      return itemData.indexOf(textData)>-1
-    })
-    return newData[0].name;
-  }
-  const deleteItemInfo = (index)=>{
-    const infoItems = [...info];
-    infoItems.splice(index , 1);
-    setInfo(infoItems);
-  }
+
+
   const descriptionHandler=(event,editor)=>{
     const data = editor.getData();
     setDescription(data);
   }
   const handleChangePicture= (e)=>{   
-    setFile(e.target.files[0]);
-    const  preview= URL.createObjectURL(e.target.files[0]);
-    setImage(preview);
+    setImageServer(null);
+    if(checkMimeType(e) &&   checkFileSize(e))
+    {
+      setFile(e.target.files[0]);
+      const  preview= URL.createObjectURL(e.target.files[0]);
+      setImage(preview);
+    }
+    
+    
   }
   const addProductHandler =()=>{
     let IDforServer = null;
@@ -360,13 +296,22 @@ const EditProduct = (props)=>{
   .catch((error)=>console.log(error));
   
    }
+    if(loading)
+    {
+      return(<center><Spinner /></center>)
+    }
+    
+    else
     return(
         <div className="animated fadeIn">
         <Row>
           <Col xl={12}>
+            <div className="form-group">
+              <ToastContainer />
+            </div>
             <Card>
               <CardHeader>
-                <i className="fa fa-align-justify"></i> اضافه کردن محصول
+                <i className="fa fa-align-justify"></i> ویرایش کردن محصول
               </CardHeader>
               <CardBody>
                 <Row>
@@ -402,29 +347,30 @@ const EditProduct = (props)=>{
                 <Row>
                 <Col xs="3">
                     <FormGroup>
-                      <Label htmlFor="ccmonth">دسته اصلی</Label>
-                      <Input type="select" name="ccmonth" id="ccmonth" onChange={categoryHandler}>
-                        <option></option>
-                        {
-                              mainSubTitleFromServer.map((item,index)=>{
-                                  return(<option key={index} value={item._id}>{item.name}</option>)
-                               })
-                          }
-                        
-                                        
+                      <Label htmlFor="mainCategory">دسته اصلی</Label>
+                      <Input
+                       type="select" 
+                       name="mainCategory" 
+                       id="mainCategory" 
+                      // onChange={categoryHandler}
+                       disabled
+                       >
+                        <option >{categoryName}</option>                
                       </Input>
                     </FormGroup>
                   </Col>
                   <Col xs="3">
                     <FormGroup>
                       <Label htmlFor="ccyear">زیر دسته</Label>
-                      <Input type="select" name="ccyear" id="ccyear" onChange={subCategoryHandler}>
-                      <option></option>
-                        {
-                              subCategory.map((item,index)=>{
-                                  return(<option key={index} value={item._id}>{item.name}</option>)
-                               })
-                          }               
+                      <Input 
+                       type="select"
+                       name="ccyear"
+                       id="ccyear" 
+                       //onChange={subCategoryHandler}
+                       disabled
+                      >
+                      <option>{subCategoryName}</option>
+                                       
                       </Input>
                     </FormGroup>
                   </Col>
@@ -435,14 +381,10 @@ const EditProduct = (props)=>{
                         type="select" 
                         name="thirddubcategory" 
                         id="thirddubcategory"
-                        onChange={thirdSubCategoryHandler}
+                        //onChange={thirdSubCategoryHandler}
+                        disabled
                       >
-                      <option></option>
-                        {
-                              thirdSubCategory.map((item,index)=>{
-                                  return(<option key={index} value={item._id}>{item.name}</option>)
-                               })
-                          } 
+                      <option>{thirdCategoryName}</option> 
                       </Input>
                     </FormGroup>
                   </Col>
@@ -454,9 +396,10 @@ const EditProduct = (props)=>{
                        name="ccyears" 
                        id="ccyears"
                        onChange={brandHandler}
+                       vlaue={brandId}
                        >
-                      <option></option>
-                        {
+                      {brandId ?<option>{brandName}</option>:
+                        
                               brands.map((item,index)=>{
                                   return(<option key={index} value={item._id}>{item.name}</option>)
                                })
@@ -466,7 +409,99 @@ const EditProduct = (props)=>{
                   </Col>
                 </Row>
                 <hr style={{marginTop:'19px'}} />
-               
+                {
+                  //show item entered
+                  info.map((item,index)=>
+                  {         
+                    let lableId = `lable-${item._id}`          
+                    return(
+                    <Row key={index}>
+                      <Col xs="2">
+                          <FormGroup>
+                              <Label for={lableId}>فروشنده</Label>
+                              <Input
+                              type="text"
+                              name={lableId}
+                              id={lableId}
+                              value={item.seller.name}
+                              disabled
+                              
+                              />
+                          </FormGroup>
+                      </Col>
+                      <Col xs="2">
+                          <FormGroup>
+                              <Label for={lableId}>گارانتی</Label>
+                              <Input
+                              type="text"
+                              name={lableId}
+                              id={lableId}
+                              value={item.warranty.name}
+                              disabled
+                             
+                              />
+                          </FormGroup>
+                      </Col>
+                      <Col xl="2">
+                        <FormGroup>
+                            <Label for={lableId}>رنگ</Label>
+                          <Input
+                                type="text"
+                                name={lableId}
+                                id={lableId}
+                                value={item.color}
+                                disabled
+                                />
+                        </FormGroup>
+                      </Col>
+                      <Col xs="1">
+                          <FormGroup>
+                              <Label for={lableId}>تعداد</Label>
+                              <Input
+                              type="text"
+                              name={lableId}
+                              id={lableId}
+                              value={item.stock}
+                              disabled
+                             
+                              />
+                          </FormGroup>
+                      </Col>
+                      <Col xs="2">
+                          <FormGroup>
+                              <Label for="exampleNumber">قیمت</Label>
+                              <Input
+                              type="text"
+                              name={lableId}
+                              id={lableId}
+                              value={item.price}
+                              disabled
+                            
+                              />
+                          </FormGroup>
+                      </Col>
+                      <Col xs="2">
+                          <FormGroup>
+                              <Label for="exampleNumber">درصد تخفیف</Label>
+                              <Input
+                              type="text"
+                              name="number"
+                              id="exampleNumber"
+                              value={item.discount}
+                              disabled
+                             
+                              />
+                          </FormGroup>
+                      </Col>
+                      <Col xs="1" style={{display:'flex',justifyContent:'center',alignItems:'flex-end'}}>
+                        
+                    </Col>
+                    </Row>
+                    )
+                  }
+                    
+                  )
+                }
                 
                 {
                   //show specs item
@@ -542,7 +577,11 @@ const EditProduct = (props)=>{
                   <Col xl="8">
                     <FormGroup>
                     <Label htmlFor="file-multiple-input">
-                        <div className={classes.fileSelection}>انتخاب عکس</div>
+                        {
+                          imageServer ?<div className={classes.fileSelection}>ویرایش عکس</div>:
+                          <div className={classes.fileSelection}>انتخاب عکس</div>
+                        }
+                        
                     </Label>
                         <Input type="file" id="file-multiple-input"
                             name="file-multiple-input"  
@@ -551,7 +590,10 @@ const EditProduct = (props)=>{
                     </FormGroup>
                   </Col>
                   <Col xl="4">
-                    {image ? <img src={ image } alt={image} className={classes.preview} />:null}
+                    {
+                      imageServer ?<img src={require(`${process.env.REACT_APP_PUBLIC_URL}${imageServer}`)} alt={imageServer} className={classes.preview} />:
+                      image ? <img src={ image } alt={image} className={classes.preview} />:null
+                      }
                   </Col>
                 </Row>
                 <Row>

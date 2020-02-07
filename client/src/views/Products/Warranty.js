@@ -32,7 +32,8 @@ const Warranty = (props)=>{
           }
         }).then((result) => {
           if(result.data.errors){
-            setMessage('خطا در دریافت اطلاعات  گارانتی ها')
+            setMessage('خطا در دریافت اطلاعات  گارانتی ها');
+            
           }
           else{
               setResult(result.data.data.getAllWarranty);
@@ -99,6 +100,8 @@ return(
         <Card>
             <CardHeader>
                     <i className="fa fa-align-justify"></i> اضافه کردن فروشنده
+                    <br />
+                    {message}
             </CardHeader>
             <CardBody>
              <FormGroup row className="my-0">

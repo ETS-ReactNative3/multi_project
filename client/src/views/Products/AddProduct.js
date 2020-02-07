@@ -1,6 +1,9 @@
 import React,{useState, useEffect, useContext} from 'react';
 import { Card, CardBody, CardHeader, Col, Row, FormGroup,Label,Input,Button,CustomInput } from 'reactstrap';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import {checkFileSize , checkMimeType} from '../Media/Funcs';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
 import CKEditor from '@ckeditor/ckeditor5-react';
@@ -56,7 +59,7 @@ const AddProduct = (props)=>{
       }
     }).then((result) => {
       if(result.data.errors){
-        setMessage('خطا در دریافت اطلاعات  گارانتی ها')
+        toast.error('خطا در دریافت اطلاعات  گارانتی ها')
       }
       else{
           setWarranty(result.data.data.getAllWarranty);
@@ -96,7 +99,7 @@ const AddProduct = (props)=>{
       }
     }).then((result) => {
       if(result.data.errors){
-        setMessage('خطا در دریافت اطلاعات دسته بندی ها')
+        toast.error('خطا در دریافت اطلاعات دسته بندی ها')
       }
       const {getAllCategory} = result.data.data;
       if(mainCategory){
@@ -153,7 +156,7 @@ const AddProduct = (props)=>{
     }
   }).then((result) => {
     if(result.data.errors){
-      setMessage('خطا در دریافت اطلاعات فروشندگان')
+      toast.error('خطا در دریافت اطلاعات فروشندگان')
     }
     setSellers(result.data.data.getAddProductInfo.sellers)           
   }).catch(error=>{
@@ -200,7 +203,7 @@ const AddProduct = (props)=>{
     }
   }).then((result) => {
     if(result.data.errors){
-      setMessage('خطا در دریافت اطلاعات برندها')
+      toast.error('خطا در دریافت اطلاعات برندها')
     }
     else{
       const {specs,brands,subcats}= result.data.data.getAddProductInfo ;     
@@ -302,10 +305,13 @@ const AddProduct = (props)=>{
     const data = editor.getData();
     setDescription(data);
   }
-  const handleChangePicture= (e)=>{   
-    setFile(e.target.files[0]);
-    const  preview= URL.createObjectURL(e.target.files[0]);
-    setImage(preview);
+  const handleChangePicture= (e)=>{  
+    if(checkMimeType(e) &&   checkFileSize(e))
+    { 
+      setFile(e.target.files[0]);
+      const  preview= URL.createObjectURL(e.target.files[0]);
+      setImage(preview);
+    }
   }
   const addProductHandler =()=>{
     let IDforServer = null;
@@ -336,12 +342,12 @@ const AddProduct = (props)=>{
       let data = 
       {
         query: `
-        mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute], $description : String!, $details : [InputDetails!]!, $image : Upload) {
+        mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute!]!, $description : String!, $details : [InputDetails!]!, $image : Upload!) {
           product(input : {fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, image : $image }) {
             status,
             message
           }
-        }     
+        }    
           `,
           variables :{
             "fname" : name,
@@ -372,10 +378,11 @@ const AddProduct = (props)=>{
       data: formD
   }).then((result)=>{
     if(result.data.errors){
-      setMessage('خطلا در ثبت اطلاعات محصول جدید')
+      console.log(result.data);
+      toast.error('خطلا در ثبت اطلاعات محصول جدید')
     }
     else{
-      setMessage(result.data.data.product.message)
+      toast.success(result.data.data.product.message)
     }
    
   })
@@ -386,6 +393,9 @@ const AddProduct = (props)=>{
         <div className="animated fadeIn">
         <Row>
           <Col xl={12}>
+            <div className="form-group">
+              <ToastContainer />
+            </div>
             <Card>
               <CardHeader>
                 <i className="fa fa-align-justify"></i> اضافه کردن محصول
@@ -531,13 +541,18 @@ const AddProduct = (props)=>{
                         <FormGroup>
                             <Label for="exampleColor">رنگ</Label>
                             <Input
-                            type="color"
-                            name="color"
-                            id="exampleColor"
-                            placeholder="color placeholder"
-                            onChange={colorHandler}
-                            required
-                            />
+                              type="select"
+                              name="Warranty"
+                              id="Warranty"
+                              onChange={warrantyHandler}
+                              required
+                            >
+                             <option value="black">مشکی</option>
+                             <option value="red">قرمز</option>
+                             <option value="blue">آبی</option>
+                             <option value="green">سبز</option>
+                             <option value="yellow">زرد</option>
+                          </Input>
                         </FormGroup>
                     </Col>
                     <Col xs="2">

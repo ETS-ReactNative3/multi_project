@@ -70,7 +70,7 @@ const resolvers = {
                     const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
                     return producs.docs
                 } else {
-                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent'}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
+                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
                     return [product]
                 }
             } else {
@@ -246,7 +246,7 @@ const resolvers = {
 
         getAllSeller : async (param, args, { check }) => {
             if(check) {
-                const sellers = await Seller.find({ category : args.category});
+                const sellers = await Seller.find({ category : args.categoryId});
                 if(!sellers) {
                     const error = new Error('برای این دسته بندی فروشنده ای ثبت نشده است!');
                     error.code = 401;
@@ -467,25 +467,21 @@ const resolvers = {
         product : async (param, args, { check }) => {
             if(check) {
                 try {
-
-        
                     const details = await saveDetailsValue(args.input.details);
                     const attribute = await saveAttributeProduct(args.input.attribute);
-
 
                     if(details == null || attribute == null) {
                         return {
                             status : 401,
                             message : 'امکان درج محصول مورد نظر وجود ندارد!'
                         }
-
                     }
 
                     const { createReadStream, filename } = await args.input.image;
                     const stream = createReadStream();
                     const { filePath } = await saveImage({ stream, filename});
 
-                    const pro = await Product.create({
+                    await Product.create({
                          fname : args.input.fname,
                          ename : args.input.ename,
                          brand : args.input.brand,
@@ -496,10 +492,10 @@ const resolvers = {
                          image : filePath
                     })
 
-                        return {
-                            status : 200,
-                            message : 'محصول مورد نظر ثبت شد.'
-                        }
+                    return {
+                        status : 200,
+                        message : 'محصول مورد نظر ثبت شد.'
+                    }
     
                 } catch {
                     deleteAttributeProduct(args.input.attribute)
@@ -758,8 +754,6 @@ let deleteDetailsValue = async (args) => {
         const element = args[index];
         await Details.deleteMany(element)
     }
-
-    return
 }
 
 let saveAttributeProduct = async (args) => {
@@ -793,7 +787,6 @@ let deleteAttributeProduct = async (args) => {
         const element = args[index];
         await Productattribute.deleteMany(element)
     }
-    return;
 }
 
 let getImageSize = (type) => {
@@ -817,7 +810,7 @@ let getImageSize = (type) => {
 let saveImage = ({stream, filename}) => {
     let date = new Date();
     const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
-    mkdirp.sync(path.join(__dirname, `./public/${dir}`));
+    mkdirp.sync(path.join(__dirname, `/public/${dir}`));
 
     const filePath = `${dir}/${filename}`;
 
@@ -833,7 +826,7 @@ let saveImage = ({stream, filename}) => {
 let deleteImage = async ({filename}) => {
     let date = new Date();
     const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
-    fs.unlinkSync(path.join(__dirname, `./public/${dir}/${filename}`));
+    fs.unlinkSync(path.join(__dirname, `/public/${dir}/${filename}`));
 
     return;
 }

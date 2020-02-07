@@ -216,25 +216,7 @@ export default {
           url: '/products/warranty',
           icon: 'icon-star',
         },
-        {
-          name: 'Flags',
-          url: '/icons/flags',
-          icon: 'icon-star',
-        },
-        {
-          name: 'Font Awesome',
-          url: '/icons/font-awesome',
-          icon: 'icon-star',
-          badge: {
-            variant: 'secondary',
-            text: '4.7',
-          },
-        },
-        {
-          name: 'Simple Line Icons',
-          url: '/icons/simple-line-icons',
-          icon: 'icon-star',
-        },
+        
       ],
     },
     {

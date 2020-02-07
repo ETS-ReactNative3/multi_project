@@ -11,7 +11,7 @@ const typeDefs = gql`
         getAllSurvey(categoryId : ID!) : Survey!
         getAllProductSpecs(categoryId : ID!) : [Specs!]!
         getAllProductSpecsDetails(specsId : ID!) : [SpecsDetails!]!
-        getAllSeller(category : ID!) : [Seller!]!
+        getAllSeller(categoryId : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
     }
@@ -199,6 +199,7 @@ const typeDefs = gql`
     }
 
     type Attribute {
+        _id :ID,
         seller : Seller
         warranty : Warranty,
         color : String,
@@ -208,6 +209,7 @@ const typeDefs = gql`
     }
 
     type Details {
+        _id: ID,
         p_details : SpecsDetails,
         value : String!,
         label : String
@@ -215,15 +217,16 @@ const typeDefs = gql`
 
     type Category {
         _id : ID
-        name : String!,
+        name : String,
         label : String,
         parent : Parent,
     }
 
     type Parent {
         _id : ID,
-        name : String!,
+        name : String,
         label : String,
+        parent : Category
     }
 
     type Brand {

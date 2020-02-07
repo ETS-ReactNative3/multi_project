@@ -42,9 +42,10 @@ const Seller = (props)=>{
           }
         }).then((result) => {
           if(result.data.errors){
-            setMessage('خطا در دریافت اطلاعات دسته بندی ها')
+            setMessage('خطا در دریافت اطلاعات دسته بندی ها');
+            console.log(result.data.errors);
           }
-          
+            
             setMainSubTitleFromServe(result.data.data.getAllCategory)
           
         }).catch(error=>{
@@ -65,7 +66,7 @@ const Seller = (props)=>{
             data: {
               query: `
               query getAllSeller($categoryId : ID!) {
-                getAllSeller(category : $categoryId) {
+                getAllSeller(categoryId : $categoryId) {
                   _id,
                   name,
                   label

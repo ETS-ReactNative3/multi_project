@@ -359,7 +359,7 @@ const Brand =(props)=> {
                                     }
                                     
                                 </td>
-                                <td><img src={`${process.env.DOMAIN}${item.image}`} alt={item.image}  className={classes.Preview}/></td>
+                                <td><img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image}`)} alt={item.image}  className={classes.Preview}/></td>
                                 <td>{item.label}</td>
                                 <td>
                                     <Row>
