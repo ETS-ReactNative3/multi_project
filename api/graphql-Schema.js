@@ -46,7 +46,6 @@ const typeDefs = gql`
 
         slider(imageId : ID) : operation!
 
-        productSuggestion(productId : ID!, expireAt : Int = 1) : operation!
     }
 
     input InputGetBrand {
@@ -150,7 +149,10 @@ const typeDefs = gql`
         color : String!,
         price : Int!,
         stock : Int!,
-        discount : Int
+        discount : Int,
+        suggestion : Boolean,
+        expireAt : Int = 24
+
     }
 
     input InputBrand {
@@ -251,8 +253,12 @@ const typeDefs = gql`
         color : String,
         price : String,
         stock : Int,
-        discount : Int
+        discount : Int,
+        suggestion : Boolean,
+        expireAt : Date
     }
+
+    scalar Date
 
     type Details {
         _id : ID
@@ -341,10 +347,6 @@ const typeDefs = gql`
         image : String,
         attr : String,
         label : String
-    }
-
-    type Suggestion {
-        product : [product!]!,
     }
 
 
