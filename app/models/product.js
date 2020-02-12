@@ -11,7 +11,8 @@ const Product = Schema({
     description : { type : String, required : true},
     rate : { type : Number, defualt : null},
     details : [{ type : Schema.Types.ObjectId, ref : 'Details', required : true}],
-    image : [{ type : String, required : true}]
+    image : [{ type : String, required : true}],
+    suggestion : { type : Boolean, defualt : false}
 }, {
     timestamps : true,
     toJSON : { virtuals : true}

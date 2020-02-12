@@ -14,6 +14,9 @@ const typeDefs = gql`
         getAllSeller(categoryId : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
+
+        MainPageApp : mainInfo
+
     }
 
     type Mutation {
@@ -32,7 +35,6 @@ const typeDefs = gql`
         seller(category : ID!, name : String!, label : String) : operation!,
         warranty(name : String!, label : String) : operation!
 
-
         UpdateCategory(input : InputCategory) : operation!
         UpdateBrand(input : InputBrand) : operation!,
         UpdateProductSpecs(input : InputProductSpecs) : operation!,
@@ -42,8 +44,10 @@ const typeDefs = gql`
         UpdateProduct(input : UpdateProduct) : operation!,
         UpdateProducctAttribute(input : InputProductAttribute) : operation!
 
-    }
+        slider(imageId : ID) : operation!
 
+        productSuggestion(productId : ID!, expireAt : Int = 1) : operation!
+    }
 
     input InputGetBrand {
         page : Int,
@@ -96,6 +100,7 @@ const typeDefs = gql`
     }
 
     input InputProductAttribute {
+        addSeller : Boolean
         attribute : [InputAttribute!]!
     }
 
@@ -109,7 +114,7 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [InputDetails!]!,
-        image : Upload
+        image : Upload!
     }
 
     input UpdateProduct {
@@ -118,11 +123,11 @@ const typeDefs = gql`
         ename : String!,
         category : ID!
         brand : ID!,
-        attribute : [ID!]!,
+        attribute : [ID]!,
         description : String!,
         rate : Int,
         details : [UpdateDetails!]!,
-        image : Upload
+        image : Upload!
     }
 
     input InputDetails {
@@ -133,7 +138,7 @@ const typeDefs = gql`
     }
 
     input UpdateDetails {
-        id : ID!,
+        id : ID
         value : String!,
         label : String
     }
@@ -250,7 +255,7 @@ const typeDefs = gql`
     }
 
     type Details {
-        _id: ID,
+        _id : ID
         p_details : SpecsDetails,
         value : String,
         label : String
@@ -322,6 +327,28 @@ const typeDefs = gql`
         subcats : [Category],
         specs : [Specs]
     }
+
+    type mainInfo {
+        slider : Slider,
+        category : [Category],
+        Asuggestion : [product],
+        banerDiscount : [Category],
+        Tselling : [product],
+        Nproduct : [product]
+    }
+
+    type Slider {
+        image : String,
+        attr : String,
+        label : String
+    }
+
+    type Suggestion {
+        product : [product!]!,
+    }
+
+
+
 `;
 
 module.exports = typeDefs;

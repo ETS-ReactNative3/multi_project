@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser')
 const resolvers = require('api/graphql-Resolver');
 const User = require('app/models/users');
+var elasticsearch = require('elasticsearch');
 
 const cors = require('cors');
 //const cookieParser = require('cookie-parser');
@@ -35,7 +36,12 @@ module.exports = class Application {
 
                     const secretID = 'asdasw!@#ASdjshxwe.xfisdyf6%$qwsdahgsd#$';
                     let check = await User.CheckToken(req, secretID);
+                    let isAdmin = false
+                    if(check) {
+                        isAdmin = await User.findById(check.id).select('level');
+                    }
                     return {
+                        isAdmin : isAdmin.level,
                         check,
                         secretID
                     }
@@ -50,7 +56,7 @@ module.exports = class Application {
         mongoose.connect(config.database.url, config.database.options);
     }
 
-    SetConfig() {
+    async SetConfig() {
         
         app.use(cors());
         app.use(express.static(config.layout.PUBLIC_DIR));
