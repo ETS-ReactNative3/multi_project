@@ -37,7 +37,7 @@ const typeDefs = gql`
         UpdateBrand(input : InputBrand) : operation!,
         UpdateProductSpecs(input : InputProductSpecs) : operation!,
         UpdateProductSpecsDetails(input : InputProductSpecsDetails) : operation!,
-        UpdateSeller(category : ID!, name : String!, label : String) : operation!,
+        UpdateSeller(id : ID!, name : String!, label : String) : operation!,
         UpdateWarranty(name : String!, label : String) : operation!
         UpdateProduct(input : UpdateProduct) : operation!,
         UpdateProducctAttribute(input : InputProductAttribute) : operation!
@@ -109,7 +109,7 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [InputDetails!]!,
-        image : Upload!
+        image : Upload
     }
 
     input UpdateProduct {
@@ -118,11 +118,11 @@ const typeDefs = gql`
         ename : String!,
         category : ID!
         brand : ID!,
-        attribute : [ID]!,
+        attribute : [ID!]!,
         description : String!,
         rate : Int,
-        details : [InputDetails!]!,
-        image : Upload!
+        details : [UpdateDetails!]!,
+        image : Upload
     }
 
     input InputDetails {
@@ -132,12 +132,18 @@ const typeDefs = gql`
         label : String
     }
 
+    input UpdateDetails {
+        id : ID!,
+        value : String!,
+        label : String
+    }
+
     input InputAttribute {
         id : ID
         seller : ID!
         warranty : ID!,
         color : String!,
-        price : String!,
+        price : Int!,
         stock : Int!,
         discount : Int
     }

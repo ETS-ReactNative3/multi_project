@@ -26,7 +26,7 @@ const EditProduct = (props)=>{
   const [description,setDescription] = useState('');
   const [image, setImage] = useState('');
   const [imageServer,setImageServer] = useState(null);
-  const [file, setFile] = useState('');
+  const [file, setFile] = useState(null);
   const [productId,setProductId] = useState(null)
   const [loading,setLoading] = useState(false);
   const {dispatch} = useContext(AuthContext);
@@ -112,7 +112,6 @@ const EditProduct = (props)=>{
     }
     else{
       const {getProduct} = result.data.data;
-      console.log(getProduct[0]);
       setName(getProduct[0].fname);
       setEnglishName(getProduct[0].ename);
       setBrandId(getProduct[0].brand._id);
@@ -175,6 +174,7 @@ const EditProduct = (props)=>{
                   {
                     specs[i].details[j].value=productDetailes[c].value;
                     specs[i].details[j].label=productDetailes[c].label;
+                    specs[i].details[j].ID =productDetailes[c]._id
                   }
 
                   
@@ -182,7 +182,7 @@ const EditProduct = (props)=>{
             }
               
           }
-          console.log(specs);
+          
           setSpecs(specs); 
         }
       
@@ -253,69 +253,97 @@ const EditProduct = (props)=>{
     specs.map(spec=>{
       spec.details.map(item=>{
         SpecArray.push({
-          p_details:item._id,
+          id:item.ID,
           value:item.value,
           label:item.label
         })
         })
       }
     )
-      // console.log(name);
-      // console.log(englishName);
-      // console.log(IDforServer);
-      // console.log(brandId);
-      console.log(info);
-      // console.log(description);
-      // console.log(SpecArray);
+    const infoHolder =[];
+    info.map((item)=>{
+      infoHolder.push(
+        item._id
+      )
+    })
+      //  console.log(productId);
+      //  console.log(name);
+      //  console.log(englishName);
+      //  console.log(subCatId);
+      //  console.log(brandId);
+      //  console.log(infoHolder);
+      //  console.log(description);
+      //  console.log(SpecArray);
+      //  console.log(file)
+      
       let data ={
         query: `
-        mutation updateProduct($product_attr : Boolean, $id : ID, $fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute!]!, $description : String!, $details : [InputDetails!]!, $image : Upload!) {
-          UpdateProduct (input : {product_attr : $product_attr, id : $id, fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, image : $image}) {
+        mutation updateProduct($id : ID, $fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [ID!]!, $description : String!, $details : [UpdateDetails!]!, $image : Upload!) {
+          UpdateProduct (input : {id : $id, fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, image : $image}) {
             status,
             message
           }
-        }    
+        }   
           `,
           variables :{
-            "product_attr": false,
             "id": productId,
             "fname" : name,
             "ename": englishName,
             "category" : subCatId,
             "brand": brandId,
-            "attribute": info,
+            "attribute": infoHolder,
             "description": description,
             "details": SpecArray,
             "image":null
           }
     }
+    let newData ={
+      query: `
+      mutation updateProduct($id : ID, $fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [ID!]!, $description : String!, $details : [UpdateDetails!]!, $image : Upload) {
+        UpdateProduct (input : {id : $id, fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, image : $image}) {
+          status,
+          message
+        }
+      }   
+        `,
+        variables :{
+          "id": productId,
+          "fname" : name,
+          "ename": englishName,
+          "category" : subCatId,
+          "brand": brandId,
+          "attribute": infoHolder,
+          "description": description,
+          "details": SpecArray,
+        }
+    }
     let map = {
       0 : ['variables.image'],
     }
-
-   let formD = new FormData();
-   formD.append('operations' , JSON.stringify(data));
-   if(image)
-   {
-     formD.append('map', JSON.stringify(map));
-     formD.append(0, file, file.name);
-   }
-   
-    console.log(formD)
+    let dataServer=newData;
+    if(image){
+      let formD = new FormData();
+      formD.append('operations' , JSON.stringify(data));
+       formD.append('map', JSON.stringify(map));
+       formD.append(0, file, file.name);
+       dataServer = formD
+    }
+      
     axios({
       url: '/',
       method: 'post',
       headers:{
         'token':`${token}`,
       },
-      data: formD
+      data: dataServer
   }).then((result)=>{
     if(result.data.errors){
       console.log(result.data);
       toast.error(`خطلا در ویرایش اطلاعات محصول ${name}` )
     }
     else{
-      toast.success(result.data.data.product.message)
+      toast.success(result.data.data.UpdateProduct.message);
+      props.history.replace('/dashboard')
     }
    
   })

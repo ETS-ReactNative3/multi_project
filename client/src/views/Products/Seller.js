@@ -3,6 +3,8 @@ import { Card, CardBody, CardHeader,CardFooter, Col, Row, FormGroup,Label,Input,
 import axios from 'axios';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const Seller = (props)=>{
     const [title,setTitle] = useState('');
     const [lable,setLable] = useState('');
@@ -42,7 +44,7 @@ const Seller = (props)=>{
           }
         }).then((result) => {
           if(result.data.errors){
-            setMessage('خطا در دریافت اطلاعات دسته بندی ها');
+            toast.error('خطا در دریافت اطلاعات دسته بندی ها');
             console.log(result.data.errors);
           }
             
@@ -54,7 +56,7 @@ const Seller = (props)=>{
     },[])
     const handleMainSubTitle=(event)=>{
         if(event.target.value===''){
-            setMessage('یک دسته را انتخاب کنید');
+          toast.error('یک دسته را انتخاب کنید');
             return;
         }
         setMainSubTitleValue(event.target.value);
@@ -79,10 +81,15 @@ const Seller = (props)=>{
           }
         }).then((result) => {
           if(result.data.errors){
-            setMessage(result.data.errors[0].message)
+            toast.error(result.data.errors[0].message)
           }
           else{
-            setResult(result.data.data.getAllSeller);
+            const {getAllSeller} = result.data.data;
+            for(let i=0;i<getAllSeller.length;i++)
+              {
+                getAllSeller[i].flag = false;
+              }
+            setResult(getAllSeller);
             setLoading(false);
             setTitle('');
             setLable('')
@@ -122,10 +129,10 @@ const Seller = (props)=>{
           }
         }).then((result) => {
           if(result.data.errors){
-            setMessage('خطلا در ثبت اطلاعات فروشنده جدید')
+            toast.error('خطلا در ثبت اطلاعات فروشنده جدید')
           }
           else{
-              setMessage('اطلاعات فروشنده جدید با موفقیت اضافه شده');
+            toast.success('اطلاعات فروشنده جدید با موفقیت اضافه شده');
               console.log(result.data.data.seller._id)
               const arrayHolder = [...resultServer];
               arrayHolder.push({
@@ -138,8 +145,82 @@ const Seller = (props)=>{
               setLable('')
            }
         }).catch(error=>{
-          console.log(error)
+          toast.error(error)
         });
+    }
+    const handleEdit = (id)=>{
+      const newSeller =[...resultServer];
+      const newData = newSeller.filter((item)=>{
+        const itemData = item._id;
+        const textData = id;
+        return itemData.indexOf(textData)>-1
+      })
+       
+       newData[0].flag = true;
+      setResult(newSeller);
+    }
+    const changeNameHandler = (event,id)=>{
+      const newSeller =[...resultServer];
+      const newData = newSeller.filter((item)=>{
+        const itemData = item._id;
+        const textData = id;
+        return itemData.indexOf(textData)>-1
+      }) 
+       newData[0].name = event.target.value;
+      setResult(newSeller);
+    }
+    const changeLabelHandler = (event,id)=>{
+      const newSeller =[...resultServer];
+      const newData = newSeller.filter((item)=>{
+        const itemData = item._id;
+        const textData = id;
+        return itemData.indexOf(textData)>-1
+      }) 
+       newData[0].label = event.target.value;
+      setResult(newSeller);
+    }
+  const submitEdit= (id)=>{
+      const newSeller =[...resultServer];
+      const newData = newSeller.filter((item)=>{
+        const itemData = item._id;
+        const textData = id;
+        return itemData.indexOf(textData)>-1
+      })
+      
+
+      axios({
+        url: '/',
+        method: 'post',
+        headers:{'token':`${token}`},
+        data: {
+          query: `
+          mutation UpdateSeller($id : ID!, $name : String!, $label : String) {
+            UpdateSeller(id : $id,  name : $name, label : $label) {
+              status,
+              message
+            }
+          }    
+            `,
+            variables :{
+              "id": newData[0]._id,
+              "name": newData[0].name,
+              "label": newData[0].label  
+            }
+      }
+    }).then((result) => {
+      if(result.data.errors){
+        toast.error('خطلا در ثبت اطلاعات فروشنده جدید')
+      }
+      else{
+        toast.success(result.data.data.UpdateSeller.message);
+        newData[0].flag = false;
+        setResult(newSeller);
+       }
+    }).catch(error=>{
+      toast.error(error)
+    });
+       
+       
     }
     
 return(
@@ -147,6 +228,9 @@ return(
     <Row>
      <Col xl={12}>
         <Card>
+           <div className="form-group">
+              <ToastContainer />
+            </div>
             <CardHeader>
                     <i className="fa fa-align-justify"></i> اضافه کردن فروشنده
                     <br />
@@ -224,14 +308,32 @@ return(
                       </thead>                              
                         <tbody>
                             {
-                                resultServer.map((item)=>
+                                resultServer.map((item,index)=>
                                 <tr key={item._id}>
-                                <td>{item.name}</td>
-                                <td>{item.label}</td>
+                                <td>{
+                                  item.flag ?
+                                    <Input 
+                                    type="text"
+                                    value={item.name}
+                                    onChange={(event)=>changeNameHandler(event,item._id)}
+                                    />
+                                  :item.name
+                                  }</td>
+                                <td>{
+                                  item.flag ?                
+                                      <Input 
+                                        type="text"
+                                        value={item.label}
+                                        onChange={(event)=>changeLabelHandler(event,item._id)}
+                                      />   
+                                  :item.label
+                                  }</td>
                                 <td>
                                     <Row>
                                     <Col xs="3">
-                                         <Button type="submit" size="sm" color="primary"><strong>ویرایش</strong> </Button>
+                                         {item.flag ? <Button type="submit" size="sm" color="primary" onClick={()=>submitEdit(item._id)}> <i className="fa fa-check fa-lg "></i> </Button>
+                                         :<Button type="submit" size="sm" color="primary" onClick={()=>handleEdit(item._id)}><strong>ویرایش</strong> </Button>
+                                        }
                                     </Col>
                                     <Col xs="3">
                                         <Button type="submit" size="sm" color="danger"><strong>حذف</strong> </Button>

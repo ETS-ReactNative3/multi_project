@@ -29,7 +29,7 @@ const AddProduct = (props)=>{
   const [info,setInfo] = useState([]);
   const [sellerId,setSellerId] = useState(null);
   const [warrantyId,setWarrantyId] = useState(null);
-  const [color,setColor] = useState('');
+  const [color,setColor] = useState('black');
   const [numberOfProducts,setNumberOfProducts] = useState(1);
   const [price,setPrice] = useState(0);
   const [discountedPrice,setDiscountedPrice] = useState(0);
@@ -252,6 +252,7 @@ const AddProduct = (props)=>{
     setSellerId(event.target.value)
   }
   const colorHandler = (event)=>{
+    console.log(event.target.value);
     setColor(event.target.value)
   }
   const numberOfProductsHandler = (event)=>{
@@ -272,7 +273,7 @@ const AddProduct = (props)=>{
     arrayHolder.push({
       seller:sellerId,
       warranty:warrantyId,
-      price:price,
+      price:parseInt(price),
       stock: parseInt(numberOfProducts),
       discount: parseInt(discountedPrice),
       color:color
@@ -332,17 +333,17 @@ const AddProduct = (props)=>{
         })
       }
     )
-      // console.log(name);
-      // console.log(englishName);
-      // console.log(IDforServer);
-      // console.log(brandId);
-     // console.log(info);
-      // console.log(description);
-      // console.log(SpecArray);
+      console.log(name);
+      console.log(englishName);
+      console.log(IDforServer);
+      console.log(brandId);
+     console.log(info);
+      console.log(description);
+      console.log(SpecArray);
       let data = 
       {
         query: `
-        mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute!]!, $description : String!, $details : [InputDetails!]!, $image : Upload!) {
+        mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute!]!, $description : String!, $details : [InputDetails!]!, $image : Upload) {
           product(input : {fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, image : $image }) {
             status,
             message
@@ -544,8 +545,9 @@ const AddProduct = (props)=>{
                               type="select"
                               name="Warranty"
                               id="Warranty"
-                              onChange={warrantyHandler}
+                              onChange={colorHandler}
                               required
+                              
                             >
                              <option value="black">مشکی</option>
                              <option value="red">قرمز</option>

@@ -499,7 +499,7 @@ const resolvers = {
                     }
     
                 } catch {
-                    deleteAttributeProduct(args.input.attribute)
+                    deleteAttributeProduct(args.input.attribute);
                     deleteDetailsValue(args.input.details);
                     const { filename } = await args.input.image;
                     await deleteImage({filename})
@@ -863,10 +863,9 @@ const resolvers = {
         UpdateSeller : async (param, args, { check }) => {
             if(check) {
                 try {
-                    const seller = await Seller.findByIdAndUpdate(args.input.id, { $set : {
-                        category : args.input.category,
-                        name : args.input.name,
-                        label : args.input.label
+                    const seller = await Seller.findByIdAndUpdate(args.id, { $set : {
+                        name : args.name,
+                        label : args.label
                     }})
 
                     if(!seller) {
@@ -924,12 +923,28 @@ const resolvers = {
         UpdateProduct : async (param, args, { check }) => {
             if(check) {
                 try {
+
                         const details = await updateDetailsValue(args.input.details);
                         // update image path
 
-                        const { createReadStream, filename } = await args.input.image;
-                        const stream = createReadStream();
-                        const { filePath } = await updateImageProduct(args.input.id,{ stream, filename})
+                        let imagePath = "";
+
+                        if(!args.input.image) {
+                            const pathim = await Product.findById(args.input.id);
+                            console.log(pathim.image[0])
+                            imagePath = pathim.image[0];
+                        } else {
+
+                            const { createReadStream, filename } = await args.input.image;
+                            const stream = createReadStream();
+                            const { filePath } = await updateImageProduct({ stream, filename})
+                            const pathim = await Product.findById(args.input.id);
+                            imagePath = filePath;
+                            fs.unlinkSync(path.join(__dirname ,`/public${pathim.image[0]}`));
+                        }
+
+
+
 
                         const product = await Product.findByIdAndUpdate(args.input.id, { $set : {
                             fname : args.input.fname,
@@ -939,7 +954,7 @@ const resolvers = {
                             attribute : args.input.attribute,
                             description : args.input.description,
                             details : details,
-                            image : filePath
+                            image : imagePath
                         }})
 
                         if(!product) {
@@ -968,10 +983,10 @@ const resolvers = {
         UpdateProducctAttribute : async (param, args, { check }) => {
             if(check) {
                 try {
-                    const arr = [];
-                    for (let index = 0; index < args.length; index++) {
+                    console.log(args.input);
+                    for (let index = 0; index < args.input.attribute.length; index++) {
                         const element = args.input.attribute[index];
-                                    const pa = await Productattribute.findByIdAndUpdate(element._id, { $set : {
+                                    const pa = await Productattribute.findByIdAndUpdate(element.id, { $set : {
                                             seller : element.seller,
                                             warranty : element.warranty,
                                             color : element.color,
@@ -980,21 +995,19 @@ const resolvers = {
                                             stock : element.stock
                                         }
                                     })
-            
-                                    arr[index] = pa._id
+
+                                    if(!pa) {
+                                        const error = new Error('ویژگی محصول ویرایش نشد!');
+                                        error.code = 401;
+                                        throw error;
+                                    }
                     }
 
-                    if(arr != null) {
-                        return {
-                            status : 401,
-                            message : 'امکان ویرایش وبژگی محصول وجود ندارد!'
-                        }
-                    } else {
-                        return {
+                    return {
                             status : 200,
                             message : 'ویژگی های محصول ویرایش شد.'
-                        }
                     }
+                    
                 } catch {
                     const error = new Error('امکان ویرایش ویژگی های محصول وجود ندارد.');
                     error.code = 401;
@@ -1130,28 +1143,19 @@ let saveImage = ({stream, filename}) => {
 
 }
 
-let updateImageProduct = async (id, {stream, filename}) => {
+let updateImageProduct = async ({stream, filename}) => {
     let date = new Date();
     const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
     mkdirp.sync(path.join(__dirname, `./public/${dir}`));
     const filePath = `${dir}/${filename}`;
-
-    const image_product = await Product.find({_id : id})
-    if(!image_product) {
-        const error = new Error('محصولی با این مشخصات در سیستم ثبت نشده است.');
-        error.code = 401;
-        throw error;
-    } else {
-        if(filePath === image_product.image[0]) {
             return new Promise((resolve, reject) => {
                 stream
                     .pipe(fs.createWriteStream(path.join(__dirname, `/public/${filePath}`)))
                     .on('error', error => reject(error))
                     .on('finish', () => resolve({filePath}))
             })
-        }
+    
     }
-}
 
 let deleteImage = async ({filename}) => {
     let date = new Date();

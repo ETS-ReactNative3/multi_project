@@ -1,4 +1,4 @@
 
 module.exports = {
-    PUBLIC_DIR : 'api'
+    PUBLIC_DIR : 'api/public'
 }
