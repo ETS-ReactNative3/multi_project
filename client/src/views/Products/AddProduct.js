@@ -134,16 +134,6 @@ const AddProduct = (props)=>{
             sellers {
               _id,
               name
-            },
-            
-            brands {
-              _id,
-              name
-            }
-            
-            subcats {
-              _id,
-              name
             }
           }
         }      

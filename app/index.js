@@ -8,7 +8,6 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser')
 const resolvers = require('api/graphql-Resolver');
 const User = require('app/models/users');
-var elasticsearch = require('elasticsearch');
 
 const cors = require('cors');
 //const cookieParser = require('cookie-parser');

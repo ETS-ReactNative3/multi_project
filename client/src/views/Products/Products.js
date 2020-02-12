@@ -230,26 +230,24 @@ const Products =(props)=> {
       headers:{'token':`${token}`},
       data: {
         query: `
-        query addProductInfo($categoryId : ID, $getSubCategory : Boolean!, $subCategoryId : ID){
-          getAddProductInfo(categoryId : $categoryId, getSubCategory : $getSubCategory, subCategoryId : $subCategoryId) {
-            sellers {
-              _id,
-              name
-            }
+        query getAllSeller($categoryId : ID!) {
+          getAllSeller(categoryId : $categoryId) {
+            _id,
+            name,
+            label
           }
         }      
           `,
           variables :{
-            "categoryId":event.target.value,
-            "getSubCategory": false,
-            "subCategoryId": null
+            "categoryId": event.target.value
           }
     }
   }).then((result) => {
     if(result.data.errors){
       toast.error('خطا در دریافت اطلاعات فروشندگان')
     }
-    setSellers(result.data.data.getAddProductInfo.sellers)           
+    //console.log(result.data.data);
+    setSellers(result.data.data.getAllSeller)           
   }).catch(error=>{
     console.log(error)
   })
@@ -350,8 +348,9 @@ const Products =(props)=> {
       toast.error('خطا در ثبت اطلاعات فروشنده جدید  ')
     }
     else{
-      console.log(result.data.data);
-    }
+      toast.success(result.data.data.UpdateProducctAttribute.message);
+      setModalSeller(false);
+        }
       
   }).catch(error=>{
     console.log(error)
@@ -587,7 +586,8 @@ const Products =(props)=> {
                                   >
                                   <option> </option>
                                   {
-                                    sellers.map((item)=> <option key={item._id}  value={item._id}>{item.name}</option>)
+                                    sellers ?
+                                    sellers.map((item)=> <option key={item._id}  value={item._id}>{item.name}</option>):null
                                   }                        
                                 </Input>
                               </FormGroup>

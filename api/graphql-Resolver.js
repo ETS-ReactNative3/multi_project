@@ -302,7 +302,7 @@ const resolvers = {
                         error.code = 401;
                         throw error;
                     } else {
-                        return sellers
+                        return {sellers}
                     }
                 } else {
                     const error = new Error('درخواست شما اعتبار لازم را نداید!');
