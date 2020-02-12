@@ -21,8 +21,8 @@ const User = Schema({
 })
 
 User.plugin(mongoosePaginate);
-User.statics.CreateToken = async ({id, phone}, secretID, exp) => {
-    return await jwt.sign({id, phone}, secretID, { expiresIn : exp}); 
+User.statics.CreateToken = async ({id}, secretID, exp) => {
+    return await jwt.sign({id}, secretID, { expiresIn : exp}); 
 }
 
 User.statics.CheckToken = async (req, secretID) => {

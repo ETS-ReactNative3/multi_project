@@ -25,11 +25,14 @@ const Productdetails = require('app/models/p-details');
 const Details = require('app/models/details');
 const Passwordreset = require('app/models/password-reset');
 const Productattribute = require('app/models/p_attribute');
+const Slider = require('app/models/slider');
+const ProductSuggestion = require('app/models/p-suggestion');
+
 
 const resolvers = {
     Query : {
         login : async (param, args, { secretID }) => {
-            const user = await User.findOne({ phone : args.input.phone, level : true});
+            const user = await User.findOne({ phone : args.input.phone});
             if(!user) {
                 const error = new Error('اطلاعات کاربری که از آن برای ورود به حساب کاربری خود استفاده می کنید نامعتبر است!');
                 error.code = 401;
@@ -42,26 +45,27 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
-
+            
             return {
                 token : await User.CreateToken(user, secretID, '10h'),
             }
+
         },
 
-        getUsers : async (param, args, { check }) => {
-            
-            if(!check) {
-                const error = new Error('امکان دسترسی شما به اطلاعات وجود ندارد ابتدا در سیستم لاگین کنید و سپس اطلاعات مورد نظر را درخواست نمایید');
+        getUsers : async (param, args, { check, isAdmin }) => {
+
+            if(check && isAdmin) {
+                const users = await User.find({});
+                return users;
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
                 throw error;
             }
-
-            const users = await User.find({});
-            return users;
         },
 
-        getProduct : async (param, args, { check }) => {
-            if(check) {
+        getProduct : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 if(args.productId == null) {
                     let page = args.page || 1;
                     let limit = args.limit || 10;
@@ -78,8 +82,8 @@ const resolvers = {
             }
         },
 
-        getAllCategory : async (param, args, { check }) => {
-            if(check) {
+        getAllCategory : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 if(args.input.mainCategory == true) {
                     let page = args.input.page || 1;
                     let limit = args.input.limit || 10;
@@ -175,8 +179,8 @@ const resolvers = {
 
         // }
 
-        getAllBrand : async (param, args, { check }) => {
-            if(check) {
+        getAllBrand : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 let page = args.input.page || 1;
                 let limit = args.input.limit || 10;
                 if(args.input.getAll == true) {
@@ -193,8 +197,8 @@ const resolvers = {
             }
         },
 
-        getAllSurvey : async (param, args, { check }) => {
-            if(check) {
+        getAllSurvey : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 const list = await Survey.findOne({ category : args.categoryId});
                 if(list) {
                     return list
@@ -210,8 +214,8 @@ const resolvers = {
             }
         },
 
-        getAllProductSpecs : async (param, args, { check }) => {
-            if(check) {
+        getAllProductSpecs : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 const specs = await Productspecs.find({ category : args.categoryId});
                 if(!specs) {
                     const error = new Error('برای دسسته بندی مورد نظر اطلاعاتی وجود ندارد!');
@@ -226,8 +230,8 @@ const resolvers = {
             }
         },
 
-        getAllProductSpecsDetails : async (param, args, { check }) => {
-            if(check) {
+        getAllProductSpecsDetails : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 const specs_details = await Productdetails.find({ specs : args.specsId});
                 if(!specs_details) {
                     const error = new Error('برای این دسته بندی و جزئیات آن اطلاعاتی ثبت نشده است!');
@@ -242,8 +246,8 @@ const resolvers = {
             }
         },
 
-        getAllSeller : async (param, args, { check }) => {
-            if(check) {
+        getAllSeller : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 const sellers = await Seller.find({ category : args.categoryId});
                 if(!sellers) {
                     const error = new Error('برای این دسته بندی فروشنده ای ثبت نشده است!');
@@ -259,8 +263,8 @@ const resolvers = {
             }
         },
 
-        getAllWarranty : async (param, args, { check }) => {
-            if(check) {
+        getAllWarranty : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 const warrantys = await Warranty.find();
                 if(!warrantys) {
                     const error = new Error('هیچ گارانتی ثبت نشده است!');
@@ -275,9 +279,9 @@ const resolvers = {
             }
         },
 
-        getAddProductInfo : async (parm, args, { check }) => {
+        getAddProductInfo : async (parm, args, { check, isAdmin }) => {
 
-            if(check) {
+            if(check && isAdmin) {
 
                 if(args.getSubCategory == true && args.subCategoryId != null) {
                     const subcats = await Category.find({parent : args.subCategoryId});
@@ -311,36 +315,49 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
-        }
+        },
+
+        // MainPageApp : async (param, args, { check }) => {
+        //     const slider = await Slider.find().limit(3).sort({created_at : -1}).exec();
+        //     const category = await Category.find({ parent : null});
+        //     const Asuggestion = await Product.paginate({}, { populate : {path : 'attribute', match : { discount : !null}}});
+        //     const banerDiscount = await Product.paginate({}, { populate : [{path : 'attribute', match : { discount : !null}}, {path : 'category'}]});
+            
+        // }
 
     },
 
     Mutation : {
         register : async (param, args) => {            
-            const person = await User.findOne({ phone : args.input.phone});
-            if(!person) {
-                const salt = await bcrypt.genSaltSync(15);
-                const hash = await bcrypt.hashSync(args.input.password, salt);
-                const user = await new User({
-                    phone : args.input.phone,
-                    password : hash,
-                    ...args
-                });
-                console.log(user);
-                await user.save();
-                return {
-                    status : 200,
-                    message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
-                };
-            } else {
-                const error = new Error('این شماره تلفن قبلا در سیستم ثبت شده است!');
+            try {
+                const person = await User.findOne({ phone : args.input.phone});
+                if(!person) {
+                    const salt = await bcrypt.genSaltSync(15);
+                    const hash = await bcrypt.hashSync(args.input.password, salt);
+                    const user = await new User({
+                        phone : args.input.phone,
+                        password : hash,
+                        ...args
+                    });
+                    console.log(user);
+                    await user.save();
+                    return {
+                        status : 200,
+                        message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
+                    };
+                } else {
+                    const error = new Error('این شماره تلفن قبلا در سیستم ثبت شده است!');
+                    error.code = 401;
+                    throw error
+                }
+            } catch {
+                const error = new Error('ارنباط با سرور محدود شده است!!');
                 error.code = 401;
                 throw error
             }
         },
 
-        multimedia : async (param, args, { check }) => {
-            console.log(check);
+        multimedia : async (param, args, { check, isAdmin }) => {
             const { createReadStream, filename } = await args.file;
             const type = await FileType.fromFile(args.file);
             const stream = createReadStream();
@@ -368,27 +385,26 @@ const resolvers = {
 
         },
 
-        category : async (param, args, { check }) => {
-            if(check) {
-                const category = await Category.create({
-                    name : args.input.name,
-                    label : args.input.label,
-                    parent : args.input.parent,
-                    level : args.input.level
-                })
-                
-                if(!category) {
-                    const error = new Error('دسته بندی مورد نظر ذخیره نشد!');
-                    error.code = 401;
-                    throw error;
-                
-                } else {
-                    return {
-                        status : 200,
-                        message : 'دسته بندی مورد نظر ایجاد شد.'
-                    }
-                }
+        category : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
+                    try {
+                        await Category.create({
+                            name : args.input.name,
+                            label : args.input.label,
+                            parent : args.input.parent,
+                        })
 
+                            return {
+                                status : 200,
+                                message : 'دسته بندی مورد نظر ایجاد شد.'
+                            }
+                        
+        
+                    } catch {
+                        const error = new Error('دسته بندی مورد نظر ذخیره نشد!');
+                        error.code = 401;
+                        throw error;
+                    }
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
@@ -396,35 +412,31 @@ const resolvers = {
             }
         },
 
-        survey : async (param, args, { check }) => {
-            if(check) {
-                if(await Survey.findOne({category : args.input.category})) {
-                    const serveyUpdate = await Survey.updateOne({category : args.input.category}, { $push : { list : args.input.list}});
-                    if(!serveyUpdate) {
-                        const error = new Error('امکان ایجاد فیلد نظرسنجی برای این دسته بندی وجود ندارد.');
-                        error.code = 401;
-                        throw error;
+        survey : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
+                try {
+                    if(await Survey.findOne({category : args.input.category})) {
+                        await Survey.updateOne({category : args.input.category}, { $push : { list : args.input.list}});
+                            return {
+                                status : 200,
+                                message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
+                            }
                     } else {
-                        return {
-                            status : 200,
-                            message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
-                        }
+                        await Survey.create({
+                            category : args.input.category,
+                            list : args.input.list,
+                        })
+    
+                            return {
+                                status : 200,
+                                message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
+                            }
                     }
-                }
-                const ser = await Survey.create({
-                    category : args.input.category,
-                    list : args.input.list,
-                })
-
-                if(!ser) {
+                    
+                } catch {
                     const error = new Error('امکان ایجاد فیلد نظرسنجی برای این دسته بندی وجود ندارد.');
                     error.code = 401;
                     throw error;
-                } else {
-                    return {
-                        status : 200,
-                        message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
-                    }
                 }
 
             } else {
@@ -434,31 +446,29 @@ const resolvers = {
             }
         },
 
-        brand : async (param, args, { check }) => {
-            if(check) { 
+        brand : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) { 
+                try {
+                    const { createReadStream, filename } = await args.input.image;
+                    const stream = createReadStream();
+                    const { filePath } = await saveImage({ stream, filename});
+    
+                    await Brand.create({
+                        category : args.input.category,
+                        name : args.input.name,
+                        label : args.input.label,
+                        image : filePath
+                    });
 
-                const { createReadStream, filename } = await args.input.image;
-                const stream = createReadStream();
-                const { filePath } = await saveImage({ stream, filename});
-
-                const brand = await Brand.create({
-                    category : args.input.category,
-                    name : args.input.name,
-                    label : args.input.label,
-                    image : filePath
-                });
-
-                if(!brand) {
-                    if(err) {
-                        const error = new Error('امکان ثبت برند مورد نظر برای این دسته بندی وجود ندارد.');
-                        error.code = 401;
-                        throw error;
-                    }
-                } else {
-                    return {
-                        status : 200,
-                        message : 'برند برای دسته بندی مورد نظر ثبت شد.'
-                    }
+                        return {
+                            status : 200,
+                            message : 'برند برای دسته بندی مورد نظر ثبت شد.'
+                        }
+                    
+                } catch {
+                    const error = new Error('امکان ثبت برند مورد نظر برای این دسته بندی وجود ندارد.');
+                    error.code = 401;
+                    throw error;
                 }
 
             } else {
@@ -468,15 +478,12 @@ const resolvers = {
             }
         },
 
-        product : async (param, args, { check }) => {
-            if(check) {
+        product : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
 
                 try {
-
-        
                     const details = await saveDetailsValue(args.input.details);
                     const attribute = await saveAttributeProduct(args.input.attribute);
-
 
                     if(details == null || attribute == null) {
                         return {
@@ -489,7 +496,7 @@ const resolvers = {
                     const stream = createReadStream();
                     const { filePath } = await saveImage({ stream, filename});
 
-                    const pro = await Product.create({
+                    await Product.create({
                          fname : args.input.fname,
                          ename : args.input.ename,
                          brand : args.input.brand,
@@ -508,8 +515,8 @@ const resolvers = {
                 } catch {
                     deleteAttributeProduct(args.input.attribute)
                     deleteDetailsValue(args.input.details);
-                    const { filename } = await args.input.image;
-                    await deleteImage({filename})
+                    // const { filename } = await args.input.image;
+                    // await deleteImage({filename})
                     const error = new Error('امکان درج محصول جدید وجود ندارد.');
                     error.code = 401;
                     throw error;
@@ -522,24 +529,23 @@ const resolvers = {
             }
         },
 
-        productSpecs : async (param, args, { check }) => {
-            if(check) {
-                const ProSpecs = await Productspecs.create({
-                    category : args.input.category,
-                    specs : args.input.specs,
-                    label : args.input.label
-                })
-
-                if(!ProSpecs) {
-                    const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
+        productSpecs : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
+                try {
+                    await Productspecs.create({
+                        category : args.input.category,
+                        specs : args.input.specs,
+                        label : args.input.label
+                    })
+                        return {
+                            _id : ProSpecs._id,
+                            status : 200,
+                            message : 'لیست اصلی مربوط به مشخصات محصول ذخیره شد.'
+                        }
+                } catch {
+                    const error = new Error('امکان درج لیست مشخصات محصول وجود ندارد.');
                     error.code = 401;
                     throw error;
-                } else {
-                    return {
-                        _id : ProSpecs._id,
-                        status : 200,
-                        message : 'لیست اصلی مربوط به مشخصات محصول ذخیره شد.'
-                    }
                 }
 
             } else {
@@ -549,26 +555,52 @@ const resolvers = {
             }
         },
 
-        productSpecsDetails : async (param, args, { check }) => {
-            if(check) {
-                const ProSpecsDetails = await Productdetails.create({
-                    specs : args.input.specs,
-                    name : args.input.name,
-                    label : args.input.label
-                })
+        productSpecsDetails : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
+                try {
+                    await Productdetails.create({
+                        specs : args.input.specs,
+                        name : args.input.name,
+                        label : args.input.label
+                    })
 
-                if(!ProSpecsDetails) {
-                    const error = new Error('امکان درج لست جزئیات مشخصات محصول وجود ندارد.');
+                        return {
+                            _id : ProSpecsDetails._id,
+                            status : 200,
+                            message : 'لیست جزئیات مربوط به مشخصات محصول ذخیره شد.'
+                        }
+                } catch {
+                    const error = new Error('امکان درج لیست جزئیات مشخصات محصول وجود ندارد.');
                     error.code = 401;
                     throw error;
-                } else {
+                }
+
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        productDetailsValue : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
+                try {
+                    await Details.create({
+                        p_details : args.input.p_details,
+                        value : args.input.value,
+                        label : args.input.label
+                    })
+
                     return {
-                        _id : ProSpecsDetails._id,
                         status : 200,
-                        message : 'لیست جزئیات مربوط به مشخصات محصول ذخیره شد.'
+                        message : 'اطلاعات مورد نظر برای جزئیات مشخصات محصول ثبت شد.'
                     }
+                } catch {
+                    const error = new Error('امکان درج اطلاعات برای جزئیات مشخصات محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
                 }
-
+                
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
@@ -576,53 +608,24 @@ const resolvers = {
             }
         },
 
-        productDetailsValue : async (param, args, { check }) => {
-            if(check) {
-                const detail = await new Details({
-                    p_details : args.input.p_details,
-                    value : args.input.value,
-                    label : args.input.label
-                })
+        seller : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
+                try {
+                    const seller = await Seller.create({
+                        category : args.category,
+                        name : args.name,
+                        label : args.label
+                    })
     
-                await detail.save(err =>{
-                    if(err) {
-                        const error = new Error('امکان درج جزئیات مشخصات محصول وجود ندارد.');
-                        error.code = 401;
-                        throw error;
-                    }
-                })
-    
-                return {
-                    status : 200,
-                    message : 'ok'
-                }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
-        },
-
-        seller : async (param, args, { check }) => {
-            if(check) {
-                const seller = await Seller.create({
-                    category : args.category,
-                    name : args.name,
-                    label : args.label
-                })
-
-                if(!seller) {
-                    if(err) {
-                        const error = new Error('امکان درج فروشنده جدید وجود ندارد.');
-                        error.code = 401;
-                        throw error;
-                    }
-                } else {
-                    return {
-                        _id : seller._id,
-                        status : 200,
-                        message : 'ok'
-                    }
+                        return {
+                            _id : seller._id,
+                            status : 200,
+                            message : 'ok'
+                        }
+                } catch {
+                    const error = new Error('امکان درج فروشنده جدید وجود ندارد.');
+                    error.code = 401;
+                    throw error;
                 }
     
             } else {
@@ -632,8 +635,8 @@ const resolvers = {
             }
         },
 
-        warranty : async (param, args, { check }) => {
-            if(check) {
+        warranty : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 const warr = await Warranty.create({
                     name : args.name,
                     label : args.label
@@ -734,8 +737,8 @@ const resolvers = {
 
         // edit method for all section
 
-        UpdateCategory : async (param, args, { check }) => {
-            if(check) {
+        UpdateCategory : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 try {
                     const cat = await Category.findByIdAndUpdate(args.input.id, {$set : {
                         name : args.input.name,
@@ -765,10 +768,10 @@ const resolvers = {
             }
         },
 
-        UpdateBrand : async (param, args, { check }) => {
-            if(check) {
+        UpdateBrand : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 try {
-                    const img = "";
+                    let img = "";
                     if(args.input.image) {
                         const { createReadStream, filename } = await args.input.image;
                         const stream = createReadStream();
@@ -805,8 +808,8 @@ const resolvers = {
             }
         },
 
-        UpdateProductSpecs : async (param, args, { check }) => {
-            if(check) {
+        UpdateProductSpecs : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 try {
                     const specs = await Productspecs.findByIdAndUpdate(args.input.id, { $set : {
                         category : args.input.category,
@@ -836,8 +839,8 @@ const resolvers = {
             }
         },
 
-        UpdateProductSpecsDetails : async (param, args, { check }) => {
-            if(check) {
+        UpdateProductSpecsDetails : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 try {
                     const pd = await Productdetails.findByIdAndUpdate(args.input.id, { $set : {
                         specs : args.input.specs,
@@ -867,13 +870,12 @@ const resolvers = {
             }
         },
 
-        UpdateSeller : async (param, args, { check }) => {
-            if(check) {
+        UpdateSeller : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 try {
-                    const seller = await Seller.findByIdAndUpdate(args.input.id, { $set : {
-                        category : args.input.category,
-                        name : args.input.name,
-                        label : args.input.label
+                    const seller = await Seller.findByIdAndUpdate(args.id, { $set : {
+                        name : args.name,
+                        label : args.label
                     }})
 
                     if(!seller) {
@@ -898,8 +900,8 @@ const resolvers = {
             }
         },
 
-        UpdateWarranty : async (param, args, { check }) => {
-            if(check) {
+        UpdateWarranty : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 try {
                     const warranty = await Warranty.findByIdAndUpdate(args.input.id, { $set : {
                         name : args.input.name,
@@ -928,15 +930,29 @@ const resolvers = {
             }
         },
 
-        UpdateProduct : async (param, args, { check }) => {
-            if(check) {
+        UpdateProduct : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 try {
                         const details = await updateDetailsValue(args.input.details);
                         // update image path
 
-                        const { createReadStream, filename } = await args.input.image;
-                        const stream = createReadStream();
-                        const { filePath } = await updateImageProduct(args.input.id,{ stream, filename})
+                        let imagePath = "";
+
+                        if(!args.input.image) {
+                            const pathim = await Product.findById(args.input.id);
+                            console.log(pathim.image[0])
+                            imagePath = pathim.image[0];
+                        } else {
+
+                            const { createReadStream, filename } = await args.input.image;
+                            const stream = createReadStream();
+                            const { filePath } = await updateImageProduct({ stream, filename})
+                            const pathim = await Product.findById(args.input.id);
+                            imagePath = filePath;
+                            fs.unlinkSync(path.join(__dirname ,`/public${pathim.image[0]}`));
+                        }
+
+
 
                         const product = await Product.findByIdAndUpdate(args.input.id, { $set : {
                             fname : args.input.fname,
@@ -946,7 +962,7 @@ const resolvers = {
                             attribute : args.input.attribute,
                             description : args.input.description,
                             details : details,
-                            image : filePath
+                            image : imagePath
                         }})
 
                         if(!product) {
@@ -972,13 +988,21 @@ const resolvers = {
             }
         },
 
-        UpdateProducctAttribute : async (param, args, { check }) => {
-            if(check) {
+        UpdateProducctAttribute : async (param, args, { check, isAdmin }) => {
+            if(check && isAdmin) {
                 try {
-                    const arr = [];
-                    for (let index = 0; index < args.length; index++) {
+                    if(args.input.addSeller == true) {
+                        const attribute = await saveAttributeProduct(args.input.attribute);
+                        await Product.findByIdAndUpdate(args.input.attribute[0].id, { $push : { attribute : attribute[0]}})
+                        return {
+                            status : 200,
+                            message : 'یک فروشنده جدید به محصول اختصاص پیدا کرد.'
+                        }
+
+                    }
+                    for (let index = 0; index < args.input.length; index++) {
                         const element = args.input.attribute[index];
-                                    const pa = await Productattribute.findByIdAndUpdate(element._id, { $set : {
+                                    await Productattribute.findByIdAndUpdate(element.id, { $set : {
                                             seller : element.seller,
                                             warranty : element.warranty,
                                             color : element.color,
@@ -987,21 +1011,13 @@ const resolvers = {
                                             stock : element.stock
                                         }
                                     })
-            
-                                    arr[index] = pa._id
                     }
 
-                    if(arr != null) {
-                        return {
-                            status : 401,
-                            message : 'امکان ویرایش وبژگی محصول وجود ندارد!'
-                        }
-                    } else {
-                        return {
-                            status : 200,
-                            message : 'ویژگی های محصول ویرایش شد.'
-                        }
+                    return {
+                        status : 200,
+                        message : 'ویژگی های محصول ویرایش شد.'
                     }
+
                 } catch {
                     const error = new Error('امکان ویرایش ویژگی های محصول وجود ندارد.');
                     error.code = 401;
@@ -1012,7 +1028,62 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+        }, 
+
+        slider : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    await Slider.create({
+                        image : args.imageId,
+                    })
+
+                    return {
+                        status : 200,
+                        message : 'تصویر مورد نظر به عنوان بنر درج شد.'
+                    }
+
+                } catch {
+                    const error = new Error('امکان درج تصویر به عنوان بنر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        productSuggestion : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    await ProductSuggestion.create({
+                        product : args.productId,
+                        expireAt : Date.now() + (args.expireAt * 60 * 60 * 1000)
+                    })
+
+                    await Product.findByIdAndUpdate(args.productId, { $set : { suggestion : true}})
+
+                    return {
+                        status : 200,
+                        message : 'محصول به لیست شگفت انگیز اضافه شد.'
+                    }
+                } catch {
+                    const error = new Error('امکان درج محصول شگفت انگیز وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         }
+
+
+
+        
+
 
     },
 }
@@ -1129,7 +1200,11 @@ let saveImage = ({stream, filename}) => {
     const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
     mkdirp.sync(path.join(__dirname, `./public/${dir}`));
 
-    const filePath = `${dir}/${filename}`;
+    let filePath = `${dir}/${filename}`;
+
+    if(fs.existsSync(`/public/${filePath}`)) {
+        filePath = `${dir}/${Date.now()}-${filename}`
+    }
 
     return new Promise((resolve, reject) => {
         stream
@@ -1163,12 +1238,11 @@ let updateImageProduct = async (id, {stream, filename}) => {
     }
 }
 
-let deleteImage = async ({filename}) => {
-    let date = new Date();
-    const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
-    fs.unlinkSync(path.join(__dirname, `./public/${dir}/${filename}`));
-
-    return;
-}
+// let deleteImage = async ({filename}) => {
+//     let date = new Date();
+//     const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
+//     fs.unlinkSync(path.join(__dirname, `/public/${dir}/${filename}`));
+//     return;
+// }
 
 module.exports = resolvers;

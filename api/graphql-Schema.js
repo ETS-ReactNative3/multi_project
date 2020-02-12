@@ -14,6 +14,9 @@ const typeDefs = gql`
         getAllSeller(categoryId : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
+
+        MainPageApp : mainInfo
+
     }
 
     type Mutation {
@@ -32,18 +35,19 @@ const typeDefs = gql`
         seller(category : ID!, name : String!, label : String) : operation!,
         warranty(name : String!, label : String) : operation!
 
-
         UpdateCategory(input : InputCategory) : operation!
         UpdateBrand(input : InputBrand) : operation!,
         UpdateProductSpecs(input : InputProductSpecs) : operation!,
         UpdateProductSpecsDetails(input : InputProductSpecsDetails) : operation!,
-        UpdateSeller(category : ID!, name : String!, label : String) : operation!,
+        UpdateSeller(id : ID!, name : String!, label : String) : operation!,
         UpdateWarranty(name : String!, label : String) : operation!
         UpdateProduct(input : UpdateProduct) : operation!,
         UpdateProducctAttribute(input : InputProductAttribute) : operation!
 
-    }
+        slider(imageId : ID) : operation!
 
+        productSuggestion(productId : ID!, expireAt : Int = 1) : operation!
+    }
 
     input InputGetBrand {
         page : Int,
@@ -96,6 +100,7 @@ const typeDefs = gql`
     }
 
     input InputProductAttribute {
+        addSeller : Boolean
         attribute : [InputAttribute!]!
     }
 
@@ -121,13 +126,19 @@ const typeDefs = gql`
         attribute : [ID]!,
         description : String!,
         rate : Int,
-        details : [InputDetails!]!,
+        details : [UpdateDetails!]!,
         image : Upload!
     }
 
     input InputDetails {
         id : ID
         p_details : ID!,
+        value : String!,
+        label : String
+    }
+
+    input UpdateDetails {
+        id : ID
         value : String!,
         label : String
     }
@@ -316,6 +327,28 @@ const typeDefs = gql`
         subcats : [Category],
         specs : [Specs]
     }
+
+    type mainInfo {
+        slider : Slider,
+        category : [Category],
+        Asuggestion : [product],
+        banerDiscount : [Category],
+        Tselling : [product],
+        Nproduct : [product]
+    }
+
+    type Slider {
+        image : String,
+        attr : String,
+        label : String
+    }
+
+    type Suggestion {
+        product : [product!]!,
+    }
+
+
+
 `;
 
 module.exports = typeDefs;
