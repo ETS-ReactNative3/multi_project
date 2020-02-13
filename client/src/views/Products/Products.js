@@ -59,7 +59,8 @@ const Products =(props)=> {
               color,
               stock,
               price,
-              discount
+              discount,
+              suggestion
             },
             rate,          
             image
@@ -149,23 +150,26 @@ const Products =(props)=> {
         color:item.color,
         price:parseInt(item.price),
         discount:parseInt(item.discount),
-        stock:parseInt(item.stock)
+        stock:parseInt(item.stock),
+        suggestion:item.suggestion
       })
     })
+    console.log(attributeHolder);
     axios({
       url: '/',
       method: 'post',
       headers:{'token':`${token}`},
       data: {
         query: `
-        mutation updateProductAttribute($attribute : [InputAttribute!]!) {
-          UpdateProducctAttribute (input : {attribute : $attribute}) {
+        mutation updateProductAttribute($addSeller : Boolean, $attribute : [InputAttribute!]!) {
+          UpdateProducctAttribute (input : {addSeller : $addSeller, attribute : $attribute}) {
             status,
             message
           }
         }    
           `,
           variables :{
+            "addSeller":false,
             "attribute": attributeHolder
           }
     }
@@ -173,7 +177,7 @@ const Products =(props)=> {
     if(result.data.errors){
       
       toast.error('خطا در ویرایش اطلاعات  فروشندگان');
-      dispatch({type:'logout',payload:props});
+      
     }
     else{
       toast.success(result.data.data.UpdateProducctAttribute.message);
@@ -212,6 +216,18 @@ const Products =(props)=> {
     const newAttributerState = [...attribute];
     newAttributerState[id]=field;
     setAttribute(newAttributerState);
+  }
+  const suggestion = (id,flag)=>{
+    const field={...attribute[id]};
+    if(field.discount<5){
+      toast.error('برای اضافه شدن محصول به پیشنهاد ویژه باید درصد تخفیف بیشتر از 5 درصد باشد');
+    }
+    else{
+      field.suggestion=flag;
+      const newAttributerState = [...attribute];
+      newAttributerState[id]=field;
+      setAttribute(newAttributerState);
+    }    
   }
   const deleteItem=(index)=>{
     const items = [...attribute];
@@ -436,6 +452,7 @@ const Products =(props)=> {
                       {
                         attribute.map((item,idx)=>
                         {
+                            
                             const sellerId = `seller-${idx}`;
                             const warrantyId = `warranty-${idx}`;
                             const colorId = `color-${idx}`;
@@ -505,7 +522,7 @@ const Products =(props)=> {
                                       />
                                   </FormGroup>
                                   </Col>
-                                  <Col xl="4">
+                                  <Col xl="3">
                                     <FormGroup>
                                         <Label for={price}>قیمت (تومان)</Label>
                                         <Input
@@ -519,7 +536,7 @@ const Products =(props)=> {
                                         />
                                     </FormGroup>
                                   </Col>
-                                  <Col xl="4">
+                                  <Col xl="3">
                                   <FormGroup>
                                       <Label for={discountId}> درصد تخفیف</Label> 
                                       <Input
@@ -532,6 +549,16 @@ const Products =(props)=> {
                                       required
                                       />
                                   </FormGroup>
+                                  </Col>
+                                  <Col xl="2" className={classes.deleteButton}>
+                                    <FormGroup style={{display:'flex',flexFlow:'column'}}>
+                                    <Label>پیشنهاد وِیژه</Label> 
+                                        {                                 
+                                            item.suggestion ?
+                                            <i className="fa fa-star fa-lg" onClick={()=>suggestion(idx,false)}></i> 
+                                            :<i className="fa fa-star-o fa-lg" onClick={()=>suggestion(idx,true)}></i>
+                                          }
+                                    </FormGroup>
                                   </Col>
                                   <Col xl="2" className={classes.deleteButton}>
                                   <Button type="submit" size="lg" color="danger" onClick={()=>deleteItem(idx)}>

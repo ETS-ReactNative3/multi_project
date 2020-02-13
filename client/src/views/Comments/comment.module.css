@@ -1,0 +1,92 @@
+.CommentsUserShopping{
+    list-style: none;
+    padding: 5px 0 0
+}
+.CommentsBuyerBadge{
+    padding: 0 8px;
+    background-color: #f0f0f1;
+    border-radius: 8px;
+    font-size: 10px;
+    font-size: .714rem;
+    line-height: 16px;
+    color: #81858b;
+    margin-right: 8px;
+    display: inline-block;
+}
+.cell{
+    font-size: 13px;
+    font-size: .929rem;
+    line-height: 1.692;
+    color: #777;
+    margin: 5px 0;
+}
+
+.c_message_light__opinion_positive{
+    font-size: 13px;
+    font-size: .929rem;
+    line-height: 2.23;
+    background-color: #f1feff;
+    border: 1px solid #c2f2f7;
+    border-radius: 3px;
+    color: #1599a9;
+    padding: 7px 40px 7px 12px;
+    margin-bottom: 25px;
+}
+.cellColor{
+    width:18px;
+    height: 18px;
+    border-radius: 9px;
+}
+.comment_description{
+    text-align: justify;
+    font-size: 18px;
+}
+.comments_likes{
+    text-align: left;
+    color: #777;
+    font-size: 13px;
+    font-size: .929rem;
+    line-height: 1.692;
+    display: flex;
+    margin-top:17px
+}
+.btn_like{
+    border-radius: 8px;
+    border: 1px solid #ededed;
+    background: #fff;
+    padding: 2px 13px;
+    color: #8c8c8c;
+    font-size: 13px;
+    font-size: .929rem;
+    line-height: 1.692;
+    margin-right: 17px;
+    width: 66px;
+}
+.c_comments_summary_box{
+    position: relative;
+    width: 100%;
+    min-height: 53px;
+    -webkit-box-flex: 0;
+    flex: 0 0 50%;
+    max-width: 100%;
+    background: #fcfcfc;
+    margin-top:17px
+}
+.c_comments_item_rating{
+    list-style: none;
+    padding: 10px 10px 10px 0px;
+    background: #fcfcfc;
+    border-radius: 5px;
+}
+.c_comments_item_rating li .cell{
+    position: relative;
+    width: 100%;
+    min-height: 1px;
+    padding-right: 7px;
+    padding-left: 7px;
+}
+.c_comments_item_rating li .cell:first-child{
+    -webkit-box-flex: 0;
+    flex: 0 0 45%;
+    max-width: 45%;
+}

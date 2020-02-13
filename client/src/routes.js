@@ -52,6 +52,7 @@ const EditProduct  = React.lazy(() => import('./views/Products/EditProduct'));
 const Seller  = React.lazy(() => import('./views/Products/Seller'));
 const Warranty  = React.lazy(() => import('./views/Products/Warranty'));
 const Comments = React.lazy(() => import('./views/Comments/Comments'));
+const CommentInfo = React.lazy(() => import('./views/Comments/CommentInfo'));
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
   
@@ -60,6 +61,7 @@ const routes = [
   { path: '/theme/colors', name: 'Colors', component: Colors },
   { path: '/theme/typography', name: 'Typography', component: Typography },
   { path: '/comments', exact: true, name: 'نظرات', component: Comments },
+  { path: '/comments/comment/:commentid', exact: true, name: 'جزئیات نظر', component: CommentInfo },
   { path: '/shop', exact: true, name: 'امور فروشگاه', component: Category },
   { path: '/shop/category', exact: true, name: 'دسته بندی ها', component: Category },
   { path: '/shop/brand', exact: true, name: ' برند ها', component: Brand },
@@ -112,6 +114,7 @@ const routes = [
   { path: '/orders/:userid/order/:orderid', exact: true, name: ' جزئیات سفارش کاربر ', component: Order },
   { path: '/media/allmedia', exact: true, name: ' کتابخانه', component: Media },
   { path: '/media/addMedia', exact: true, name: ' افزودن', component: AddMedia },
+  { path: '/media/font-awesome', name: 'Font Awesome', component: FontAwesome },
 ];
 
 export default routes;

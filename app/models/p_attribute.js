@@ -7,7 +7,9 @@ const ProductAttribute = Schema({
     color : { type : String, required : true},
     price : { type : String, required : true},
     discount : { type : Number, defualt : 0},
-    stock : { type : Number, defualt : 0}
+    stock : { type : Number, defualt : 0},
+    suggestion : { type : Boolean, defualt : false},
+    expireAt : { type : Date}
 })
 
 module.exports = mongoose.model('ProductAttribute', ProductAttribute);

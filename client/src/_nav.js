@@ -39,6 +39,15 @@ export default {
           url: '/media/addMedia',
           icon: 'icon-puzzle',
         },
+        {
+          name: 'Font Awesome',
+          url: '/media/font-awesome',
+          icon: 'icon-star',
+          badge: {
+            variant: 'secondary',
+            text: '4.7',
+          },
+        },
       ],
     },
     

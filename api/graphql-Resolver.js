@@ -1000,7 +1000,7 @@ const resolvers = {
                         }
 
                     }
-                    for (let index = 0; index < args.input.length; index++) {
+                    for (let index = 0; index < args.input.attribute.length; index++) {
                         const element = args.input.attribute[index];
                                     await Productattribute.findByIdAndUpdate(element.id, { $set : {
                                             seller : element.seller,
@@ -1008,7 +1008,9 @@ const resolvers = {
                                             color : element.color,
                                             price : element.price,
                                             discount : element.discount,
-                                            stock : element.stock
+                                            stock : element.stock,
+                                            suggestion : element.suggestion,
+                                            expireAt : Date.now() + (element.expireAt * 60 * 60 * 1000)
                                         }
                                     })
                     }
@@ -1053,32 +1055,6 @@ const resolvers = {
                 throw error;
             }
         },
-
-        productSuggestion : async (param, args, { check, isAdmin}) => {
-            if(check && isAdmin) {
-                try {
-                    await ProductSuggestion.create({
-                        product : args.productId,
-                        expireAt : Date.now() + (args.expireAt * 60 * 60 * 1000)
-                    })
-
-                    await Product.findByIdAndUpdate(args.productId, { $set : { suggestion : true}})
-
-                    return {
-                        status : 200,
-                        message : 'محصول به لیست شگفت انگیز اضافه شد.'
-                    }
-                } catch {
-                    const error = new Error('امکان درج محصول شگفت انگیز وجود ندارد!');
-                    error.code = 401;
-                    throw error;
-                }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
-        }
 
 
 
