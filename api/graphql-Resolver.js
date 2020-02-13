@@ -26,7 +26,8 @@ const Details = require('app/models/details');
 const Passwordreset = require('app/models/password-reset');
 const Productattribute = require('app/models/p_attribute');
 const Slider = require('app/models/slider');
-const ProductSuggestion = require('app/models/p-suggestion');
+const Comment = require('app/models/comment');
+const Vsurvey = require('app/models/v-survey');
 
 
 const resolvers = {
@@ -198,7 +199,7 @@ const resolvers = {
         },
 
         getAllSurvey : async (param, args, { check, isAdmin }) => {
-            if(check && isAdmin) {
+            if(check) {
                 const list = await Survey.findOne({ category : args.categoryId});
                 if(list) {
                     return list
@@ -327,6 +328,27 @@ const resolvers = {
             
         // }
 
+        getAllComment : async (param, args, { check }) => {
+            if(check) {
+                    let page = args.page || 1;
+                    let limit = args.limit || 10;
+                    const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+
+                    if(!comments) {
+                        return {
+                            status : 401,
+                            message : 'گامنتی برای این محصول ثبت نشده است!'
+                        }
+                    }
+
+                    return comments.docs
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        }
+
     },
 
     Mutation : {
@@ -341,7 +363,6 @@ const resolvers = {
                         password : hash,
                         ...args
                     });
-                    console.log(user);
                     await user.save();
                     return {
                         status : 200,
@@ -417,16 +438,16 @@ const resolvers = {
         survey : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
-                    if(await Survey.findOne({category : args.input.category})) {
-                        await Survey.updateOne({category : args.input.category}, { $push : { list : args.input.list}});
+                    if(!await Category.findOne({_id : args.input.category})) {
                             return {
                                 status : 200,
-                                message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
+                                message : 'چنین دسته بندی وجود ندارد!'
                             }
                     } else {
                         await Survey.create({
                             category : args.input.category,
-                            list : args.input.list,
+                            name : args.input.name,
+                            label : args.input.label
                         })
     
                             return {
@@ -737,6 +758,44 @@ const resolvers = {
             }
         },
 
+        comment : async (param, args, { check, isAdmin}) => {
+            if(check) {
+                try {
+                    const product = await Product.findById(args.input.product);
+                    if(!product) {
+                        const error = new Error('این محصول در سیستم ثبت نشده است. نمی توانید کامنت ثبت کنید!');
+                        error.code = 401;
+                        throw error;
+                    }
+                    const surveyValue = await saveSurveyValue(args.input.survey);
+                    
+                    await Comment.create({
+                        user : args.input.user,
+                        product : args.input.product,
+                        survey : surveyValue,
+                        title : args.input.title,
+                        description : args.input.description,
+                        negative : args.input.negative,
+                        positive : args.input.positive,
+                    })
+
+                    return {
+                        status : 20,
+                        message : 'کامنت شما برای این محصول ثبت شد.'
+                    }
+                    
+                } catch {
+                    const error = new Error('امکان درج کامنت در حال حاضر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
         // edit method for all section
 
         UpdateCategory : async (param, args, { check, isAdmin }) => {
@@ -1002,7 +1061,8 @@ const resolvers = {
                         }
 
                     }
-                    for (let index = 0; index < args.input.length; index++) {
+
+                    for (let index = 0; index < args.input.attribute.length; index++) {
                         const element = args.input.attribute[index];
                                     await Productattribute.findByIdAndUpdate(element.id, { $set : {
                                             seller : element.seller,
@@ -1012,7 +1072,7 @@ const resolvers = {
                                             discount : element.discount,
                                             stock : element.stock,
                                             suggestion : element.suggestion,
-                                            expireAt : Date.now() + (args.expireAt * 60 * 60 * 1000)
+                                            expireAt : Date.now() + (element.expireAt * 60 * 60 * 1000)
                                         }
                                     })
                     }
@@ -1032,7 +1092,37 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
-        }, 
+        },
+
+        UpdateCommentProduct : async (param, args, { check , isAdmin }) => {
+            if(check && isAdmin) {
+                try {
+                    const comment= await Comment.findById(args.commentId);
+                    if(!comment) {
+                        return {
+                            status : 401,
+                            message : 'چنین کامنتی برای این محصول ثبت نشده است.'
+                        }
+                    }
+
+                    await Comment.updateOne({_id : comment._id}, { $set : { check : !comment.check}})
+
+                    return {
+                        status : 200,
+                        message : 'امکان تایید این کامنت وجود ندارد!'
+                    }
+
+                } catch {
+                    const error = new Error('امکان ویرایش کامنت محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
 
         slider : async (param, args, { check, isAdmin}) => {
             if(check && isAdmin) {
@@ -1222,5 +1312,27 @@ let updateImageProduct = async (id, {stream, filename}) => {
 //     fs.unlinkSync(path.join(__dirname, `/public/${dir}/${filename}`));
 //     return;
 // }
+
+let saveSurveyValue = async (args) => {
+    try {
+        const arr = [];
+        for (let index = 0; index < args.length; index++) {
+            const element = args[index];
+                        const vs = await Vsurvey.create({
+                            survey : element.survey,
+                            value : element.value
+                        })
+
+                        arr[index] = vs._id
+    
+        }
+        return arr;
+    } catch {
+        const error = new Error('امکان درج نظر سنجی جدید وجود ندارد');
+        error.code = 401;
+        throw error;
+    }
+    
+}
 
 module.exports = resolvers;
