@@ -188,6 +188,10 @@ const typeDefs = gql`
     }
 
     input InputSurvey {
+        list : [InputSurveyList!]!
+    }
+
+    input InputSurveyList {
         category : ID!,
         name : String!,
         label : String
