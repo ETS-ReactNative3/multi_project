@@ -10,15 +10,15 @@ const Scoring=(props)=> {
     const {dispatch} = useContext(AuthContext);
     const [allCategory,setAllCategory] = useState([]);
     const [subCategory,setSubCategory] = useState([]);
-    const[ownerState,setOwnerState] = useState([]);
-    const[subCategoryId,setSubCategoryId] = useState(null);
+    const [ownerState,setOwnerState] = useState([]);
+    const [subCategoryId,setSubCategoryId] = useState(null);
     const [mainCategory,setMainCategory] = useState(true);
     const [parentCategory,setParentCategory] = useState(false);
     const [message,setMessage] = useState('')
-    const[ID,setID] = useState(null);
-    const[modal,setModal] = useState(false);
+    const [ID,setID] = useState(null);
+    const [modal,setModal] = useState(false);
     const [result,setResult] = useState([]);
-    const[surveyInformation,serSurveyInformation] = useState([])
+    const [surveyInformation,serSurveyInformation] = useState([])
     const token =  GetToken();
     useEffect(()=>{
         dispatch({type:'check',payload:props});
@@ -75,7 +75,7 @@ const Scoring=(props)=> {
       const newState = [...ownerState];
       newState.push({
           name:'',
-          label:''
+          label:'',
       });
       setOwnerState(newState)
   }
@@ -106,29 +106,31 @@ const onSubmitForm =()=>{
         setMessage('حداقل باید یک مورد را وارد کنید');
         return false;
     }
-    console.log(ownerState+' '+ID);
+  for(let i =0;i<ownerState.length;i++){
+    ownerState[i].category=ID;
+  }
+    console.log(JSON.stringify(ownerState)+' '+ID);
     axios({
         url: '/',
         method: 'post',
         headers:{'token':`${token}`},
         data: {
           query: `
-          mutation addsurvey($category : ID!, $list : [SurveyList]!) {
-            survey(input : { category : $category, list : $list}) {
+          mutation addsurvey($list : [InputSurveyList!]!) {
+            survey(input : {list : $list}) {
               status,
               message
             }
-          }     
+          }    
             `,
             variables :{
-                "category": ID,
                 "list": ownerState
               }
       }
     }).then((result) => {
         const {message} =result.data.data.survey;
-        console.log(result)
-        setMessage(message)
+        setMessage(message);
+        
     }).catch(error=>{
       console.log(error)
     });
@@ -170,22 +172,22 @@ const showModal=(subCatId)=>{
     headers:{'token':`${token}`},
     data: {
       query: `
-       query getAllSurvey ($categoryId : ID!){
-           getAllSurvey(categoryId : $categoryId) {
-             list {
-               name,
-               label
-             }          
-           }
-         }      
+      query getAllSurvey ($categoryId : ID!){
+        getAllSurvey(categoryId : $categoryId) {
+             _id,
+             name,
+             label
+         }
+       }     
         `,
         variables :{
           "categoryId":subCatId
         }
     }
   }).then((result) => {
-      const {list} = result.data.data.getAllSurvey;
-      serSurveyInformation(list)
+     // const {list} = result.data.data.getAllSurvey;
+      console.log(result);
+     // serSurveyInformation(list)
       setModal(true)
   }).catch(error=>{
     console.log(error)

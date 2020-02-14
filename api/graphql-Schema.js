@@ -14,8 +14,11 @@ const typeDefs = gql`
         getAllSeller(categoryId : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
+        getAllComment(page : Int, limit : Int, productId : ID!) : [Comment]
 
         MainPageApp : mainInfo
+
+
 
     }
 
@@ -33,7 +36,9 @@ const typeDefs = gql`
         UserResetPassword(input : InputUserResetPassword) : operation!,
         ResetPassword(input : InputResetPassword) : operation!,
         seller(category : ID!, name : String!, label : String) : operation!,
-        warranty(name : String!, label : String) : operation!
+        warranty(name : String!, label : String) : operation!,
+        comment(input : InputComment) : operation!,
+        addSurveyValue(input : InputSurveyValue) : operation!
 
         UpdateCategory(input : InputCategory) : operation!
         UpdateBrand(input : InputBrand) : operation!,
@@ -43,9 +48,28 @@ const typeDefs = gql`
         UpdateWarranty(name : String!, label : String) : operation!
         UpdateProduct(input : UpdateProduct) : operation!,
         UpdateProducctAttribute(input : InputProductAttribute) : operation!
+        UpdateCommentProduct(commentId : ID!) : operation!
 
         slider(imageId : ID) : operation!
 
+    }
+
+    input InputSurveyValue {
+        survey : ID!,
+        value : Int = 3
+    }
+
+    input InputComment {
+        user : ID!,
+        product : ID!,
+        survey : [InputSurveyValue!]!
+        title : String!,
+        description : String!,
+        like : Int = 0,
+        dislike : Int = 0,
+        negative : [String],
+        positive : [String],
+        check : Boolean = false
     }
 
     input InputGetBrand {
@@ -165,10 +189,6 @@ const typeDefs = gql`
 
     input InputSurvey {
         category : ID!,
-        list : [SurveyList]!
-    }
-
-    input SurveyList {
         name : String!,
         label : String
     }
@@ -290,11 +310,8 @@ const typeDefs = gql`
     }
 
     type Survey {
+        _id : ID,
         category : ID
-        list : [SurveyOption]!
-    }
-
-    type SurveyOption {
         name : String!,
         label : String
     }
@@ -349,6 +366,26 @@ const typeDefs = gql`
         label : String
     }
 
+    
+    type Comment {
+        _id : ID,
+        user : User,
+        product : product,
+        survey : [SurveyValue],
+        title : String,
+        description : String,
+        like : Int,
+        dislike : Int,
+        negative : [String],
+        positive : [String],
+        createdAt : Date,
+        check : Boolean,
+    }
+
+    type SurveyValue {
+        survey : Survey,
+        value : String
+    }
 
 
 `;
