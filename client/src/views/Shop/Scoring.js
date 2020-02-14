@@ -1,7 +1,8 @@
 import React, { useState,useEffect,useContext } from 'react';
 import {  Card, CardBody, CardHeader, Col, Row, Table,Button,Label,Input,FormGroup,CardFooter,Pagination,PaginationItem,PaginationLink,Modal, ModalHeader,ModalBody,ModalFooter   } from 'reactstrap';
 import classes from './scoring.module.css';
-import { Link } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
 import axios from 'axios'
@@ -46,18 +47,17 @@ const Scoring=(props)=> {
         }).then((result) => {
             const {getAllCategory} = result.data.data;
             if(result.data.errors){
-                setMessage('خطا در دریافت اطلاعات')
+              toast.error('خطا در دریافت اطلاعات')
               }
            else if(mainCategory){
                 setAllCategory(getAllCategory);
             }
             else if(parentCategory){
-                console.log(getAllCategory);
                 setSubCategory(getAllCategory);
             }
             
         }).catch(error=>{
-          console.log(error)
+          toast.error(error)
         });
     },[subCategoryId])
 
@@ -66,7 +66,6 @@ const Scoring=(props)=> {
 
   const getSubCategory =(event)=>{
     setSubCategoryId(event.target.value);
-    console.log(subCategoryId);
     setMainCategory(false);
     setParentCategory(true);
     
@@ -81,9 +80,7 @@ const Scoring=(props)=> {
   }
 
   const handleChange = (event,id)=>{
-    
       const field={...ownerState[id]};
-      //console.log(student);
       field.name=event.target.value;
       const newOwnerState = [...ownerState];
       newOwnerState[id]=field;
@@ -92,7 +89,6 @@ const Scoring=(props)=> {
   const handleChangeLabel = (event,id)=>{
        
     const field={...ownerState[id]};
-    //console.log(student);
     field.label=event.target.value;
     const newOwnerState = [...ownerState];
     newOwnerState[id]=field;
@@ -103,7 +99,7 @@ const getId=(event)=>{
 }
 const onSubmitForm =()=>{
     if(ownerState.length===0){
-        setMessage('حداقل باید یک مورد را وارد کنید');
+      toast.error('حداقل باید یک مورد را وارد کنید');
         return false;
     }
   for(let i =0;i<ownerState.length;i++){
@@ -129,10 +125,10 @@ const onSubmitForm =()=>{
       }
     }).then((result) => {
         const {message} =result.data.data.survey;
-        setMessage(message);
+        toast.success(message);
         
     }).catch(error=>{
-      console.log(error)
+      toast.error(error)
     });
 
 }
@@ -162,7 +158,7 @@ const getIdSubCategory=(event)=>{
         const {getAllCategory} = result.data.data;
         setResult(getAllCategory);
     }).catch(error=>{
-      console.log(error)
+      toast.error(error)
     });
 }
 const showModal=(subCatId)=>{
@@ -173,24 +169,23 @@ const showModal=(subCatId)=>{
     data: {
       query: `
       query getAllSurvey ($categoryId : ID!){
-        getAllSurvey(categoryId : $categoryId) {
+        getAllSurvey(categoryId : $categoryId) {       
              _id,
              name,
              label
          }
-       }     
+       }    
         `,
         variables :{
           "categoryId":subCatId
         }
     }
   }).then((result) => {
-     // const {list} = result.data.data.getAllSurvey;
-      console.log(result);
-     // serSurveyInformation(list)
-      setModal(true)
+       const {getAllSurvey} = result.data.data;
+       serSurveyInformation(getAllSurvey)
+       setModal(true)
   }).catch(error=>{
-    console.log(error)
+    toast.error(error)
   });
 }
 const toggleLarge=()=> {
@@ -206,6 +201,9 @@ const deleteSurvey=(index)=>{
       <div className="animated fadeIn">
         <Row>
           <Col xl={12} xs={12} md={12}>
+              <div className="form-group">
+                <ToastContainer />
+              </div>
               <Card>
                 <CardHeader>         
                     <strong>نحوه امتیاز دهی</strong>
@@ -356,7 +354,7 @@ const deleteSurvey=(index)=>{
                     <ModalBody>
                       {
                         surveyInformation.map((item,index)=>
-                        <Row key={index}>                          
+                        <Row key={item._id}>                          
                           <Col xl={5}>
                             <FormGroup row>
                               <Col md="3">

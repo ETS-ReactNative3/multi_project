@@ -8,7 +8,7 @@ const typeDefs = gql`
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
         getAllBrand(input : InputGetBrand) : [Brand!]!
-        getAllSurvey(categoryId : ID!) : Survey!
+        getAllSurvey(categoryId : ID!) : [Survey!]!
         getAllProductSpecs(categoryId : ID!) : [Specs!]!
         getAllProductSpecsDetails(specsId : ID!) : [SpecsDetails!]!
         getAllSeller(categoryId : ID!) : [Seller!]!

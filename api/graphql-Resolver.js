@@ -200,8 +200,8 @@ const resolvers = {
 
         getAllSurvey : async (param, args, { check, isAdmin }) => {
             if(check) {
-                const list = await Survey.findOne({ category : args.categoryId});
-                if(list) {
+                const list = await Survey.find({ category : args.categoryId});
+                if(list) {console.log(list)
                     return list
                 } else {
                     const error = new Error('هیچ فیلد نظر سنجی برای این دسته بندی وجود ندارد!');
