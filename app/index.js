@@ -38,7 +38,7 @@ module.exports = class Application {
                     let check = await User.CheckToken(req, secretID);
                     let isAdmin = false
                     if(check) {
-                        isAdmin = await User.findById(check.id).select('level');
+                        isAdmin = await User.findById(check.id);
                     }
                     return {
                         isAdmin : isAdmin.level,
