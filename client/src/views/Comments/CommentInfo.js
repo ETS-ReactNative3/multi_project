@@ -28,7 +28,7 @@ const CommentInfo =(props)=> {
                                 </div>
                             </li>
                         </ul>
-                        <div class={classes.c_message_light__opinion_positive}>
+                        <div className={classes.c_message_light__opinion_positive}>
                             <i className="fa fa-thumbs-o-up fa-lg "></i> خرید این محصول را توصیه می‌کنم
                         </div>
                         <ul className={classes.CommentsUserShopping}>
@@ -46,7 +46,7 @@ const CommentInfo =(props)=> {
 توجه کنین دوستان این گوشی برای پدر ومادر ها و مادربزرگ و پدربزرگ ها و کلا سن بالا ها بسیار مناسب هستش. در کل برای کسانی مه فقط اینستا و تلگرام و واتس اپ میخوان داشته باشن نرماله. در غیر این صورت اصلا روو این مدل فکر نکنین چون با هنگ و کندی مواجه میشین.
                 با تشکر از دیجی کالا.
                         </p>
-                        <div class={classes.comments_likes}>
+                        <div className={classes.comments_likes}>
                             موافقین و مخالفین نظر: 
                             <div className={classes.btn_like}>
                                 <i className="fa fa-thumbs-o-up fa-lg "></i> 22

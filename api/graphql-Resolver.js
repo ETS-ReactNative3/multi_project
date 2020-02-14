@@ -201,7 +201,8 @@ const resolvers = {
         getAllSurvey : async (param, args, { check, isAdmin }) => {
             if(check) {
                 const list = await Survey.find({ category : args.categoryId});
-                if(list) {console.log(list)
+
+                if(list) {
                     return list
                 } else {
                     const error = new Error('هیچ فیلد نظر سنجی برای این دسته بندی وجود ندارد!');
@@ -330,16 +331,30 @@ const resolvers = {
             if(check) {
                     let page = args.page || 1;
                     let limit = args.limit || 10;
-                    const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
-
-                    if(!comments) {
-                        return {
-                            status : 401,
-                            message : 'گامنتی برای این محصول ثبت نشده است!'
+                    console.log(args);
+                    if( args.productId == null ) {
+                        const comments = await Comment.paginate({}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی برای این محصول ثبت نشده است!'
+                            }
                         }
+                        console.log(comments.docs);
+                        return comments.docs
+                    } else {
+                        const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+                        
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی برای این محصول ثبت نشده است!'
+                            }
+                        }
+
+                        return comments.docs
                     }
 
-                    return comments.docs
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;

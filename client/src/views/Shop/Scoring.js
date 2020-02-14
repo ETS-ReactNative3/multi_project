@@ -105,7 +105,7 @@ const onSubmitForm =()=>{
   for(let i =0;i<ownerState.length;i++){
     ownerState[i].category=ID;
   }
-    console.log(JSON.stringify(ownerState)+' '+ID);
+   
     axios({
         url: '/',
         method: 'post',
