@@ -438,23 +438,27 @@ const resolvers = {
         survey : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
-                    if(!await Category.findOne({_id : args.input.category})) {
-                            return {
-                                status : 200,
-                                message : 'چنین دسته بندی وجود ندارد!'
+                            for (let index = 0; index < args.input.list.length; index++) {
+                                const element = args.input.list[index];
+
+                                        if(!await Category.findOne({_id : element.category})) {
+                                            return {
+                                                status : 200,
+                                                message : 'چنین دسته بندی وجود ندارد!'
+                                            }
+                                        }
+
+                                        await Survey.create({
+                                            category : element.category,
+                                            name : element.name,
+                                            label : element.label,
+                                        })
                             }
-                    } else {
-                        await Survey.create({
-                            category : args.input.category,
-                            name : args.input.name,
-                            label : args.input.label
-                        })
-    
+
                             return {
                                 status : 200,
                                 message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
                             }
-                    }
                     
                 } catch {
                     const error = new Error('امکان ایجاد فیلد نظرسنجی برای این دسته بندی وجود ندارد.');
