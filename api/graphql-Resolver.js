@@ -200,7 +200,7 @@ const resolvers = {
 
         getAllSurvey : async (param, args, { check, isAdmin }) => {
             if(check) {
-                const list = await Survey.findOne({ category : args.categoryId});
+                const list = await Survey.find({ category : args.categoryId});
                 if(list) {
                     return list
                 } else {
@@ -332,12 +332,23 @@ const resolvers = {
             if(check) {
                     let page = args.page || 1;
                     let limit = args.limit || 10;
-                    const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+                    if(! args.productId ) {
+                        const comments = await Comment.paginate({}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی برای این محصول ثبت نشده است!'
+                            }
+                        }
+                        return comments.docs
+                    } 
 
+                    const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+                    
                     if(!comments) {
                         return {
                             status : 401,
-                            message : 'گامنتی برای این محصول ثبت نشده است!'
+                            message : 'کامنتی برای این محصول ثبت نشده است!'
                         }
                     }
 

@@ -14,7 +14,7 @@ const typeDefs = gql`
         getAllSeller(categoryId : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
-        getAllComment(page : Int, limit : Int, productId : ID!) : [Comment]
+        getAllComment(page : Int, limit : Int, productId : ID) : [Comment]
 
         MainPageApp : mainInfo
 
