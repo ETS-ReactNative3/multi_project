@@ -1,34 +1,124 @@
-import React from 'react';
-import { Badge, Card, CardBody, CardHeader, Col, Row, Progress } from 'reactstrap';
+import React,{useEffect, useContext, useState} from 'react';
+import { Card, CardBody, CardHeader, Col, Row, Spinner, Progress,Badge } from 'reactstrap';
+import {AuthContext} from '../../context/Auth/AuthContext';
+import GetToken from '../../context/Auth/GetToken';
+import axios from 'axios';
+
 import classes from './comment.module.css';
 const CommentInfo =(props)=> {
     const {commentid} = props.match.params;
     if(!commentid){
         props.history.replace('/comments')
     }
-    return (
+    const {dispatch} = useContext(AuthContext);
+    const token =  GetToken();
+    const [comment,setComment] = useState(null);
+    const [loading,setLoading] = useState(false);
+    useEffect(()=>{
+        dispatch({type:'check',payload:props});
+        setLoading(true)
+        axios({
+            url: '/',
+            method: 'post',
+            headers:{'token':`${token}`},
+            data: {
+              query: `
+              query getAllComment($page : Int, $limit : Int, $productId : ID, $commentId : ID) {
+                getAllComment(page : $page, limit : $limit, productId : $productId, commentId : $commentId) {
+                  user {
+                  fname,
+                  lname
+                  },
+                  product {
+                    fname
+                  },
+                  survey {
+                    survey {
+                      name
+                    },
+                    value
+                  },
+                  title,
+                  description,
+                  negative,
+                  positive,
+                  like,
+                  dislike,
+                  createdAt,
+                  check  
+                }
+              }    
+                `,
+                variables :{
+                  "page": 1,
+                  "limit": 10,
+                  "productId": null,
+                  "commentId": commentid
+                }
+          }
+        }).then((result) => {
+          if(result.data.errors){
+            dispatch({type:'logout',payload:props});
+          }
+          else{
+            const {getAllComment} = result.data.data;
+            setComment(getAllComment[0]);
+            setLoading(false);
+            console.log(getAllComment[0]);
+          }
+         
+        }).catch(error=>{
+          console.log(error)
+        }); 
+    },[])
+
+    const getStatusSuervay = (val)=>{
+        switch (val) {
+            case "1":
+                return 'خیلی بد';
+            case "2":
+                return 'بد';
+            case "3":
+                return 'معمولی';
+            case "4":
+                return 'خوب';
+            case "5":
+                return 'عالی';
+            default:
+                break;
+        }
+    }
+
+    const getBadge = (status) => {
+        return status ? 'success' : 'danger'
+      }
+
+    return (  
       <div className="animated fadeIn">
-        <Row>
+      {
+         
+          comment ?
+          <Row>
           <Col xl={12}>
             <Card>
               <CardHeader>
-              شیک و خوش دست نسبت به قیمت
+              {comment.title}
               </CardHeader>
               <CardBody>
                 <Row>
                     <Col xl="4">
                         <ul className={classes.CommentsUserShopping}>
                             <li>
-                               <p>حمید بختیاری داویجانی</p> 
-                                <div className={classes.CommentsBuyerBadge}>خریدار</div>
+                               <p>{comment.user.fname+comment.user.lname}</p> 
+                                {/* <div className={classes.CommentsBuyerBadge}>خریدار</div> */}
                              </li>
                             <li>
                                 <div className={classes.cell}>
-                                    در تاریخ ۲۳ بهمن ۱۳۹۸
+                                    در تاریخ {new Date(comment.createdAt).toLocaleDateString('fa-IR')}
                                 </div>
                             </li>
                         </ul>
-                        <div className={classes.c_message_light__opinion_positive}>
+                        {/* <div className={classes.c_message_light__opinion_positive}>
                             <i className="fa fa-thumbs-o-up fa-lg "></i> خرید این محصول را توصیه می‌کنم
                         </div>
                         <ul className={classes.CommentsUserShopping}>
@@ -39,82 +129,70 @@ const CommentInfo =(props)=> {
                             <li>
                             فروشنده : <span style={{color:'#1ca2bd',fontWeight:'bold'}}>دی جی کالا</span>
                             </li>
-                        </ul>
+                        </ul> */}
+                        <Badge color={getBadge(comment.check)}>
+                              {comment.check ?'تایید شده': 'تایید نشده'}
+                        </Badge>
                     </Col>
                     <Col xl="8">
-                        <p className={classes.comment_description}>سلام. امروز به دستم رسید با گارانتی مایکروتل گرفتم که خوشبختانه هدفون داخلش گذاشته بود به اضافه ی گلس بسیار ضعیف. اما همین که تکمیل بود بسیار جای شکرش باقیه. من رنگ آبیش رو خریدم به مناسبت روز مادر برای مادربزرگم.
-توجه کنین دوستان این گوشی برای پدر ومادر ها و مادربزرگ و پدربزرگ ها و کلا سن بالا ها بسیار مناسب هستش. در کل برای کسانی مه فقط اینستا و تلگرام و واتس اپ میخوان داشته باشن نرماله. در غیر این صورت اصلا روو این مدل فکر نکنین چون با هنگ و کندی مواجه میشین.
-                با تشکر از دیجی کالا.
+                        <p className={classes.comment_description}>
+                            {comment.description}
                         </p>
                         <div className={classes.comments_likes}>
                             موافقین و مخالفین نظر: 
                             <div className={classes.btn_like}>
-                                <i className="fa fa-thumbs-o-up fa-lg "></i> 22
+                                <i className="fa fa-thumbs-o-up fa-lg "></i> {comment.like}
                             </div>
                             <div className={classes.btn_like}>
-                                <i className="fa fa-thumbs-o-down fa-lg "></i> 2
+                                <i className="fa fa-thumbs-o-down fa-lg "></i> {comment.dislike}
                             </div>
                         </div>
+
+                         <div class={classes.c_comments_evaluation}>
+                            <div class={classes.c_comments_evaluation_positive}>
+                                <span style={{color: '#00bfd6'}}>نقاط قوت</span>
+                                <ul>
+                                    {
+                                        comment.positive.map((item,index)=>
+                                            <li key={index}><i className="fa fa-circle fa"></i>{item}</li>
+                                        )
+                                    }  
+                                </ul>
+                            </div> 
+                         </div>
+                         <div class={classes.c_comments_evaluation}>
+                            <div class={classes.c_comments_evaluation_positive}>
+                                <span style={{color: '#ff637d'}}>نقاط ضعف</span>
+                                <ul>
+                                    {
+                                        comment.negative.map((item,index)=>
+                                            <li key={index}><i className="fa fa-circle fa"></i>{item}</li>
+                                        )
+                                    }  
+                                </ul>
+                            </div> 
+                         </div>   
+
                         <div className={classes.c_comments_summary_box}>
                             <ul className={classes.c_comments_item_rating}>
-                               <li>
-                                    <p>کیفیت ساخت:</p>
+                            {
+                                comment.survey.map((item,index)=>
+                                <li key={index}>
+                                    <p>{item.survey.name}:</p>
                                     <Row>
                                         <Col xl="8">
-                                            <Progress value="3" max="5" /> 
+                                            <Progress value={item.value} max="5" /> 
                                         </Col>
                                         <Col xl="4">
-                                             <span>معمولی</span>
+                                             <span>{getStatusSuervay(item.value)}</span>
                                         </Col>
                                         
                                     </Row>  
                                 </li>
-                                <li>
-                                    <p> نوآوری:</p>
-                                    <Row>
-                                        <Col xl="8">
-                                            <Progress value="1" max="5" /> 
-                                        </Col>
-                                        <Col xl="4">
-                                             <span>بد</span>
-                                        </Col>
-                                        
-                                    </Row>  
-                                </li>
-                                <li>
-                                    <p> ارزش خرید به نسبت قیمت:</p>
-                                    <Row>
-                                        <Col xl="8">
-                                            <Progress value="5" max="5" /> 
-                                        </Col>
-                                        <Col xl="4">
-                                             <span>عالی</span>
-                                        </Col>
-                                        
-                                    </Row>  
-                                </li>
-                                <li>
-                                    <p>نوآوری:</p>
-                                    <Row>
-                                        <Col xl="8">
-                                            <Progress value="0" max="5" /> 
-                                        </Col>
-                                        <Col xl="4">
-                                             <span>خیلی بد</span>
-                                        </Col>   
-                                    </Row>  
-                                </li>
-                                <li>
-                                    <p>امکانات و قابلیت ها:</p>
-                                    <Row>
-                                        <Col xl="8">
-                                            <Progress value="4" max="5" /> 
-                                        </Col>
-                                        <Col xl="4">
-                                             <span> خوب</span>
-                                        </Col>   
-                                    </Row>  
-                                </li>
+                                )
+                            }
+                               
+                                
                             </ul>
                         </div>
                     </Col>
@@ -125,6 +203,10 @@ const CommentInfo =(props)=> {
             </Card>
           </Col>
         </Row>
+          :
+          <center><Spinner /></center>
+      }
+        
       </div>
     )
   

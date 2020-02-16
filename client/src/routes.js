@@ -53,6 +53,8 @@ const Seller  = React.lazy(() => import('./views/Products/Seller'));
 const Warranty  = React.lazy(() => import('./views/Products/Warranty'));
 const Comments = React.lazy(() => import('./views/Comments/Comments'));
 const CommentInfo = React.lazy(() => import('./views/Comments/CommentInfo'));
+const AllOrders = React.lazy(()=>import('./views/Orders/Orders'));
+const OrderDetails = React.lazy(()=>import('./views/Orders/Order'));
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
   
@@ -101,17 +103,19 @@ const routes = [
   { path: '/products/flags', name: 'Flags', component: Flags },
   { path: '/products/font-awesome', name: 'Font Awesome', component: FontAwesome },
   { path: '/products/simple-line-icons', name: 'Simple Line Icons', component: SimpleLineIcons },
-  { path: '/notifications', exact: true, name: 'مالی و فروش', component: Alerts },
-  { path: '/notifications/alerts', name: 'Alerts', component: Alerts },
-  { path: '/notifications/badges', name: 'Badges', component: Badges },
-  { path: '/notifications/modals', name: 'Modals', component: Modals },
+  { path: '/orders', exact: true, name: 'مالی و فروش', component: Alerts },
+  { path: '/orders/allorders', exact: true, name: 'سفارشات', component: AllOrders },
+  { path: '/orders/detail/:orderNumber', exact: true, name: 'جزئیات سفارش', component: OrderDetails },
+  { path: '/orders/alerts', name: 'Alerts', component: Alerts },
+  { path: '/orders/badges', name: 'Badges', component: Badges },
+  { path: '/orders/modals', name: 'Modals', component: Modals },
   { path: '/widgets', name: 'Widgets', component: Widgets },
   { path: '/charts', name: 'Charts', component: Charts },
   { path: '/users', exact: true,  name: 'کاربران', component: Users },
   { path: '/users/adduser', exact: true,  name: 'اضافه کردن کاربر', component: AddUser },
   { path: '/users/:id', exact: true, name: 'مشخصات کاربران', component: User },
-  { path: '/orders/:userid', exact: true, name: 'سفارشات کاربر', component: Orders },
-  { path: '/orders/:userid/order/:orderid', exact: true, name: ' جزئیات سفارش کاربر ', component: Order },
+  { path: '/users/orders/:userid', exact: true, name: 'سفارشات کاربر', component: Orders },
+  { path: '/users/orders/:userid/order/:orderid', exact: true, name: ' جزئیات سفارش کاربر ', component: Order },
   { path: '/media/allmedia', exact: true, name: ' کتابخانه', component: Media },
   { path: '/media/addMedia', exact: true, name: ' افزودن', component: AddMedia },
   { path: '/media/font-awesome', name: 'Font Awesome', component: FontAwesome },

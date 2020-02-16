@@ -21,8 +21,8 @@ const Comments =(props)=> {
         headers:{'token':`${token}`},
         data: {
           query: `
-          query getAllComment($page : Int, $limit : Int, $productId : ID) {
-            getAllComment(page : $page, limit : $limit, productId : $productId) {
+          query getAllComment($page : Int, $limit : Int, $productId : ID,$commentId : ID) {
+            getAllComment(page : $page, limit : $limit, productId : $productId,commentId : $commentId) {
               _id
               user {
                 fname,
@@ -42,7 +42,8 @@ const Comments =(props)=> {
             variables :{
               "page": 1,
               "limit": 10,
-              "productId": null
+              "productId": null,
+              "commentId": null
             }
       }
     }).then((result) => {

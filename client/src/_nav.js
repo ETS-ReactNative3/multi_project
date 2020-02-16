@@ -235,22 +235,27 @@ export default {
     },
     {
       name: 'مالی و فروش',
-      url: '/notifications',
+      url: '/orders',
       icon: 'icon-bell',
       children: [
         {
+          name: 'سفارشات',
+          url: '/orders/allorders',
+          icon: 'icon-bell',
+        },
+        {
           name: 'Alerts',
-          url: '/notifications/alerts',
+          url: '/orders/alerts',
           icon: 'icon-bell',
         },
         {
           name: 'Badges',
-          url: '/notifications/badges',
+          url: '/orders/badges',
           icon: 'icon-bell',
         },
         {
           name: 'Modals',
-          url: '/notifications/modals',
+          url: '/orders/modals',
           icon: 'icon-bell',
         },
       ],

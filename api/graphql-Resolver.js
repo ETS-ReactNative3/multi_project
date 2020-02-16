@@ -84,7 +84,7 @@ const resolvers = {
         },
 
         getAllCategory : async (param, args, { check, isAdmin }) => {
-            if(check && isAdmin) {
+            if(check) {
                 if(args.input.mainCategory == true) {
                     let page = args.input.page || 1;
                     let limit = args.input.limit || 10;
@@ -201,7 +201,6 @@ const resolvers = {
         getAllSurvey : async (param, args, { check, isAdmin }) => {
             if(check) {
                 const list = await Survey.find({ category : args.categoryId});
-
                 if(list) {
                     return list
                 } else {
@@ -304,7 +303,9 @@ const resolvers = {
                         error.code = 401;
                         throw error;
                     } else {
-                        return {sellers}
+                        return {
+                            sellers
+                        }
                     }
                 } else {
                     const error = new Error('درخواست شما اعتبار لازم را نداید!');
@@ -331,8 +332,7 @@ const resolvers = {
             if(check) {
                     let page = args.page || 1;
                     let limit = args.limit || 10;
-                    console.log(args);
-                    if( args.productId == null ) {
+                    if(! args.productId ) {
                         const comments = await Comment.paginate({}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
                         if(!comments) {
                             return {
@@ -340,19 +340,31 @@ const resolvers = {
                                 message : 'کامنتی برای این محصول ثبت نشده است!'
                             }
                         }
-                        console.log(comments.docs);
-                        return comments.docs
-                    } else {
+                        return comments.docs;
+
+                    } else if(args.productId) {
                         const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
-                        
+
                         if(!comments) {
                             return {
                                 status : 401,
                                 message : 'کامنتی برای این محصول ثبت نشده است!'
                             }
                         }
+    
+                        return comments.docs;
 
-                        return comments.docs
+                    } else if(args.commentId != null && args.productId == null) {
+                        const comments = await Comment.paginate({_id : args.commentId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی با این مشخصات وجود ندارد!'
+                            }
+                        }
+    
+                        return comments.docs;
                     }
 
             } else {
@@ -368,7 +380,13 @@ const resolvers = {
         register : async (param, args) => {            
             try {
                 const person = await User.findOne({ phone : args.input.phone});
-                if(!person) {
+                if(person == null) {
+                    if(args.input.phone.length > 11 || args.input.phone.length < 11) {
+                        return {
+                            status : 401,
+                            message : 'اطلاعات وارد شده نا معتبر می باشد!'
+                        }
+                    }
                     const salt = await bcrypt.genSaltSync(15);
                     const hash = await bcrypt.hashSync(args.input.password, salt);
                     const user = await new User({
@@ -382,9 +400,10 @@ const resolvers = {
                         message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
                     };
                 } else {
-                    const error = new Error('این شماره تلفن قبلا در سیستم ثبت شده است!');
-                    error.code = 401;
-                    throw error
+                    return {
+                        status : 200,
+                        message : 'این شماره تلفن قبلا در سیستم ثبت شده است!'
+                    }
                 }
             } catch {
                 const error = new Error('ارنباط با سرور محدود شده است!!');
@@ -1078,6 +1097,7 @@ const resolvers = {
                         }
 
                     }
+
                     for (let index = 0; index < args.input.attribute.length; index++) {
                         const element = args.input.attribute[index];
                                     await Productattribute.findByIdAndUpdate(element.id, { $set : {
@@ -1163,6 +1183,7 @@ const resolvers = {
                 throw error;
             }
         },
+
 
 
 

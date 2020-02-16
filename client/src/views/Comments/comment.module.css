@@ -90,3 +90,42 @@
     flex: 0 0 45%;
     max-width: 45%;
 }
+.c_comments_evaluation {
+    margin: 20px 0;
+}
+.c_comments_evaluation_positive{
+    position: relative;
+    width: 100%;
+    min-height: 1px;
+    padding-right: 0;
+    padding-left: 0;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: start;
+    -ms-flex-align: start;
+    align-items: flex-start;
+}
+.c_comments_evaluation_positive span{
+    width: 80px;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    font-size: 14px;
+    font-size: 1rem;
+    line-height: 1.571;
+    white-space: nowrap;
+    font-weight: bold
+}
+.c_comments_evaluation_positive ul{
+    list-style: none;
+    padding: 0;
+}
+.c_comments_evaluation_positive ul li{
+    margin-bottom: 12px;
+    padding-right: 17px;
+    color: #5f5f5f;
+    position: relative;
+}
+.c_comments_evaluation_positive ul li i{
+    margin-left:9px;
+}

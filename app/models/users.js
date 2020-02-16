@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const mongoosePaginate = require('mongoose-paginate');
 
 const User = Schema({
-    level : { type : Boolean, required : true, default : false},
+    level : { type : Boolean, default : false},
     fname : { type : String, default : null},
     lname : { type : String, default : null},
     code : { type : String, default : null},

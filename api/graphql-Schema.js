@@ -8,13 +8,13 @@ const typeDefs = gql`
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
         getAllBrand(input : InputGetBrand) : [Brand!]!
-        getAllSurvey(categoryId : ID!) : [Survey!]!
+        getAllSurvey(categoryId : ID!) : Survey!
         getAllProductSpecs(categoryId : ID!) : [Specs!]!
         getAllProductSpecsDetails(specsId : ID!) : [SpecsDetails!]!
         getAllSeller(categoryId : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
-        getAllComment(page : Int, limit : Int, productId : ID) : [Comment!]!
+        getAllComment(page : Int, limit : Int, productId : ID, commentId : ID) : [Comment]
 
         MainPageApp : mainInfo
 
@@ -226,6 +226,7 @@ const typeDefs = gql`
         phone : String!,
         email : String,
         password : String!,
+        level : Boolean
     }
 
     enum Gender {
