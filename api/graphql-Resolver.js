@@ -5,6 +5,8 @@ const FileType = require('file-type');
 const mkdirp = require('mkdirp');
 const path = require('path');
 const fs = require('fs');
+const Kavenegar = require('kavenegar');
+const jwt = require('jsonwebtoken');
 
 // const uniquestring = require('unique-string');
 // const nodemailer = require('nodemailer');
@@ -28,6 +30,9 @@ const Productattribute = require('app/models/p_attribute');
 const Slider = require('app/models/slider');
 const Comment = require('app/models/comment');
 const Vsurvey = require('app/models/v-survey');
+const VlidationRegister = require('app/models/validation-register');
+const Payment = require('app/models/payment');
+const Receptor = require('app/models/receptor');
 
 
 const resolvers = {
@@ -46,9 +51,15 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
-            
-            return {
-                token : await User.CreateToken(user, secretID, '10h'),
+
+            if(user.verify) {
+                return {
+                    token : await User.CreateToken(user, secretID, '10h'),
+                }
+            } else {
+                const error = new Error('حساب کاربری شما تایید نشده است!');
+                error.code = 401;
+                throw error;
             }
 
         },
@@ -83,7 +94,7 @@ const resolvers = {
             }
         },
 
-        getAllCategory : async (param, args, { check, isAdmin }) => {
+        getAllCategory : async (param, args, { check }) => {
             if(check) {
                 if(args.input.mainCategory == true) {
                     let page = args.input.page || 1;
@@ -372,39 +383,92 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+        },
+
+        verifyRegister : async (param, args, { secretID }) => {
+            try {
+                const digit = Math.floor(Math.random() * (9999 - 1000)) + 1000;
+                console.log('digit :' + digit)
+                const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
+                await VlidationRegister.create({
+                    verifyToken : token
+                })
+
+                const api = Kavenegar.KavenegarApi({apikey: '2F647571766C745A7030745A61585273523734365946544D783648744343767768636F6B374779587255553D'});
+                api.Send({ message: `کد تایید حساب کاربری شما : ${digit}` , sender: "1000596446" , receptor: "09154968751" });
+
+                return {
+                    status : 200,
+                    message : 'کد تایید حساب کاربری به شماره همراه شما ارسال شد.'
+                }
+    
+            } catch {
+                const error = new Error('امکان ارسال کد تایید حساب کاربری وجود ندارد!');
+                error.code = 401;
+                throw error
+            }
+
+        }, 
+    
+        getAllPayment : async (param, args, { check, isAdmin }) => {
+            if(check) {
+                try {
+                    if(args.userId) {
+                        const pay = await Payment.findOne({ user : args.userId}).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}]);
+                        return pay
+                    } else if(args.userId == null && isAdmin) {
+                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}]);
+                        return pay
+                    } else {
+                        const error = new Error('سفارشی برای نمایش وجود ندارد!');
+                        error.code = 401;
+                        throw error;
+                    }
+                } catch {
+                    const error = new Error('سفارشی برای نمایش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         }
 
     },
 
     Mutation : {
-        register : async (param, args) => {            
+        register : async (param, args, { secretID }) => {            
             try {
-                const person = await User.findOne({ phone : args.input.phone});
-                if(person == null) {
-                    if(args.input.phone.length > 11 || args.input.phone.length < 11) {
+                    const digit = args.input.digit;
+                    const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
+                    const codeToken = await VlidationRegister.findOne({ verifyToken : token});
+                    const verify = await jwt.verify(codeToken, secretID);
+
+                    if(!verify) {
                         return {
-                            status : 401,
-                            message : 'اطلاعات وارد شده نا معتبر می باشد!'
+                            status : 403,
+                            message : 'درخواست شما اعتبار لازم برای ثبت نام را ندارد!'
                         }
-                    }
-                    const salt = await bcrypt.genSaltSync(15);
-                    const hash = await bcrypt.hashSync(args.input.password, salt);
-                    const user = await new User({
-                        phone : args.input.phone,
-                        password : hash,
-                        ...args
-                    });
-                    await user.save();
-                    return {
-                        status : 200,
-                        message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
-                    };
-                } else {
-                    return {
-                        status : 200,
-                        message : 'این شماره تلفن قبلا در سیستم ثبت شده است!'
-                    }
-                }
+                    } else {
+                        const salt = await bcrypt.genSaltSync(15);
+                        const hash = await bcrypt.hashSync(args.input.password, salt);
+                        await User.create({
+                            phone : args.input.phone,
+                            password : hash,
+                            verify : true,
+                            ...args
+                        });
+
+
+                        return {
+                            status : 200,
+                            message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
+                        };
+
+                    } 
+
             } catch {
                 const error = new Error('ارنباط با سرور محدود شده است!!');
                 error.code = 401;
@@ -1160,7 +1224,7 @@ const resolvers = {
             }
         },
 
-        slider : async (param, args, { check, isAdmin}) => {
+        slider : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
                     await Slider.create({
@@ -1184,11 +1248,93 @@ const resolvers = {
             }
         },
 
-
-
-
+        payment : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const user = await User.findById(check.id);
+                    if(user.fname != null) {
+                        const product = await Product.findById(args.input.product);
         
+                        if(!product) {
+                            return {
+                                status : 401,
+                                message : 'خرید این محصول مجاز نمی باشد'
+                            }
+                        }
+                        
+                        const payment = await Payment.create({
+                            user : check.id,
+                            product,
+                            payment : args.input.payment,
+                            resnumber : args.input.resnumber,
+                            attribute : args.input.attribute,
+                            discount : args.input.discount,
+                            count : args.input.count,
+                            price : args.input.price,
+                            receptor : args.input.receptor
+                        })
+            
+                        await User.findByIdAndUpdate(check.id, { $push : { payCach : payment._id}});
+                        return {
+                            status : 200,
+                            message : 'سفارش شما ثبت شد.'
+                        }
+                    } else {
+                        return {
+                            status : 401,
+                            message : 'اطلاعات خریدار ناقص است!!'
+                        }
+                    }
+                    
+                } catch {
+                    const error = new Error('امکان ثبت سفارش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
 
+        receptor : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const receptor = await Receptor.findOne({ phone : args.input.phone});
+                    if(receptor) {
+                        return {
+                            status : 401,
+                            message : 'این گیرنده قبلا در سیستم درج شده است!'
+                        }
+                    } else {
+                        await Receptor.create({
+                            fname : args.input.fname,
+                            lname : args.input.lname,
+                            code : args.input.code,
+                            number : args.input.number,
+                            phone : args.input.phone,
+                            state : args.input.state,
+                            city : args.input.city,
+                            address : args.input.address,
+                        })
+
+                        return {
+                            status : 200,
+                            message : 'گیرنده مورد نظر درج شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ثبت گیرنده وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        }
 
     },
 }
