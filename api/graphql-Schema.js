@@ -15,10 +15,11 @@ const typeDefs = gql`
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
         getAllComment(page : Int, limit : Int, productId : ID, commentId : ID) : [Comment]
-
+        
         MainPageApp : mainInfo
 
-
+        verifyRegister : operation,
+        getAllPayment(userId : ID) : [Payment]
 
     }
 
@@ -39,19 +40,44 @@ const typeDefs = gql`
         warranty(name : String!, label : String) : operation!,
         comment(input : InputComment) : operation!,
         addSurveyValue(input : InputSurveyValue) : operation!
+        slider(imageId : ID) : operation!,
+        payment( input : Inputpayment) : operation!,
+        receptor(input : InputReceptor) : operation
+
 
         UpdateCategory(input : InputCategory) : operation!
         UpdateBrand(input : InputBrand) : operation!,
         UpdateProductSpecs(input : InputProductSpecs) : operation!,
         UpdateProductSpecsDetails(input : InputProductSpecsDetails) : operation!,
         UpdateSeller(id : ID!, name : String!, label : String) : operation!,
-        UpdateWarranty(name : String!, label : String) : operation!
+        UpdateWarranty(name : String!, label : String) : operation!,
         UpdateProduct(input : UpdateProduct) : operation!,
-        UpdateProducctAttribute(input : InputProductAttribute) : operation!
-        UpdateCommentProduct(commentId : ID!) : operation!
+        UpdateProducctAttribute(input : InputProductAttribute) : operation!,
+        UpdateCommentProduct(commentId : ID!) : operation!,
 
-        slider(imageId : ID) : operation!
 
+    }
+
+    input InputReceptor {
+        fname : String!,
+        lname : String!,
+        code : String!,
+        number : String!,
+        phone : String!,
+        state : ID!,
+        city : ID!,
+        address : String!,
+    }
+
+    input Inputpayment {
+        product : ID!,
+        payment : Boolean!,
+        resnumber : String,
+        attribute : ID,
+        discount : Int,
+        count : Int,
+        price : Int,
+        receptor : ID
     }
 
     input InputSurveyValue {
@@ -226,7 +252,8 @@ const typeDefs = gql`
         phone : String!,
         email : String,
         password : String!,
-        level : Boolean
+        level : Boolean,
+        digit : Int
     }
 
     enum Gender {
@@ -390,6 +417,29 @@ const typeDefs = gql`
     type SurveyValue {
         survey : Survey,
         value : String
+    }
+
+    type Receptor {
+        fname : String,
+        lname : String,
+        code : String,
+        number : String,
+        phone : String,
+        state : ID,
+        city : ID,
+        address : String,
+    }
+
+    type Payment {
+        user : User,
+        product : product,
+        payment : Boolean!,
+        resnumber : String,
+        attribute : Attribute,
+        discount : Int,
+        count : Int,
+        price : Int,
+        receptor : Receptor
     }
 
 
