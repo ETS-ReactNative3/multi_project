@@ -33,6 +33,9 @@ const Vsurvey = require('app/models/v-survey');
 const VlidationRegister = require('app/models/validation-register');
 const Payment = require('app/models/payment');
 const Receptor = require('app/models/receptor');
+const OrderStatus = require('app/models/order-status');
+
+
 
 
 const resolvers = {
@@ -434,7 +437,39 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+        },
+
+        // MainPageApp : async (param, args) => {
+        //     const product = await Product.find({}).sort({ soldCount : 1})
+        //     return {
+        //         Tselling : product
+        //     }
+        // }
+
+        getAllOrderStatus : async (param, args, { check , isAdmin }) => {
+            if(check && isAdmin) {
+                try {
+                    const getOrderStatus = await OrderStatus.find({});
+                    if(getOrderStatus == null) {
+                        const error = new Error('هیج وضعیت سفارشی در سیستم ثبت نشده است!');
+                        error.code = 401;
+                        throw error;
+                    } else {
+                        return getOrderStatus;
+                    }
+                } catch {
+                    const error = new Error('هیج وضعیت سفارشی در سیستم ثبت نشده است!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         }
+
+        
 
     },
 
@@ -1326,6 +1361,44 @@ const resolvers = {
                     }
                 } catch {
                     const error = new Error('امکان ثبت گیرنده وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        OrderStatus : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const status = await OrderStatus.findOne({ name : args.name});
+                    if(status != null) {
+                        return {
+                            status : 401,
+                            message : 'قبل یک وضعیت سفارش با این عنوان ایجاد شده است!'
+                        }
+                    } else {
+
+                        const { createReadStream, filename } = await args.image;
+                        const stream = createReadStream();
+                        const { filePath } = await saveImage({ stream, filename});
+
+                        await OrderStatus.create({
+                            name : args.name,
+                            image : filePath
+                        })
+
+                        return {
+                            status : 200,
+                            message : 'وضعیت سفارش جدید در سیستم ثبت شد.'
+                        }
+
+                    }
+                } catch {
+                    const error = new Error('امکان ثبت وضعیت سفارش جدید وجود ندارد!');
                     error.code = 401;
                     throw error;
                 }

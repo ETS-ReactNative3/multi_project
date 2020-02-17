@@ -13,7 +13,8 @@ const Product = Schema({
     details : [{ type : Schema.Types.ObjectId, ref : 'Details', required : true}],
     image : [{ type : String, required : true}],
     commentCount : { type : Number, default : 0},
-    soldCount : { type : Number , default : 0}
+    soldCount : { type : Number , default : 0},
+    viewCount : { type : Number, default : 0}
 }, {
     timestamps : true,
     toJSON : { virtuals : true}

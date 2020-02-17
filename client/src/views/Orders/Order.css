@@ -32,3 +32,15 @@ span{
     opacity: 1;
     color: #000000;
 }
+.checbox_box{
+    display: flex;
+    align-items:center;
+    justify-content: center
+}
+.checbox_box input{
+    width:25px;
+    height: 25px;
+}
+.checbox_box label{
+    margin-top:7px;
+}
