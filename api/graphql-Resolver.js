@@ -33,6 +33,7 @@ const Vsurvey = require('app/models/v-survey');
 const VlidationRegister = require('app/models/validation-register');
 const Payment = require('app/models/payment');
 const Receptor = require('app/models/receptor');
+const OrderStatus = require('app/models/order-status');
 
 
 const resolvers = {
@@ -1256,6 +1257,63 @@ const resolvers = {
             }
         },
 
+        UpdateOrderStatus : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const order_status = await OrderStatus.findById(args.orderstatusId);
+                    if(order_status == null || order_status.default == true) {
+                        return {
+                            status : 401,
+                            message : 'نمی توانید این وضعیت سفارش را به پیشفرض تغییر دهید!'
+                        }
+                    } else {
+                        await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : { deault : true}})
+                        return {
+                            status : 200,
+                            message : 'وضعیت سفارش مورد نظر به عنوان پیشفرض سیستم انتخاب شد.'
+                        }
+                    }
+                    
+                } catch {
+                    const error = new Error('امکان ویرایش وضعیت سفارش مورد نظر وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdatePayment : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const pay = await Payment.findByIdAndUpdate(args.paymentId, { $set : { orderStatus : args.orderstatusId}});
+                    if(pay == null) {
+                        return {
+                            status : 401,
+                            message : 'چنین سفارشی در سیستم ثبت نشده است!'
+                        }
+                    } else {
+                        return {
+                            status : 200,
+                            message : 'وضعیت سفارش مورد نظر ویرایش شد.'
+                        }
+                    }
+
+                } catch {
+                    const error = new Error('امکان ویرایش سفارش مورد نظر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
         slider : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
@@ -1371,6 +1429,16 @@ const resolvers = {
         OrderStatus : async (param, args, { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
+                    if(args.default) {
+                        const status_def = await OrderStatus.findOne({ default : true});
+                        if(status_def != null) {
+                            return {
+                                status : 401,
+                                message : 'وضعیت سفارش دیگیری را به عنوان گزینه پیشفرض انتخاب کرده اید!'
+                            }
+                        }
+                    }
+
                     const status = await OrderStatus.findOne({ name : args.name});
                     if(status != null) {
                         return {
@@ -1385,7 +1453,8 @@ const resolvers = {
 
                         await OrderStatus.create({
                             name : args.name,
-                            image : filePath
+                            image : filePath,
+                            default : true
                         })
 
                         return {

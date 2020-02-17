@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const OrderStatus = require('app/models/order-status');
+const status_def = OrderStatus.findOne({ default : true});
 
 const Payment = Schema({
     user : { type : Schema.Types.ObjectId, ref : 'User'},
@@ -10,8 +12,8 @@ const Payment = Schema({
     discount : { type : Number, default : 0},
     count : { type : Number, required : true , default : 1},
     price : { type : Number, required : true},
-    receptor : { type : Schema.Types.ObjectId, ref : 'Receptor'}
-
+    receptor : { type : Schema.Types.ObjectId, ref : 'Receptor'},
+    orderStatus : { type : Schema.Types.ObjectId, ref : 'OrderStatus', default : `${status_def._id}`}
 }, {
     timestamps : true
 })
