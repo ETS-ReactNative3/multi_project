@@ -13,6 +13,7 @@ const Status = (props)=>{
     const [resultServer,setResult] = useState([]);
     const [file, setFile] = useState('');
     const [image, setImage] = useState('');
+    const [checked,setChecked] = useState(false);
     const {dispatch} = useContext(AuthContext);
     const token =  GetToken();
 
@@ -29,7 +30,8 @@ const Status = (props)=>{
             getAllOrderStatus {
               _id,
               name,
-              image
+              image,
+              default
             }
           } 
             `
@@ -62,8 +64,8 @@ const Status = (props)=>{
       dispatch({type:'check',payload:props});
       let data ={
         query: `
-        mutation addOrderStatus($name : String!, $image : Upload!) {
-          OrderStatus(name : $name, image : $image) {
+        mutation addOrderStatus($name : String!, $image : Upload!, $default : Boolean) {
+          OrderStatus(name : $name, image : $image, default : $default) {
             status,
             message
           }
@@ -71,7 +73,8 @@ const Status = (props)=>{
           `,
           variables :{
             "name": title,
-            "image": null
+            "image": null,
+            "default" : checked
             }
       }
       let map = {
@@ -143,6 +146,19 @@ const submitEdit= (id)=>{
   newData[0].flag = false;
   setResult(newSeller);
 }
+const setDefault = ()=>{
+  setChecked(!checked)
+}
+const ChangeDefaultStatus = (id)=>{
+  const newOrderStatus =[...resultServer];
+  const newData = newOrderStatus.filter((item)=>{
+    const itemData = item._id;
+    const textData = id;
+    return itemData.indexOf(textData)>-1
+  }) 
+   newData[0].default = !newData[0].default;
+  setResult(newOrderStatus);
+}
     
 return(
 <div className="animated fadeIn">
@@ -174,7 +190,7 @@ return(
                         <Label check>
                         تعیین به عنوان حالت پیش فرض سفارشات
                         </Label>
-                          <Input type="checkbox" />{' '}
+                          <Input type="checkbox" value={checked} onChange={setDefault} />
                       </FormGroup>
                     </Col> 
                     <Col xs="5">
@@ -222,6 +238,7 @@ return(
                           <tr>
                               <th>عنوان</th>
                               <th>عکس</th>
+                              <th>وضعیت</th>
                               <th>عملیات</th>                                
                           </tr>
                       </thead>                              
@@ -239,6 +256,13 @@ return(
                                   :item.name
                                   }</td>
                                 <td><img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image}`)} alt={item.image}  className={classes.Preview}/></td>
+                                <td>
+                                    {item.flag 
+                                      ? 
+                                      <Input type="checkbox" value={item.default} onChange={() =>ChangeDefaultStatus(item._id)} />
+                                       :
+                                       item.default ? 'پیش فرض' : 'عادی'}
+                                  </td>
                                 <td>
                                     <Row>
                                     <Col xs="3">

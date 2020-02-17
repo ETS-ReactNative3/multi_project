@@ -37,7 +37,7 @@ span{
     align-items:center;
     justify-content: center
 }
-.checbox_box input{
+input[type=checkbox]{
     width:25px;
     height: 25px;
 }

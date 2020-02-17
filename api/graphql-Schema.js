@@ -45,7 +45,7 @@ const typeDefs = gql`
         slider(imageId : ID) : operation!,
         payment( input : Inputpayment) : operation!,
         receptor(input : InputReceptor) : operation,
-        OrderStatus(name : String!, image : Upload!) : operation!
+        OrderStatus(name : String!, image : Upload!, default : Boolean) : operation!,
 
 
         UpdateCategory(input : InputCategory) : operation!
@@ -57,6 +57,8 @@ const typeDefs = gql`
         UpdateProduct(input : UpdateProduct) : operation!,
         UpdateProducctAttribute(input : InputProductAttribute) : operation!,
         UpdateCommentProduct(commentId : ID!) : operation!,
+        UpdateOrderStatus(orderstatusId : ID!) : operation!,
+        UpdatePayment(paymentId : ID!, orderstatusId : ID!) : operation!
 
 
     }
@@ -453,6 +455,7 @@ const typeDefs = gql`
     type OrderStatus {
         name : String,
         image : String,
+        default : Boolean,
         _id : ID,
     }
 
