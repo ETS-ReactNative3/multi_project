@@ -55,6 +55,7 @@ const Comments = React.lazy(() => import('./views/Comments/Comments'));
 const CommentInfo = React.lazy(() => import('./views/Comments/CommentInfo'));
 const AllOrders = React.lazy(()=>import('./views/Orders/Orders'));
 const OrderDetails = React.lazy(()=>import('./views/Orders/Order'));
+const Status = React.lazy(()=>import('./views/Orders/Status'))
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
   
@@ -106,6 +107,7 @@ const routes = [
   { path: '/orders', exact: true, name: 'مالی و فروش', component: Alerts },
   { path: '/orders/allorders', exact: true, name: 'سفارشات', component: AllOrders },
   { path: '/orders/detail/:orderNumber', exact: true, name: 'جزئیات سفارش', component: OrderDetails },
+  { path: '/orders/status', exact: true, name: 'وضعیت سفارشات', component: Status },
   { path: '/orders/alerts', name: 'Alerts', component: Alerts },
   { path: '/orders/badges', name: 'Badges', component: Badges },
   { path: '/orders/modals', name: 'Modals', component: Modals },

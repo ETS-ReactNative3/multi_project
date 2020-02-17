@@ -19,7 +19,7 @@ const typeDefs = gql`
         MainPageApp : mainInfo
 
         verifyRegister : operation,
-        getAllPayment(userId : ID) : [Payment]
+        getAllPayment(orderId : ID) : [Payment]
 
     }
 
@@ -431,6 +431,7 @@ const typeDefs = gql`
     }
 
     type Payment {
+        _id :ID,
         user : User,
         product : product,
         payment : Boolean!,
@@ -439,7 +440,8 @@ const typeDefs = gql`
         discount : Int,
         count : Int,
         price : Int,
-        receptor : Receptor
+        receptor : Receptor,
+        createdAt: Date
     }
 
 

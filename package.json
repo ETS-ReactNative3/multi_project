@@ -40,12 +40,9 @@
     "graphql": "^14.5.8",
     "image-size": "^0.8.3",
     "jsonwebtoken": "^8.5.1",
-<<<<<<< HEAD
     "method-override": "^3.0.0",
-=======
     "kavenegar": "^1.1.4",
     "mail-time": "^1.2.2",
->>>>>>> e5e505040d505c9daf089f29f5628e95ee3ade6f
     "mkdirp": "^0.5.1",
     "moment-jalaali": "^0.9.1",
     "mongoose": "^5.8.5",

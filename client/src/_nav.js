@@ -244,6 +244,11 @@ export default {
           icon: 'icon-bell',
         },
         {
+          name: 'وضعیت سفارشات',
+          url: '/orders/status',
+          icon: 'icon-bell',
+        },
+        {
           name: 'Alerts',
           url: '/orders/alerts',
           icon: 'icon-bell',

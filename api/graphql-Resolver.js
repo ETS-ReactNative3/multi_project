@@ -413,10 +413,10 @@ const resolvers = {
         getAllPayment : async (param, args, { check, isAdmin }) => {
             if(check) {
                 try {
-                    if(args.userId) {
-                        const pay = await Payment.findOne({ user : args.userId}).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}]);
-                        return pay
-                    } else if(args.userId == null && isAdmin) {
+                    if(args.orderId) {
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}]);
+                        return [pay]
+                    } else if(args.orderId == null && isAdmin) {
                         const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}]);
                         return pay
                     } else {

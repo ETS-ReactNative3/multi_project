@@ -11,41 +11,104 @@ import Eccentricity from '../../assets/img/status/332b9ff1.svg';
 import GetInTheCenter from '../../assets/img/status/d599fbb2.svg';
 import Delivery from '../../assets/img/status/d599fbb2.svg';
 const OrderDetails =(props)=>{
+    const {orderNumber} = props.match.params;
+    if(!orderNumber){
+        props.history.replace('/')
+    }
     const {dispatch} = useContext(AuthContext);
     const token =  GetToken();
+    const [order,setOrder] = useState(null)
     useEffect(()=>{
       dispatch({type:'check',payload:props});
-    })
+      axios({
+        url: '/',
+        method: 'post',
+        headers:{'token':`${token}`},
+        data: {
+          query: `
+          query getallpayment($orderId : ID) {
+            getAllPayment(orderId : $orderId) {
+                _id,
+              user {
+                fname,
+                lname
+              }
+              product {
+                fname,
+                ename,
+              }
+              payment,
+              resnumber,
+              attribute {
+                seller {
+                  name
+                },
+                warranty {
+                  name
+                }
+              },
+              discount,
+              count,
+              price,
+              receptor {
+                fname,
+                lname,
+                address,
+                phone
+              },
+              createdAt
+            }
+          }  
+            `,
+            variables :{
+                "orderId": orderNumber      
+            }
+      }
+    }).then((result) => {
+      if(result.data.errors){
+        //dispatch({type:'logout',payload:props});
+        console.log(result.data.errors)
+      }
+      else{
+        const {getAllPayment} =result.data.data;
+        console.log(getAllPayment);
+        setOrder(getAllPayment[0])
+      }
+     
+    }).catch(error=>{
+      console.log(error)
+    });
+    },[])
     return (
       <div className="animated fadeIn">
-        <Row>
+      {
+          order?
+          <Row>
           <Col xl={12}>
               <Card>
                 <CardHeader>
-                    <h3>سفارش DKC-1721762</h3>
-                    <h6>ثبت شده در تاریخ 12 شهریور 1393</h6>
+                    <h3>سفارش {order._id}</h3>
+                    <h6>ثبت شده در تاریخ {new Date(order.createdAt).toLocaleDateString('fa-IR')}</h6>
                 </CardHeader>
                 <CardBody className="CardBody" >
                     <Row>
                         <Col>
-                            تحویل گیرنده:
-                            mahdi hasanzadeh
+                            تحویل گیرنده : {order.receptor.fname} {order.receptor.lname} 
+                            
                         </Col>
                         <Col>
-                            شماره تماس تحویل گیرنده:
-                            ۰۹۱۵۶۶۷۶۱۹۸ 
+                            شماره تماس تحویل گیرنده : {order.receptor.phone}
+                            
                         </Col>
                     </Row> 
                 </CardBody>
                 <CardBody className="CardBody">
                     <Row>
                         <Col>
-                        آدرس تحویل گیرنده:
-                        3خراسان جنوبی، فردوس، ایران-خراسان جنوبی-فردوس-خیابان مطهری-مطهری                      
+                        آدرس تحویل گیرنده: {order.receptor.address}                  
                         </Col>
                         <Col>
-                        تعداد مرسوله:
-                        ۱ مرسوله
+                        تعداد محصولات مرسوله : {order.count}
                         </Col>
                     </Row>
                 </CardBody>
@@ -57,7 +120,7 @@ const OrderDetails =(props)=>{
                         </Col>
                         <Col>
                         مبلغ کل:
-                        ۱۱۱,۵۰۰ تومان   
+                        {order.price} تومان   
                         </Col>
                     </Row>
                 </CardBody>
@@ -98,7 +161,7 @@ const OrderDetails =(props)=>{
                 <CardBody className="CardBody">
                     <Row>
                         <Col>
-                        کد مرسوله: 1161002                        
+                        کد مرسوله: {order._id.substr(18,24)}                        
                         </Col>
                         <Col>
                         زمان تحویل: -  
@@ -167,6 +230,9 @@ const OrderDetails =(props)=>{
               </Card>
           </Col>
         </Row>
+        :null
+      }
+        
       </div>
     )
   
