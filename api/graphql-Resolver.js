@@ -1260,18 +1260,25 @@ const resolvers = {
         UpdateOrderStatus : async (param, args, { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
-                    const order_status = await OrderStatus.findById(args.orderstatusId);
-                    if(order_status == null || order_status.default == true) {
-                        return {
-                            status : 401,
-                            message : 'نمی توانید این وضعیت سفارش را به پیشفرض تغییر دهید!'
-                        }
+                    if(args.default == true) {
+                        await OrderStatus.findOneAndUpdate({ default : true}, { $set : { default : !args.default}});
+                        await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : {
+                            name : args.name,
+                            deault : args.default,
+                        }}) 
+                            return {
+                                status : 401,
+                                message : 'وضعیت سفارش مورد نظر ویرایش شد.'
+                            }
                     } else {
-                        await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : { deault : true}})
-                        return {
-                            status : 200,
-                            message : 'وضعیت سفارش مورد نظر به عنوان پیشفرض سیستم انتخاب شد.'
-                        }
+                        await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : {
+                            name : args.name,
+                            deault : args.default,
+                        }}) 
+                            return {
+                                status : 401,
+                                message : 'وضعیت سفارش مورد نظر ویرایش شد.'
+                            }
                     }
                     
                 } catch {
@@ -1454,7 +1461,7 @@ const resolvers = {
                         await OrderStatus.create({
                             name : args.name,
                             image : filePath,
-                            default : true
+                            default : args.default
                         })
 
                         return {
