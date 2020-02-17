@@ -57,7 +57,7 @@ const typeDefs = gql`
         UpdateProduct(input : UpdateProduct) : operation!,
         UpdateProducctAttribute(input : InputProductAttribute) : operation!,
         UpdateCommentProduct(commentId : ID!) : operation!,
-        UpdateOrderStatus(orderstatusId : ID!) : operation!,
+        UpdateOrderStatus(orderstatusId : ID!, name : String!, deafult : Boolean!) : operation!,
         UpdatePayment(paymentId : ID!, orderstatusId : ID!) : operation!
 
 
