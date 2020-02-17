@@ -19,7 +19,8 @@ const typeDefs = gql`
         MainPageApp : mainInfo
 
         verifyRegister : operation,
-        getAllPayment(userId : ID) : [Payment]
+        getAllPayment(orderId : ID) : [Payment]
+        getAllOrderStatus : [OrderStatus]
 
     }
 
@@ -42,7 +43,8 @@ const typeDefs = gql`
         addSurveyValue(input : InputSurveyValue) : operation!
         slider(imageId : ID) : operation!,
         payment( input : Inputpayment) : operation!,
-        receptor(input : InputReceptor) : operation
+        receptor(input : InputReceptor) : operation,
+        OrderStatus(name : String!, image : Upload!) : operation!
 
 
         UpdateCategory(input : InputCategory) : operation!
@@ -295,7 +297,10 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [Details],
-        image : [String]
+        image : [String],
+        commentCount : Int,
+        soldCount : Int,
+        viewCount : Int
     }
 
     type Attribute {
@@ -440,6 +445,11 @@ const typeDefs = gql`
         count : Int,
         price : Int,
         receptor : Receptor
+    }
+
+    type OrderStatus {
+        name : String,
+        image : String
     }
 
 
