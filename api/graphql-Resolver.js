@@ -1271,7 +1271,7 @@ const resolvers = {
                                 message : 'وضعیت سفارش مورد نظر ویرایش شد.'
                             }
                     } else {
-                        await OrderStatus.findOneAndUpdate({ default : true}, { $set : { default : !args.default}});
+                        await OrderStatus.findOneAndUpdate({ default : true}, { $set : { default : false}});
                         await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : {
                             name : args.name,
                             default : args.default,

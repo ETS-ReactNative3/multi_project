@@ -8,4 +8,4 @@ module.exports = {
     }
 }
 
-//mongodb://root:2bUa5sHebWc8bPRXiQm9tI86@s9.liara.ir:33373/my-app?authSource=admin
+//mongodb://root:6olVLSBUpEVmd0R300ZCMLgU@127.0.0.1:30000/Digikala?authSource=admin

@@ -56,7 +56,7 @@ const typeDefs = gql`
         UpdateProduct(input : UpdateProduct) : operation!,
         UpdateProducctAttribute(input : InputProductAttribute) : operation!,
         UpdateCommentProduct(commentId : ID!) : operation!,
-        UpdateOrderStatus(orderstatusId : ID!, name : String!, deafult : Boolean!) : operation!,
+        UpdateOrderStatus(orderstatusId : ID!, name : String!, default : Boolean!) : operation!,
         UpdatePayment(paymentId : ID!, orderstatusId : ID!) : operation!
 
 
@@ -446,12 +446,15 @@ const typeDefs = gql`
         discount : Int,
         count : Int,
         price : Int,
-        receptor : Receptor
+        receptor : Receptor,
+        orderStatus : OrderStatus
     }
 
     type OrderStatus {
         name : String,
-        image : String
+        image : String,
+        default : Boolean,
+        _id : ID
     }
 
 
