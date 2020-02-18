@@ -83,7 +83,7 @@ const resolvers = {
         },
 
         getAllCategory : async (param, args, { check, isAdmin }) => {
-            if(check && isAdmin) {
+            if(check) {
                 if(args.input.mainCategory == true) {
                     let page = args.input.page || 1;
                     let limit = args.input.limit || 10;
