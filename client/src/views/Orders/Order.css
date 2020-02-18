@@ -2,7 +2,7 @@
     border: 1px solid #ccc;
     
 }
-.status{
+.status-img{
     width:110px;
     height: 110px;
     display: block;
@@ -43,4 +43,24 @@ input[type=checkbox]{
 }
 .checbox_box label{
     margin-top:7px;
+}
+.status{
+    display: flex;
+    justify-content: center;
+    align-items: unset;
+    border-bottom: 1px solid #ccc;
+    padding: 38px;
+}
+.status label{
+    padding-right: 43px;
+    font-size: 17px;
+}
+.status input{
+    width:18px;
+    height: 18px;
+}
+.status-order{
+    display: flex;
+    flex-flow: column;
+    align-items: center;
 }

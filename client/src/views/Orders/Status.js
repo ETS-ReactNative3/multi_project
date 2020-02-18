@@ -14,6 +14,7 @@ const Status = (props)=>{
     const [file, setFile] = useState('');
     const [image, setImage] = useState('');
     const [checked,setChecked] = useState(false);
+    const [loadAgain,setLoadAgain] = useState(false)
     const {dispatch} = useContext(AuthContext);
     const token =  GetToken();
 
@@ -54,7 +55,7 @@ const Status = (props)=>{
     }).catch(error=>{
       console.log(error)
     });
-    },[])
+    },[loadAgain])
 
     const handleTitle =(event)=>{
         setTitle(event.target.value)
@@ -158,9 +159,9 @@ const submitEdit= (id)=>{
     const textData = id;
     return itemData.indexOf(textData)>-1
   })
-  console.log();
-  console.log();
-  console.log();
+  console.log(id);
+  console.log(newData[0].name);
+  console.log(newData[0].default);
   axios({
     url: '/',
     method: 'post',
@@ -168,7 +169,7 @@ const submitEdit= (id)=>{
     data: {
       query: `
       mutation UpdateOrderStatus($orderstatusId : ID!, $name : String!, $default : Boolean!) {
-        UpdateOrderStatus(orderstatusId : $orderstatusId, name : $name, deafult : $default) {
+        UpdateOrderStatus(orderstatusId : $orderstatusId, name : $name, default : $default) {
           status,
           message
         }
@@ -183,16 +184,11 @@ const submitEdit= (id)=>{
 }).then((result) => {
   if(result.data.errors){
     
-    toast.error(result.data.errors)
+   toast.error(result.data.errors.message)
   }
   else{
     newData[0].flag = false;
-    if(newData[0].default){
-      newSeller.map((item)=>{
-        if(id!==newData[0].id)
-        item.default=false;
-      })
-    }
+    setLoadAgain(!loadAgain)
     setResult(newSeller);
   }
 }).catch(error=>{
@@ -305,7 +301,7 @@ return(
                                         {item.flag 
                                           ? 
                                           <Input type="checkbox" 
-                                          value={item.default}
+                                          //value={item.default}
                                           checked={item.default}
                                           onChange={() =>ChangeDefaultStatus(item._id)}
                                           //disabled = {item.default}

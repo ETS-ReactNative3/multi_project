@@ -4,12 +4,7 @@ import './Order.css';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
 import axios from 'axios';
-import Artboard from '../../assets/img/status/0eab59b0.svg';
-import OrderConfirmation from '../../assets/img/status/d5d5e1d2.svg';
-import OrderPreparation from '../../assets/img/status/3db3cdeb.svg';
-import Eccentricity from '../../assets/img/status/332b9ff1.svg';
-import GetInTheCenter from '../../assets/img/status/d599fbb2.svg';
-import Delivery from '../../assets/img/status/d599fbb2.svg';
+
 const OrderDetails =(props)=>{
     const {orderNumber} = props.match.params;
     if(!orderNumber){
@@ -17,7 +12,8 @@ const OrderDetails =(props)=>{
     }
     const {dispatch} = useContext(AuthContext);
     const token =  GetToken();
-    const [order,setOrder] = useState(null)
+    const [order,setOrder] = useState(null);
+    const [status,setStatus] = useState(null);
     useEffect(()=>{
       dispatch({type:'check',payload:props});
       axios({
@@ -50,6 +46,11 @@ const OrderDetails =(props)=>{
               discount,
               count,
               price,
+              ,
+              orderStatus{
+                name,
+                _id
+              },
               receptor {
                 fname,
                 lname,
@@ -78,6 +79,39 @@ const OrderDetails =(props)=>{
     }).catch(error=>{
       console.log(error)
     });
+
+
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        query getAllOrderStatus {
+          getAllOrderStatus {
+            _id,
+            name,
+            image,
+          }
+        } 
+          `
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      
+      console.log(result.data.errors)
+    }
+    else{
+     const{getAllOrderStatus} = result.data.data;
+     console.log(getAllOrderStatus);
+      setStatus(getAllOrderStatus); 
+    }
+   
+  }).catch(error=>{
+    console.log(error)
+  });
+
+
     },[])
     return (
       <div className="animated fadeIn">
@@ -132,30 +166,23 @@ const OrderDetails =(props)=>{
                 </CardHeader>
                 <CardBody>
                     <Row>
-                        <Col>
-                            <img src={Artboard} className="status" alt="pic" />  
-                            <span>در صف بررسی</span>  
+                      {
+                        status.map((item)=>{
+                          
+                          return(
+                        <Col key={item._id} className="status-order">
+                            <img 
+                             src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image}`)}
+                             className={`status-img ${order.orderStatus._id===item._id? 'is-active':null}`}
+                             alt="pic"
+                              />  
+                            <span style={order.orderStatus._id===item._id?{color:'#000'}:null}>{item.name}</span>  
                         </Col>
-                        <Col>
-                            <img src={OrderConfirmation} className="status is-active"   alt="pic"/>
-                            <span className="is-active">تایید سفارش</span>
-                        </Col>
-                        <Col>
-                            <img src={OrderPreparation} className="status"  alt="pic" />
-                            <span>آماده‌سازی سفارش</span>
-                        </Col>
-                        <Col>
-                            <img src={Eccentricity} className="status"  alt="pic" />
-                            <span>خروج از مرکز پردازش</span>
-                        </Col>
-                        <Col>
-                            <img src={GetInTheCenter} className="status"   alt="pic"/>
-                            <span>دریافت در مرکز توزیع </span>
-                        </Col>
-                        <Col>
-                            <img src={Delivery} className="status"  alt="pic" />
-                            <span>تحویل به مامور ارسال</span>
-                        </Col>
+                          )
+                        })
+                      }
+                        
+                       
                     </Row>
                 </CardBody>
                 <CardBody className="CardBody">
@@ -181,7 +208,7 @@ const OrderDetails =(props)=>{
                 <CardBody className="CardBody">
                     <Row>
                         <Col style={{textAlign:'center'}}>
-                        مبلغ این مرسوله: ۱۱۱,۵۰۰ تومان
+                        مبلغ این مرسوله: {order.price} تومان
                         </Col>
                         
                     </Row>

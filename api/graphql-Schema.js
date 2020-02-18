@@ -57,7 +57,7 @@ const typeDefs = gql`
         UpdateProduct(input : UpdateProduct) : operation!,
         UpdateProducctAttribute(input : InputProductAttribute) : operation!,
         UpdateCommentProduct(commentId : ID!) : operation!,
-        UpdateOrderStatus(orderstatusId : ID!, name : String!, deafult : Boolean!) : operation!,
+        UpdateOrderStatus(orderstatusId : ID!, name : String!, default : Boolean!) : operation!,
         UpdatePayment(paymentId : ID!, orderstatusId : ID!) : operation!
 
 
@@ -82,7 +82,7 @@ const typeDefs = gql`
         discount : Int,
         count : Int,
         price : Int,
-        receptor : ID
+        receptor : ID,
     }
 
     input InputSurveyValue {
@@ -449,6 +449,7 @@ const typeDefs = gql`
         count : Int,
         price : Int,
         receptor : Receptor,
+        orderStatus : OrderStatus,
         createdAt: Date
     }
 

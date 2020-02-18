@@ -416,10 +416,10 @@ const resolvers = {
             if(check) {
                 try {
                     if(args.orderId) {
-                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}]);
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}, { path : 'orderStatus'}]);
                         return [pay]
                     } else if(args.orderId == null && isAdmin) {
-                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}]);
+                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
                         return pay
                     } else {
                         const error = new Error('سفارشی برای نمایش وجود ندارد!');
@@ -1272,7 +1272,7 @@ const resolvers = {
                                 message : 'وضعیت سفارش مورد نظر ویرایش شد.'
                             }
                     } else {
-                        await OrderStatus.findOneAndUpdate({ default : true}, { $set : { default : !args.default}});
+                        await OrderStatus.findOneAndUpdate({ default : true}, { $set : { default : false}});
                         await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : {
                             name : args.name,
                             default : args.default,
