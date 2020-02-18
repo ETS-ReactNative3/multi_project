@@ -136,16 +136,7 @@ const handleEdit = (id)=>{
    newData[0].flag = true;
   setResult(newSeller);
 }
-const submitEdit= (id)=>{
-  const newSeller =[...resultServer];
-  const newData = newSeller.filter((item)=>{
-    const itemData = item._id;
-    const textData = id;
-    return itemData.indexOf(textData)>-1
-  })
-  newData[0].flag = false;
-  setResult(newSeller);
-}
+
 const setDefault = ()=>{
   setChecked(!checked)
 }
@@ -158,6 +149,57 @@ const ChangeDefaultStatus = (id)=>{
   }) 
    newData[0].default = !newData[0].default;
   setResult(newOrderStatus);
+}
+
+const submitEdit= (id)=>{
+  const newSeller =[...resultServer];
+  const newData = newSeller.filter((item)=>{
+    const itemData = item._id;
+    const textData = id;
+    return itemData.indexOf(textData)>-1
+  })
+  console.log();
+  console.log();
+  console.log();
+  axios({
+    url: '/',
+    method: 'post',
+    headers:{'token':`${token}`},
+    data: {
+      query: `
+      mutation UpdateOrderStatus($orderstatusId : ID!, $name : String!, $default : Boolean!) {
+        UpdateOrderStatus(orderstatusId : $orderstatusId, name : $name, deafult : $default) {
+          status,
+          message
+        }
+      }
+        `,
+        variables :{
+          "orderstatusId": id,
+          "name":newData[0].name,
+          "default": newData[0].default
+        }
+  }
+}).then((result) => {
+  if(result.data.errors){
+    
+    toast.error(result.data.errors)
+  }
+  else{
+    newData[0].flag = false;
+    if(newData[0].default){
+      newSeller.map((item)=>{
+        if(id!==newData[0].id)
+        item.default=false;
+      })
+    }
+    setResult(newSeller);
+  }
+}).catch(error=>{
+  console.log(error)
+});
+
+  
 }
     
 return(
@@ -226,7 +268,7 @@ return(
         </Card>
         <Card>
             <CardHeader>                   
-                        <strong>لیست گارانتی ها</strong>
+                        <strong>لیست وضعیت سفارشات</strong>
             </CardHeader>
             <CardBody>
                     {
@@ -245,37 +287,48 @@ return(
                         <tbody>
                             {
                                 resultServer.map((item)=>
-                                <tr key={item._id}>
-                                <td>{
-                                  item.flag ?
-                                    <Input 
-                                    type="text"
-                                    value={item.name}
-                                    onChange={(event)=>changeNameHandler(event,item._id)}
-                                    />
-                                  :item.name
-                                  }</td>
-                                <td><img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image}`)} alt={item.image}  className={classes.Preview}/></td>
-                                <td>
-                                    {item.flag 
-                                      ? 
-                                      <Input type="checkbox" value={item.default} onChange={() =>ChangeDefaultStatus(item._id)} />
-                                       :
-                                       item.default ? 'پیش فرض' : 'عادی'}
-                                  </td>
-                                <td>
-                                    <Row>
-                                    <Col xs="3">
-                                    {item.flag ? <Button type="submit" size="sm" color="primary" onClick={()=>submitEdit(item._id)}> <i className="fa fa-check fa-lg "></i> </Button>
-                                         :<Button type="submit" size="sm" color="primary" onClick={()=>handleEdit(item._id)}><strong>ویرایش</strong> </Button>
-                                        }
-                                    </Col>
-                                    <Col xs="3">
-                                        <Button type="submit" size="sm" color="danger"><strong>حذف</strong> </Button>
-                                    </Col>
-                                    </Row>
-                                </td>          
-                             </tr> )
+                                {
+                                  
+                                  return(
+                                  <tr key={item._id}>
+                                    <td>{
+                                      item.flag ?
+                                        <Input 
+                                        type="text"
+                                        value={item.name}
+                                        onChange={(event)=>changeNameHandler(event,item._id)}
+                                        />
+                                      :item.name
+                                      }</td>
+                                    <td><img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image}`)} alt={item.image}  className={classes.Preview}/></td>
+                                    <td>
+                                        {item.flag 
+                                          ? 
+                                          <Input type="checkbox" 
+                                          value={item.default}
+                                          checked={item.default}
+                                          onChange={() =>ChangeDefaultStatus(item._id)}
+                                          //disabled = {item.default}
+                                           />
+                                          :
+                                          item.default ? 'پیش فرض' : 'عادی'}
+                                      </td>
+                                    <td>
+                                        <Row>
+                                        <Col xs="3">
+                                        {item.flag ? <Button type="submit" size="sm" color="primary" onClick={()=>submitEdit(item._id)}> <i className="fa fa-check fa-lg "></i> </Button>
+                                            :<Button type="submit" size="sm" color="primary" onClick={()=>handleEdit(item._id)}><strong>ویرایش</strong> </Button>
+                                            }
+                                        </Col>
+                                        <Col xs="3">
+                                            <Button type="submit" size="sm" color="danger"><strong>حذف</strong> </Button>
+                                        </Col>
+                                        </Row>
+                                    </td>          
+                                </tr>
+                                  )
+                                }
+                                 )
                             }
                                                
                     </tbody>                
