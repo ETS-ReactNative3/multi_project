@@ -1260,26 +1260,27 @@ const resolvers = {
         UpdateOrderStatus : async (param, args, { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
-                    if(args.default == true) {
-                        await OrderStatus.findOneAndUpdate({ default : true}, { $set : { default : !args.default}});
+                    const order = await OrderStatus.findById(args.orderstatusId);
+                    if(order.default == true) {
                         await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : {
                             name : args.name,
-                            deault : args.default,
+                            default : true,
                         }}) 
                             return {
-                                status : 401,
+                                status : 200,
                                 message : 'وضعیت سفارش مورد نظر ویرایش شد.'
                             }
                     } else {
+                        await OrderStatus.findOneAndUpdate({ default : true}, { $set : { default : !args.default}});
                         await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : {
                             name : args.name,
-                            deault : args.default,
+                            default : args.default,
                         }}) 
                             return {
-                                status : 401,
+                                status : 200,
                                 message : 'وضعیت سفارش مورد نظر ویرایش شد.'
                             }
-                    }
+                    } 
                     
                 } catch {
                     const error = new Error('امکان ویرایش وضعیت سفارش مورد نظر وجود ندارد.');

@@ -52,8 +52,14 @@ module.exports = class Application {
     }
 
     ConfigDatabase() {
-        mongoose.Promise = global.Promise;
-        mongoose.connect(config.database.url, config.database.options);
+        try {
+            mongoose.Promise = global.Promise;
+            mongoose.connect(config.database.url, config.database.options);
+        } catch {
+            const error = new Error('ارتباط با دیتابیس برقرار نشد!');
+            error.code = 401;
+            throw error;
+        }
     }
 
     async SetConfig() {
