@@ -43,6 +43,19 @@ const AddMedia = React.lazy(() => import('./views/Media/AddMedia'));
 const Category = React.lazy(() => import('./views/Shop/Category'));
 const Brand = React.lazy(() => import('./views/Shop/Brand'));
 const Scoring = React.lazy(() => import('./views/Shop/Scoring'));
+const ScoringItem = React.lazy(() => import('./views/Shop/ScoringItem'));
+const Specifications = React.lazy(() => import('./views/Shop/Specifications'));
+const SubSpecifications = React.lazy(() => import('./views/Shop/SubSpecifications'));
+const AddProduct  = React.lazy(() => import('./views/Products/AddProduct'));
+const Products  = React.lazy(() => import('./views/Products/Products'));
+const EditProduct  = React.lazy(() => import('./views/Products/EditProduct'));
+const Seller  = React.lazy(() => import('./views/Products/Seller'));
+const Warranty  = React.lazy(() => import('./views/Products/Warranty'));
+const Comments = React.lazy(() => import('./views/Comments/Comments'));
+const CommentInfo = React.lazy(() => import('./views/Comments/CommentInfo'));
+const AllOrders = React.lazy(()=>import('./views/Orders/Orders'));
+const OrderDetails = React.lazy(()=>import('./views/Orders/Order'));
+const Status = React.lazy(()=>import('./views/Orders/Status'))
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
   
@@ -50,10 +63,15 @@ const routes = [
   { path: '/theme', exact: true, name: 'Theme', component: Colors },
   { path: '/theme/colors', name: 'Colors', component: Colors },
   { path: '/theme/typography', name: 'Typography', component: Typography },
+  { path: '/comments', exact: true, name: 'نظرات', component: Comments },
+  { path: '/comments/comment/:commentid', exact: true, name: 'جزئیات نظر', component: CommentInfo },
   { path: '/shop', exact: true, name: 'امور فروشگاه', component: Category },
   { path: '/shop/category', exact: true, name: 'دسته بندی ها', component: Category },
   { path: '/shop/brand', exact: true, name: ' برند ها', component: Brand },
   { path: '/shop/scoring', exact: true, name: 'نحوه امتیاز دهی', component: Scoring },
+  { path: '/shop/scoring/:scoringid', exact: true, name: ' معیار های نحوه امتیاز دهی ', component: ScoringItem },
+  { path: '/shop/specifications', exact: true, name: 'مشخصات', component: Specifications },
+  { path: '/shop/subSpecifications', exact: true, name: 'مشخصات', component: SubSpecifications },
   { path: '/base/cards', name: 'Cards', component: Cards },
   { path: '/base/forms', name: 'Forms', component: Forms },
   { path: '/base/switches', name: 'Switches', component: Switches },
@@ -76,24 +94,33 @@ const routes = [
   { path: '/buttons/button-dropdowns', name: 'Button Dropdowns', component: ButtonDropdowns },
   { path: '/buttons/button-groups', name: 'Button Groups', component: ButtonGroups },
   { path: '/buttons/brand-buttons', name: 'Brand Buttons', component: BrandButtons },
-  { path: '/icons', exact: true, name: 'محصولات', component: CoreUIIcons },
-  { path: '/icons/coreui-icons', name: 'CoreUI Icons', component: CoreUIIcons },
-  { path: '/icons/flags', name: 'Flags', component: Flags },
-  { path: '/icons/font-awesome', name: 'Font Awesome', component: FontAwesome },
-  { path: '/icons/simple-line-icons', name: 'Simple Line Icons', component: SimpleLineIcons },
-  { path: '/notifications', exact: true, name: 'مالی و فروش', component: Alerts },
-  { path: '/notifications/alerts', name: 'Alerts', component: Alerts },
-  { path: '/notifications/badges', name: 'Badges', component: Badges },
-  { path: '/notifications/modals', name: 'Modals', component: Modals },
+  { path: '/products', exact: true, name: 'محصولات', component: AddProduct },
+  { path: '/products/addproduct', exact: true, name: 'محصولات', component: AddProduct },
+  { path: '/products/allproducts', exact: true, name: 'محصولات', component: Products },
+  { path: '/products/seller', exact: true, name: 'فروشنده ها', component: Seller },
+  { path: '/products/warranty', exact: true, name: 'گارانتی', component: Warranty },
+  { path: '/products/product/:productid', exact: true, name: 'محصولات', component: EditProduct },
+  { path: '/products/coreui-icons', name: 'CoreUI Icons', component: CoreUIIcons },
+  { path: '/products/flags', name: 'Flags', component: Flags },
+  { path: '/products/font-awesome', name: 'Font Awesome', component: FontAwesome },
+  { path: '/products/simple-line-icons', name: 'Simple Line Icons', component: SimpleLineIcons },
+  { path: '/orders', exact: true, name: 'مالی و فروش', component: Alerts },
+  { path: '/orders/allorders', exact: true, name: 'سفارشات', component: AllOrders },
+  { path: '/orders/detail/:orderNumber', exact: true, name: 'جزئیات سفارش', component: OrderDetails },
+  { path: '/orders/status', exact: true, name: 'وضعیت سفارشات', component: Status },
+  { path: '/orders/alerts', name: 'Alerts', component: Alerts },
+  { path: '/orders/badges', name: 'Badges', component: Badges },
+  { path: '/orders/modals', name: 'Modals', component: Modals },
   { path: '/widgets', name: 'Widgets', component: Widgets },
   { path: '/charts', name: 'Charts', component: Charts },
   { path: '/users', exact: true,  name: 'کاربران', component: Users },
   { path: '/users/adduser', exact: true,  name: 'اضافه کردن کاربر', component: AddUser },
   { path: '/users/:id', exact: true, name: 'مشخصات کاربران', component: User },
-  { path: '/orders/:userid', exact: true, name: 'سفارشات کاربر', component: Orders },
-  { path: '/orders/:userid/order/:orderid', exact: true, name: ' جزئیات سفارش کاربر ', component: Order },
+  { path: '/users/orders/:userid', exact: true, name: 'سفارشات کاربر', component: Orders },
+  { path: '/users/orders/:userid/order/:orderid', exact: true, name: ' جزئیات سفارش کاربر ', component: Order },
   { path: '/media/allmedia', exact: true, name: ' کتابخانه', component: Media },
   { path: '/media/addMedia', exact: true, name: ' افزودن', component: AddMedia },
+  { path: '/media/font-awesome', name: 'Font Awesome', component: FontAwesome },
 ];
 
 export default routes;

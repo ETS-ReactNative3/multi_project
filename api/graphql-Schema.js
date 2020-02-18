@@ -20,6 +20,7 @@ const typeDefs = gql`
 
         verifyRegister : operation,
         getAllPayment(orderId : ID) : [Payment]
+
         getAllOrderStatus : [OrderStatus]
 
     }
@@ -81,7 +82,7 @@ const typeDefs = gql`
         discount : Int,
         count : Int,
         price : Int,
-        receptor : ID
+        receptor : ID,
     }
 
     input InputSurveyValue {
@@ -438,6 +439,7 @@ const typeDefs = gql`
     }
 
     type Payment {
+        _id :ID,
         user : User,
         product : product,
         payment : Boolean!,
@@ -447,14 +449,15 @@ const typeDefs = gql`
         count : Int,
         price : Int,
         receptor : Receptor,
-        orderStatus : OrderStatus
+        orderStatus : OrderStatus,
+        createdAt: Date
     }
 
     type OrderStatus {
         name : String,
         image : String,
         default : Boolean,
-        _id : ID
+        _id : ID,
     }
 
 

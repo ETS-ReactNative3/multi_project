@@ -1,0 +1,10 @@
+.has-error{
+    border-color: red;
+    text-align: center;
+    margin-bottom: 10px;
+}
+.error-msg{
+    color:red;
+    text-align: center;
+    margin-bottom: 10px;
+}

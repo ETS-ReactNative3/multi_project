@@ -36,6 +36,7 @@ const Receptor = require('app/models/receptor');
 const OrderStatus = require('app/models/order-status');
 
 
+
 const resolvers = {
     Query : {
         login : async (param, args, { secretID }) => {
@@ -415,10 +416,10 @@ const resolvers = {
             if(check) {
                 try {
                     if(args.orderId) {
-                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}]);
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}, { path : 'orderStatus'}]);
                         return [pay]
-                    } else if(args.userId == null && isAdmin) {
-                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}]);
+                    } else if(args.orderId == null && isAdmin) {
+                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
                         return pay
                     } else {
                         const error = new Error('سفارشی برای نمایش وجود ندارد!');

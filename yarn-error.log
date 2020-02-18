@@ -1,0 +1,102 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Program Files (x86)\Yarn\bin\yarn.js start
+
+PATH: 
+  C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files (x86)\Intel\OpenCL SDK\2.0\bin\x86;C:\Program Files (x86)\Intel\OpenCL SDK\2.0\bin\x64;C:\Program Files\Git\cmd;C:\Program Files\Git\bin\git.exe;C:\watchman\watchman.exe;R:\project\stopsee\watchman\watchman.exe;C:\Program Files (x86)\SqliteBrowser3\bin;c:\wamp\bin\mysql\mysql5.1.36\bin;C:\Users\reactapp\AppData\Local\Programs\Python\Python36\Scripts\;C:\Users\reactapp\AppData\Local\Programs\Python\Python36\;C:\Program Files\MongoDB\Server\3.6\bin;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Yarn\bin\;C:\Program Files\Microsoft VS Code\bin;C:\Program Files\PuTTY\;C:\Program Files\nodejs\;C:\Users\reactapp\AppData\Local\Programs\Python\Python37\Scripts\;C:\Users\reactapp\AppData\Local\Programs\Python\Python37\;C:\Users\reactapp\AppData\Local\Programs\Python\Python36\Scripts\;C:\Users\reactapp\AppData\Local\Programs\Python\Python36\;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\Program Files\Git\bin\git.exe;C:\Program Files\Git\cmd;C:\watchman\watchman.exe;R:\project\stopsee\watchman.exe;C:\Users\reactapp\AppData\Local\Microsoft\WindowsApps;c:\wamp\bin\mysql\mysql5.1.36\bin;R:\SDK\platform-tools;C:\Program Files\Microsoft VS Code\bin;C:\Users\reactapp\AppData\Local\atom\bin;C:\Users\reactapp\AppData\Local\Yarn\bin;C:\Users\reactapp\AppData\Roaming\npm
+
+Yarn version: 
+  1.13.0
+
+Node version: 
+  10.16.3
+
+Platform: 
+  win32 x64
+
+Trace: 
+  SyntaxError: R:\ReactProjects\adminPanel\package.json: Unexpected token < in JSON at position 157
+      at JSON.parse (<anonymous>)
+      at C:\Program Files (x86)\Yarn\lib\cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (C:\Program Files (x86)\Yarn\lib\cli.js:304:30)
+      at C:\Program Files (x86)\Yarn\lib\cli.js:315:13
+
+npm manifest: 
+  {
+    "name": "digikala_project_api",
+    "version": "1.0.0",
+    "description": "this is a api for store digikala project",
+    "main": "server.js",
+    "scripts": {
+  <<<<<<< HEAD
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "node server.js"
+  =======
+      "start": "nodemon server.js"
+  >>>>>>> 82bf7bda6f6c95a6c871a7b932eca814eebfa831
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Ali-kiani-dev/multi_project.git"
+    },
+    "keywords": [
+      "reactapp.ir/project"
+    ],
+    "author": "ali kiani",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/Ali-kiani-dev/multi_project/issues"
+    },
+    "homepage": "https://github.com/Ali-kiani-dev/multi_project#readme",
+    "dependencies": {
+      "apollo-server-express": "^2.9.15",
+      "app-module-path": "^2.2.0",
+      "auto-bind": "^4.0.0",
+  <<<<<<< HEAD
+      "connect-mongo": "^3.2.0",
+      "cookie-parser": "^1.4.4",
+  =======
+      "bcryptjs": "^2.4.3",
+      "connect-mongo": "^3.2.0",
+      "cookie-parser": "^1.4.4",
+      "cors": "^2.8.5",
+  >>>>>>> 82bf7bda6f6c95a6c871a7b932eca814eebfa831
+      "dotenv": "^8.2.0",
+      "express": "^4.17.1",
+      "express-graphql": "^0.9.0",
+      "express-recaptcha": "^5.0.1",
+      "express-session": "^1.17.0",
+      "express-validator": "^6.3.1",
+  <<<<<<< HEAD
+      "graphql": "^14.5.8",
+  =======
+      "file-type": "^13.0.3",
+      "flash": "^1.1.0",
+      "graphql": "^14.5.8",
+      "image-size": "^0.8.3",
+  >>>>>>> 82bf7bda6f6c95a6c871a7b932eca814eebfa831
+      "jsonwebtoken": "^8.5.1",
+      "mkdirp": "^0.5.1",
+      "moment-jalaali": "^0.9.1",
+      "mongoose": "^5.8.5",
+      "mongoose-paginate": "^5.0.3",
+      "nodemailer": "^6.4.2",
+      "passport": "^0.4.1",
+      "passport-jwt": "^4.0.0",
+      "passport-local": "^1.0.0",
+      "sweetalert2": "^9.5.4",
+      "unique-string": "^2.0.0"
+  <<<<<<< HEAD
+  =======
+    },
+    "devDependencies": {
+      "nodemon": "^2.0.2"
+  >>>>>>> 82bf7bda6f6c95a6c871a7b932eca814eebfa831
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

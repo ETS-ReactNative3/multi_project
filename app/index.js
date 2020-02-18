@@ -2,13 +2,15 @@ const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const { ApolloServer } = require('apollo-server-express');
+var methodOverride = require('method-override')
 const typeDefs = require('api/graphql-Schema');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser')
 const resolvers = require('api/graphql-Resolver');
 const User = require('app/models/users');
-var elasticsearch = require('elasticsearch');
 
 const cors = require('cors');
+//const cookieParser = require('cookie-parser');
 const app = express();
 
 
@@ -22,9 +24,6 @@ module.exports = class Application {
 
     ConfigServer() {
         const server = new ApolloServer({typeDefs, resolvers, formatError(err) {
-            if(!err.originalError) {
-                return err;
-            }
 
             const data =  err.originalError.data;
             const code =  err.originalError.code || 500;
@@ -66,8 +65,12 @@ module.exports = class Application {
         
         app.use(cors());
         app.use(express.static(config.layout.PUBLIC_DIR));
+        app.use(bodyParser.json({ limit: "50mb" }));
+        app.use(bodyParser.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }))
+        app.use(methodOverride('_method'));
+
         // app.use(session({...config.session}));
-        app.use(cookieParser());
+        //app.use(cookieParser());
         // app.use(passport.initialize());
         // app.use(passport.session());
     }
