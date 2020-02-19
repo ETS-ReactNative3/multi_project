@@ -36,6 +36,7 @@ const Receptor = require('app/models/receptor');
 const OrderStatus = require('app/models/order-status');
 
 
+
 const resolvers = {
     Query : {
         login : async (param, args, { secretID }) => {
@@ -343,45 +344,26 @@ const resolvers = {
             
         // }
 
-        getAllComment : async (param, args, { check }) => {
+        getAllPayment : async (param, args, { check, isAdmin }) => {
             if(check) {
-                    let page = args.page || 1;
-                    let limit = args.limit || 10;
-                    if(! args.productId ) {
-                        const comments = await Comment.paginate({}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
-                        if(!comments) {
-                            return {
-                                status : 401,
-                                message : 'کامنتی برای این محصول ثبت نشده است!'
-                            }
-                        }
-                        return comments.docs;
-
-                    } else if(args.productId) {
-                        const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
-
-                        if(!comments) {
-                            return {
-                                status : 401,
-                                message : 'کامنتی برای این محصول ثبت نشده است!'
-                            }
-                        }
-    
-                        return comments.docs;
-
-                    } else if(args.commentId != null && args.productId == null) {
-                        const comments = await Comment.paginate({_id : args.commentId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
-
-                        if(!comments) {
-                            return {
-                                status : 401,
-                                message : 'کامنتی با این مشخصات وجود ندارد!'
-                            }
-                        }
-    
-                        return comments.docs;
+                try {
+                    console.log(args.orderId)
+                    if(args.orderId) {
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);
+                        return [pay]
+                    } else if(args.orderId == null && isAdmin) {
+                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
+                        return pay
+                    } else {
+                        const error = new Error('سفارشی برای نمایش وجود ندارد!');
+                        error.code = 401;
+                        throw error;
                     }
-
+                } catch {
+                    const error = new Error('سفارشی برای نمایش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
@@ -418,10 +400,10 @@ const resolvers = {
             if(check) {
                 try {
                     if(args.orderId) {
-                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}]);
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);
                         return [pay]
-                    } else if(args.userId == null && isAdmin) {
-                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribulte', populate : [{ path : 'seller'}, { path : 'warranty'}]}]);
+                    } else if(args.orderId == null && isAdmin) {
+                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
                         return pay
                     } else {
                         const error = new Error('سفارشی برای نمایش وجود ندارد!');
