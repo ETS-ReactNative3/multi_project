@@ -19,20 +19,4 @@ const Multimedia = Schema({
 
 Multimedia.plugin(mongoosePaginate);
 
-Multimedia.statics.SaveFile = async ({ stream, filename}) => {
-    let date = new Date();
-    const dir = `/uploads/${date.getFullYear()}/${date.getMonth()}`;
-    mkdirp.sync(path.join(__dirname, `/public/${dir}`));
-
-    const filePath = `${dir}/${filename}`;
-
-    return new Promise((resolve, reject) => {
-        stream
-            .pipe(fs.createWriteStream(path.join(__dirname, `/public/${filePath}`)))
-            .on('error', error => reject(error))
-            .on('finish', () => resolve({filePath}))
-    })
-}
-
-
 module.exports = mongoose.model('Multimedia', Multimedia);

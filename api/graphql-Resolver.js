@@ -78,14 +78,17 @@ const resolvers = {
         },
 
         getProduct : async (param, args, { check, isAdmin }) => {
-            if(check && isAdmin) {
-                if(args.productId == null) {
+            if(check) {
+                if(args.productId == null && args.categoryId == null) {
                     let page = args.page || 1;
                     let limit = args.limit || 10;
                     const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
                     return producs.docs
-                } else {
+                } else if(args.productId != null && args.categoryId == null) {
                     const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
+                    return [product]
+                } else if(args.categoryId != null && args.productId == null) {
+                    const product = await Product.find({ category : args.categoryId});
                     return [product]
                 }
             } else {
@@ -418,7 +421,7 @@ const resolvers = {
                         const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}]);
                         return [pay]
                     } else if(args.userId == null && isAdmin) {
-                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}]);
+                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribulte', populate : [{ path : 'seller'}, { path : 'warranty'}]}]);
                         return pay
                     } else {
                         const error = new Error('سفارشی برای نمایش وجود ندارد!');
@@ -510,31 +513,38 @@ const resolvers = {
         },
 
         multimedia : async (param, args, { check, isAdmin }) => {
-            const { createReadStream, filename } = await args.file;
-            const type = await FileType.fromFile(args.file);
-            const stream = createReadStream();
-            const { filePath } = await Multimedia.SaveFile({ stream, filename});
-            if(!filePath) {
-                const error = new Error('امکان ذخیره فایل در پرونده چند رسانه ای وجود ندارد.');
-                error.code = 401;
-                throw error;
-            }
+            if(check && isAdmin) {
+                try {
+                    for (let index = 0; index < args.length; index++) {
+                        const element = args[index];
+                        const type = await FileType.fromFile(element.image);
+                        const { createReadStream, filename } = await args.image;
+                        const stream = createReadStream();
+                        const { filePath } = await saveImage({ stream, filename});
 
-            const file = await new Multimedia({
-                name : filename,
-                dimwidth : getImageSize(type).dimwidth,
-                dimheight :getImageSize(type).dimheight,
-                dir : filePath
-            })
+                        await Details.create({
+                            name : filename,
+                            dimwidth : getImageSize(type).dimwidth,
+                            dimheight :getImageSize(type).dimheight,
+                            dir : filePath
+                        })
+                    }
 
-            await file.save(err => {
-                if(err) {
-                    const error = new Error('امکان ذخیره فایل در پرونده چند رسانه ای وجود ندارد.');
+                    return {
+                        status : 200,
+                        message : 'تصاویر در رسانه ذخیره شد'
+                    }
+
+                } catch {
+                    const error = new Error('امکان ذخیره تصاویر وجود ندارد!');
                     error.code = 401;
                     throw error;
                 }
-            })
-
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         },
 
         category : async (param, args, { check, isAdmin }) => {
@@ -688,7 +698,7 @@ const resolvers = {
         productSpecs : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
-                    await Productspecs.create({
+                    const ProSpecs = await Productspecs.create({
                         category : args.input.category,
                         specs : args.input.specs,
                         label : args.input.label
@@ -714,7 +724,7 @@ const resolvers = {
         productSpecsDetails : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
-                    await Productdetails.create({
+                    const ProSpecsDetails = await Productdetails.create({
                         specs : args.input.specs,
                         name : args.input.name,
                         label : args.input.label
