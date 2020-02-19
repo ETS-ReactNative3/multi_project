@@ -458,7 +458,6 @@ const typeDefs = gql`
         image : String,
         default : Boolean,
         _id : ID,
-
     }
 
 
