@@ -5,6 +5,8 @@ const FileType = require('file-type');
 const mkdirp = require('mkdirp');
 const path = require('path');
 const fs = require('fs');
+const Kavenegar = require('kavenegar');
+const jwt = require('jsonwebtoken');
 
 // const uniquestring = require('unique-string');
 // const nodemailer = require('nodemailer');
@@ -26,7 +28,12 @@ const Details = require('app/models/details');
 const Passwordreset = require('app/models/password-reset');
 const Productattribute = require('app/models/p_attribute');
 const Slider = require('app/models/slider');
-const ProductSuggestion = require('app/models/p-suggestion');
+const Comment = require('app/models/comment');
+const Vsurvey = require('app/models/v-survey');
+const VlidationRegister = require('app/models/validation-register');
+const Payment = require('app/models/payment');
+const Receptor = require('app/models/receptor');
+const OrderStatus = require('app/models/order-status');
 
 
 const resolvers = {
@@ -45,9 +52,15 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
-            
-            return {
-                token : await User.CreateToken(user, secretID, '10h'),
+
+            if(user.verify) {
+                return {
+                    token : await User.CreateToken(user, secretID, '10h'),
+                }
+            } else {
+                const error = new Error('حساب کاربری شما تایید نشده است!');
+                error.code = 401;
+                throw error;
             }
 
         },
@@ -198,8 +211,8 @@ const resolvers = {
         },
 
         getAllSurvey : async (param, args, { check, isAdmin }) => {
-            if(check && isAdmin) {
-                const list = await Survey.findOne({ category : args.categoryId});
+            if(check) {
+                const list = await Survey.find({ category : args.categoryId});
                 if(list) {
                     return list
                 } else {
@@ -327,31 +340,168 @@ const resolvers = {
             
         // }
 
+        getAllComment : async (param, args, { check }) => {
+            if(check) {
+                    let page = args.page || 1;
+                    let limit = args.limit || 10;
+                    if(! args.productId ) {
+                        const comments = await Comment.paginate({}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی برای این محصول ثبت نشده است!'
+                            }
+                        }
+                        return comments.docs;
+
+                    } else if(args.productId) {
+                        const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی برای این محصول ثبت نشده است!'
+                            }
+                        }
+    
+                        return comments.docs;
+
+                    } else if(args.commentId != null && args.productId == null) {
+                        const comments = await Comment.paginate({_id : args.commentId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی با این مشخصات وجود ندارد!'
+                            }
+                        }
+    
+                        return comments.docs;
+                    }
+
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        verifyRegister : async (param, args, { secretID }) => {
+            try {
+                const digit = Math.floor(Math.random() * (9999 - 1000)) + 1000;
+                console.log('digit :' + digit)
+                const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
+                await VlidationRegister.create({
+                    verifyToken : token
+                })
+
+                const api = Kavenegar.KavenegarApi({apikey: '2F647571766C745A7030745A61585273523734365946544D783648744343767768636F6B374779587255553D'});
+                api.Send({ message: `کد تایید حساب کاربری شما : ${digit}` , sender: "1000596446" , receptor: "09154968751" });
+
+                return {
+                    status : 200,
+                    message : 'کد تایید حساب کاربری به شماره همراه شما ارسال شد.'
+                }
+    
+            } catch {
+                const error = new Error('امکان ارسال کد تایید حساب کاربری وجود ندارد!');
+                error.code = 401;
+                throw error
+            }
+
+        }, 
+    
+        getAllPayment : async (param, args, { check, isAdmin }) => {
+            if(check) {
+                try {
+                    if(args.orderId) {
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}]);
+                        return [pay]
+                    } else if(args.userId == null && isAdmin) {
+                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}]);
+                        return pay
+                    } else {
+                        const error = new Error('سفارشی برای نمایش وجود ندارد!');
+                        error.code = 401;
+                        throw error;
+                    }
+                } catch {
+                    const error = new Error('سفارشی برای نمایش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        // MainPageApp : async (param, args) => {
+        //     const product = await Product.find({}).sort({ soldCount : 1})
+        //     return {
+        //         Tselling : product
+        //     }
+        // }
+
+        getAllOrderStatus : async (param, args, { check , isAdmin }) => {
+            if(check && isAdmin) {
+                try {
+                    const getOrderStatus = await OrderStatus.find({});
+                    if(getOrderStatus == null) {
+                        const error = new Error('هیج وضعیت سفارشی در سیستم ثبت نشده است!');
+                        error.code = 401;
+                        throw error;
+                    } else {
+                        return getOrderStatus;
+                    }
+                } catch {
+                    const error = new Error('هیج وضعیت سفارشی در سیستم ثبت نشده است!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        }
+
+        
+
     },
 
     Mutation : {
-        register : async (param, args) => {            
+        register : async (param, args, { secretID }) => {            
             try {
-                const person = await User.findOne({ phone : args.input.phone});
-                if(!person) {
-                    const salt = await bcrypt.genSaltSync(15);
-                    const hash = await bcrypt.hashSync(args.input.password, salt);
-                    const user = await new User({
-                        phone : args.input.phone,
-                        password : hash,
-                        ...args
-                    });
-                    console.log(user);
-                    await user.save();
-                    return {
-                        status : 200,
-                        message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
-                    };
-                } else {
-                    const error = new Error('این شماره تلفن قبلا در سیستم ثبت شده است!');
-                    error.code = 401;
-                    throw error
-                }
+                    // const digit = args.input.digit;
+                    // const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
+                    // const codeToken = await VlidationRegister.findOne({ verifyToken : token});
+                    // const verify = await jwt.verify(codeToken, secretID);
+
+                    // if(!verify) {
+                    //     return {
+                    //         status : 403,
+                    //         message : 'درخواست شما اعتبار لازم برای ثبت نام را ندارد!'
+                    //     }
+                    // } else {
+                        const salt = await bcrypt.genSaltSync(15);
+                        const hash = await bcrypt.hashSync(args.input.password, salt);
+                        await User.create({
+                            phone : args.input.phone,
+                            password : hash,
+                            verify : true,
+                            ...args
+                        });
+
+
+                        return {
+                            status : 200,
+                            message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
+                        };
+
+                    // } 
+
             } catch {
                 const error = new Error('ارنباط با سرور محدود شده است!!');
                 error.code = 401;
@@ -417,23 +567,27 @@ const resolvers = {
         survey : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
-                    if(await Survey.findOne({category : args.input.category})) {
-                        await Survey.updateOne({category : args.input.category}, { $push : { list : args.input.list}});
+                            for (let index = 0; index < args.input.list.length; index++) {
+                                const element = args.input.list[index];
+
+                                        if(!await Category.findOne({_id : element.category})) {
+                                            return {
+                                                status : 200,
+                                                message : 'چنین دسته بندی وجود ندارد!'
+                                            }
+                                        }
+
+                                        await Survey.create({
+                                            category : element.category,
+                                            name : element.name,
+                                            label : element.label,
+                                        })
+                            }
+
                             return {
                                 status : 200,
                                 message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
                             }
-                    } else {
-                        await Survey.create({
-                            category : args.input.category,
-                            list : args.input.list,
-                        })
-    
-                            return {
-                                status : 200,
-                                message : 'فیلد نظرسنجی برای این دسته بندی ایجاد شد.'
-                            }
-                    }
                     
                 } catch {
                     const error = new Error('امکان ایجاد فیلد نظرسنجی برای این دسته بندی وجود ندارد.');
@@ -737,6 +891,44 @@ const resolvers = {
             }
         },
 
+        comment : async (param, args, { check, isAdmin}) => {
+            if(check) {
+                try {
+                    const product = await Product.findById(args.input.product);
+                    if(!product) {
+                        const error = new Error('این محصول در سیستم ثبت نشده است. نمی توانید کامنت ثبت کنید!');
+                        error.code = 401;
+                        throw error;
+                    }
+                    const surveyValue = await saveSurveyValue(args.input.survey);
+                    
+                    await Comment.create({
+                        user : args.input.user,
+                        product : args.input.product,
+                        survey : surveyValue,
+                        title : args.input.title,
+                        description : args.input.description,
+                        negative : args.input.negative,
+                        positive : args.input.positive,
+                    })
+
+                    return {
+                        status : 20,
+                        message : 'کامنت شما برای این محصول ثبت شد.'
+                    }
+                    
+                } catch {
+                    const error = new Error('امکان درج کامنت در حال حاضر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
         // edit method for all section
 
         UpdateCategory : async (param, args, { check, isAdmin }) => {
@@ -1002,7 +1194,8 @@ const resolvers = {
                         }
 
                     }
-                    for (let index = 0; index < args.input.length; index++) {
+
+                    for (let index = 0; index < args.input.attribute.length; index++) {
                         const element = args.input.attribute[index];
                                     await Productattribute.findByIdAndUpdate(element.id, { $set : {
                                             seller : element.seller,
@@ -1012,7 +1205,7 @@ const resolvers = {
                                             discount : element.discount,
                                             stock : element.stock,
                                             suggestion : element.suggestion,
-                                            expireAt : Date.now() + (args.expireAt * 60 * 60 * 1000)
+                                            expireAt : Date.now() + (element.expireAt * 60 * 60 * 1000)
                                         }
                                     })
                     }
@@ -1032,9 +1225,103 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
-        }, 
+        },
 
-        slider : async (param, args, { check, isAdmin}) => {
+        UpdateCommentProduct : async (param, args, { check , isAdmin }) => {
+            if(check && isAdmin) {
+                try {
+                    const comment= await Comment.findById(args.commentId);
+                    if(!comment) {
+                        return {
+                            status : 401,
+                            message : 'چنین کامنتی برای این محصول ثبت نشده است.'
+                        }
+                    }
+
+                    await Comment.updateOne({_id : comment._id}, { $set : { check : !comment.check}})
+
+                    return {
+                        status : 200,
+                        message : 'امکان تایید این کامنت وجود ندارد!'
+                    }
+
+                } catch {
+                    const error = new Error('امکان ویرایش کامنت محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdateOrderStatus : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    if(args.default == true) {
+                        await OrderStatus.findOneAndUpdate({ default : true}, { $set : { default : !args.default}});
+                        await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : {
+                            name : args.name,
+                            deault : args.default,
+                        }}) 
+                            return {
+                                status : 401,
+                                message : 'وضعیت سفارش مورد نظر ویرایش شد.'
+                            }
+                    } else {
+                        await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : {
+                            name : args.name,
+                            deault : args.default,
+                        }}) 
+                            return {
+                                status : 401,
+                                message : 'وضعیت سفارش مورد نظر ویرایش شد.'
+                            }
+                    }
+                    
+                } catch {
+                    const error = new Error('امکان ویرایش وضعیت سفارش مورد نظر وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdatePayment : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const pay = await Payment.findByIdAndUpdate(args.paymentId, { $set : { orderStatus : args.orderstatusId}});
+                    if(pay == null) {
+                        return {
+                            status : 401,
+                            message : 'چنین سفارشی در سیستم ثبت نشده است!'
+                        }
+                    } else {
+                        return {
+                            status : 200,
+                            message : 'وضعیت سفارش مورد نظر ویرایش شد.'
+                        }
+                    }
+
+                } catch {
+                    const error = new Error('امکان ویرایش سفارش مورد نظر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        slider : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
                     await Slider.create({
@@ -1058,10 +1345,142 @@ const resolvers = {
             }
         },
 
-
-
+        payment : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const user = await User.findById(check.id);
+                    if(user.fname != null) {
+                        const product = await Product.findById(args.input.product);
         
+                        if(!product) {
+                            return {
+                                status : 401,
+                                message : 'خرید این محصول مجاز نمی باشد'
+                            }
+                        }
+                        
+                        const payment = await Payment.create({
+                            user : check.id,
+                            product,
+                            payment : args.input.payment,
+                            resnumber : args.input.resnumber,
+                            attribute : args.input.attribute,
+                            discount : args.input.discount,
+                            count : args.input.count,
+                            price : args.input.price,
+                            receptor : args.input.receptor
+                        })
+            
+                        await User.findByIdAndUpdate(check.id, { $push : { payCach : payment._id}});
+                        return {
+                            status : 200,
+                            message : 'سفارش شما ثبت شد.'
+                        }
+                    } else {
+                        return {
+                            status : 401,
+                            message : 'اطلاعات خریدار ناقص است!!'
+                        }
+                    }
+                    
+                } catch {
+                    const error = new Error('امکان ثبت سفارش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
 
+        receptor : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const receptor = await Receptor.findOne({ phone : args.input.phone});
+                    if(receptor) {
+                        return {
+                            status : 401,
+                            message : 'این گیرنده قبلا در سیستم درج شده است!'
+                        }
+                    } else {
+                        await Receptor.create({
+                            fname : args.input.fname,
+                            lname : args.input.lname,
+                            code : args.input.code,
+                            number : args.input.number,
+                            phone : args.input.phone,
+                            state : args.input.state,
+                            city : args.input.city,
+                            address : args.input.address,
+                        })
+
+                        return {
+                            status : 200,
+                            message : 'گیرنده مورد نظر درج شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ثبت گیرنده وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        OrderStatus : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    if(args.default) {
+                        const status_def = await OrderStatus.findOne({ default : true});
+                        if(status_def != null) {
+                            return {
+                                status : 401,
+                                message : 'وضعیت سفارش دیگیری را به عنوان گزینه پیشفرض انتخاب کرده اید!'
+                            }
+                        }
+                    }
+
+                    const status = await OrderStatus.findOne({ name : args.name});
+                    if(status != null) {
+                        return {
+                            status : 401,
+                            message : 'قبل یک وضعیت سفارش با این عنوان ایجاد شده است!'
+                        }
+                    } else {
+
+                        const { createReadStream, filename } = await args.image;
+                        const stream = createReadStream();
+                        const { filePath } = await saveImage({ stream, filename});
+
+                        await OrderStatus.create({
+                            name : args.name,
+                            image : filePath,
+                            default : args.default
+                        })
+
+                        return {
+                            status : 200,
+                            message : 'وضعیت سفارش جدید در سیستم ثبت شد.'
+                        }
+
+                    }
+                } catch {
+                    const error = new Error('امکان ثبت وضعیت سفارش جدید وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        }
 
     },
 }
@@ -1222,5 +1641,27 @@ let updateImageProduct = async (id, {stream, filename}) => {
 //     fs.unlinkSync(path.join(__dirname, `/public/${dir}/${filename}`));
 //     return;
 // }
+
+let saveSurveyValue = async (args) => {
+    try {
+        const arr = [];
+        for (let index = 0; index < args.length; index++) {
+            const element = args[index];
+                        const vs = await Vsurvey.create({
+                            survey : element.survey,
+                            value : element.value
+                        })
+
+                        arr[index] = vs._id
+    
+        }
+        return arr;
+    } catch {
+        const error = new Error('امکان درج نظر سنجی جدید وجود ندارد');
+        error.code = 401;
+        throw error;
+    }
+    
+}
 
 module.exports = resolvers;

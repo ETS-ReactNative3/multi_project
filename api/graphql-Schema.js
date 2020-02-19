@@ -14,8 +14,13 @@ const typeDefs = gql`
         getAllSeller(categoryId : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
-
+        getAllComment(page : Int, limit : Int, productId : ID, commentId : ID) : [Comment]
+        
         MainPageApp : mainInfo
+
+        verifyRegister : operation,
+        getAllPayment(orderId : ID) : [Payment]
+        getAllOrderStatus : [OrderStatus]
 
     }
 
@@ -33,19 +38,68 @@ const typeDefs = gql`
         UserResetPassword(input : InputUserResetPassword) : operation!,
         ResetPassword(input : InputResetPassword) : operation!,
         seller(category : ID!, name : String!, label : String) : operation!,
-        warranty(name : String!, label : String) : operation!
+        warranty(name : String!, label : String) : operation!,
+        comment(input : InputComment) : operation!,
+        addSurveyValue(input : InputSurveyValue) : operation!
+        slider(imageId : ID) : operation!,
+        payment( input : Inputpayment) : operation!,
+        receptor(input : InputReceptor) : operation,
+        OrderStatus(name : String!, image : Upload!, default : Boolean) : operation!,
+
 
         UpdateCategory(input : InputCategory) : operation!
         UpdateBrand(input : InputBrand) : operation!,
         UpdateProductSpecs(input : InputProductSpecs) : operation!,
         UpdateProductSpecsDetails(input : InputProductSpecsDetails) : operation!,
         UpdateSeller(id : ID!, name : String!, label : String) : operation!,
-        UpdateWarranty(name : String!, label : String) : operation!
+        UpdateWarranty(name : String!, label : String) : operation!,
         UpdateProduct(input : UpdateProduct) : operation!,
-        UpdateProducctAttribute(input : InputProductAttribute) : operation!
+        UpdateProducctAttribute(input : InputProductAttribute) : operation!,
+        UpdateCommentProduct(commentId : ID!) : operation!,
+        UpdateOrderStatus(orderstatusId : ID!, name : String!, deafult : Boolean!) : operation!,
+        UpdatePayment(paymentId : ID!, orderstatusId : ID!) : operation!
 
-        slider(imageId : ID) : operation!
 
+    }
+
+    input InputReceptor {
+        fname : String!,
+        lname : String!,
+        code : String!,
+        number : String!,
+        phone : String!,
+        state : ID!,
+        city : ID!,
+        address : String!,
+    }
+
+    input Inputpayment {
+        product : ID!,
+        payment : Boolean!,
+        resnumber : String,
+        attribute : ID,
+        discount : Int,
+        count : Int,
+        price : Int,
+        receptor : ID
+    }
+
+    input InputSurveyValue {
+        survey : ID!,
+        value : Int = 3
+    }
+
+    input InputComment {
+        user : ID!,
+        product : ID!,
+        survey : [InputSurveyValue!]!
+        title : String!,
+        description : String!,
+        like : Int = 0,
+        dislike : Int = 0,
+        negative : [String],
+        positive : [String],
+        check : Boolean = false
     }
 
     input InputGetBrand {
@@ -164,11 +218,11 @@ const typeDefs = gql`
     }
 
     input InputSurvey {
-        category : ID!,
-        list : [SurveyList]!
+        list : [InputSurveyList!]!
     }
 
-    input SurveyList {
+    input InputSurveyList {
+        category : ID!,
         name : String!,
         label : String
     }
@@ -202,6 +256,8 @@ const typeDefs = gql`
         phone : String!,
         email : String,
         password : String!,
+        level : Boolean,
+        digit : Int
     }
 
     enum Gender {
@@ -243,7 +299,10 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [Details],
-        image : [String]
+        image : [String],
+        commentCount : Int,
+        soldCount : Int,
+        viewCount : Int
     }
 
     type Attribute {
@@ -290,11 +349,8 @@ const typeDefs = gql`
     }
 
     type Survey {
+        _id : ID,
         category : ID
-        list : [SurveyOption]!
-    }
-
-    type SurveyOption {
         name : String!,
         label : String
     }
@@ -349,6 +405,54 @@ const typeDefs = gql`
         label : String
     }
 
+    
+    type Comment {
+        _id : ID,
+        user : User,
+        product : product,
+        survey : [SurveyValue],
+        title : String,
+        description : String,
+        like : Int,
+        dislike : Int,
+        negative : [String],
+        positive : [String],
+        createdAt : Date,
+        check : Boolean,
+    }
+
+    type SurveyValue {
+        survey : Survey,
+        value : String
+    }
+
+    type Receptor {
+        fname : String,
+        lname : String,
+        code : String,
+        number : String,
+        phone : String,
+        state : ID,
+        city : ID,
+        address : String,
+    }
+
+    type Payment {
+        user : User,
+        product : product,
+        payment : Boolean!,
+        resnumber : String,
+        attribute : Attribute,
+        discount : Int,
+        count : Int,
+        price : Int,
+        receptor : Receptor
+    }
+
+    type OrderStatus {
+        name : String,
+        image : String
+    }
 
 
 `;
