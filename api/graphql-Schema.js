@@ -4,7 +4,7 @@ const typeDefs = gql`
     type Query {
         login(input : LRInput) : Token!,
         getUsers : [User]!,
-        getProduct(page : Int, limit : Int, productId : ID) : [product!]!,
+        getProduct(page : Int, limit : Int, productId : ID, categoryId : ID) : [product!]!,
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
         getAllBrand(input : InputGetBrand) : [Brand!]!
@@ -14,20 +14,18 @@ const typeDefs = gql`
         getAllSeller(categoryId : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
-        getAllComment(page : Int, limit : Int, productId : ID, commentId : ID) : [Comment]
-        
-        MainPageApp : mainInfo
-
+        getAllComment(page : Int, limit : Int, productId : ID, commentId : ID) : [Comment],
         verifyRegister : operation,
-        getAllPayment(orderId : ID) : [Payment]
-
-        getAllOrderStatus : [OrderStatus]
+        getAllPayment(orderId : ID) : [Payment],
+        getAllOrderStatus : [OrderStatus],
+        
+        MainPageApp : mainInfo,
 
     }
 
     type Mutation {
         register(input : LRInput) : operation!,
-        multimedia(file : Upload!) : UploadFile!,
+        multimedia(file : [Upload!]!) : operation!,
         category(input : InputCategory) : operation!,
         survey(input : InputSurvey) : operation!,
         brand(input : InputBrand) : operation!,

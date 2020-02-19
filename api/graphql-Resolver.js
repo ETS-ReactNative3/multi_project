@@ -79,14 +79,17 @@ const resolvers = {
         },
 
         getProduct : async (param, args, { check, isAdmin }) => {
-            if(check && isAdmin) {
-                if(args.productId == null) {
+            if(check) {
+                if(args.productId == null && args.categoryId == null) {
                     let page = args.page || 1;
                     let limit = args.limit || 10;
                     const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
                     return producs.docs
-                } else {
+                } else if(args.productId != null && args.categoryId == null) {
                     const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
+                    return [product]
+                } else if(args.categoryId != null && args.productId == null) {
+                    const product = await Product.find({ category : args.categoryId});
                     return [product]
                 }
             } else {
@@ -341,45 +344,26 @@ const resolvers = {
             
         // }
 
-        getAllComment : async (param, args, { check }) => {
+        getAllPayment : async (param, args, { check, isAdmin }) => {
             if(check) {
-                    let page = args.page || 1;
-                    let limit = args.limit || 10;
-                    if(! args.productId ) {
-                        const comments = await Comment.paginate({}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
-                        if(!comments) {
-                            return {
-                                status : 401,
-                                message : 'کامنتی برای این محصول ثبت نشده است!'
-                            }
-                        }
-                        return comments.docs;
-
-                    } else if(args.productId) {
-                        const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
-
-                        if(!comments) {
-                            return {
-                                status : 401,
-                                message : 'کامنتی برای این محصول ثبت نشده است!'
-                            }
-                        }
-    
-                        return comments.docs;
-
-                    } else if(args.commentId != null && args.productId == null) {
-                        const comments = await Comment.paginate({_id : args.commentId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
-
-                        if(!comments) {
-                            return {
-                                status : 401,
-                                message : 'کامنتی با این مشخصات وجود ندارد!'
-                            }
-                        }
-    
-                        return comments.docs;
+                try {
+                    console.log(args.orderId)
+                    if(args.orderId) {
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);
+                        return [pay]
+                    } else if(args.orderId == null && isAdmin) {
+                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
+                        return pay
+                    } else {
+                        const error = new Error('سفارشی برای نمایش وجود ندارد!');
+                        error.code = 401;
+                        throw error;
                     }
-
+                } catch {
+                    const error = new Error('سفارشی برای نمایش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
@@ -512,31 +496,38 @@ const resolvers = {
         },
 
         multimedia : async (param, args, { check, isAdmin }) => {
-            const { createReadStream, filename } = await args.file;
-            const type = await FileType.fromFile(args.file);
-            const stream = createReadStream();
-            const { filePath } = await Multimedia.SaveFile({ stream, filename});
-            if(!filePath) {
-                const error = new Error('امکان ذخیره فایل در پرونده چند رسانه ای وجود ندارد.');
-                error.code = 401;
-                throw error;
-            }
+            if(check && isAdmin) {
+                try {
+                    for (let index = 0; index < args.length; index++) {
+                        const element = args[index];
+                        const type = await FileType.fromFile(element.image);
+                        const { createReadStream, filename } = await args.image;
+                        const stream = createReadStream();
+                        const { filePath } = await saveImage({ stream, filename});
 
-            const file = await new Multimedia({
-                name : filename,
-                dimwidth : getImageSize(type).dimwidth,
-                dimheight :getImageSize(type).dimheight,
-                dir : filePath
-            })
+                        await Details.create({
+                            name : filename,
+                            dimwidth : getImageSize(type).dimwidth,
+                            dimheight :getImageSize(type).dimheight,
+                            dir : filePath
+                        })
+                    }
 
-            await file.save(err => {
-                if(err) {
-                    const error = new Error('امکان ذخیره فایل در پرونده چند رسانه ای وجود ندارد.');
+                    return {
+                        status : 200,
+                        message : 'تصاویر در رسانه ذخیره شد'
+                    }
+
+                } catch {
+                    const error = new Error('امکان ذخیره تصاویر وجود ندارد!');
                     error.code = 401;
                     throw error;
                 }
-            })
-
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         },
 
         category : async (param, args, { check, isAdmin }) => {
