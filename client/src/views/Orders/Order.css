@@ -64,3 +64,24 @@ input[type=checkbox]{
     flex-flow: column;
     align-items: center;
 }
+.shape{
+    width: 17px;
+    height: 17px;
+
+    border-radius: 5px;
+    background: #ccc;
+    border: 1px solid #ccc;
+
+}
+.box-shape{
+    display: flex;
+    justify-content: center;
+    margin-top: 11px;
+}
+.sp-span span{
+    color: #000000;
+}
+.Preview{
+    width:90px;
+    height: 90px;
+}

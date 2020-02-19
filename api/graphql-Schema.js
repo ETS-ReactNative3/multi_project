@@ -444,7 +444,7 @@ const typeDefs = gql`
         product : product,
         payment : Boolean!,
         resnumber : String,
-        attribute : Attribute,
+        attribute : [Attribute],
         discount : Int,
         count : Int,
         price : Int,
@@ -458,6 +458,7 @@ const typeDefs = gql`
         image : String,
         default : Boolean,
         _id : ID,
+
     }
 
 

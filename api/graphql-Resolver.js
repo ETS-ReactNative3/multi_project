@@ -415,8 +415,9 @@ const resolvers = {
         getAllPayment : async (param, args, { check, isAdmin }) => {
             if(check) {
                 try {
+                    console.log(args.orderId)
                     if(args.orderId) {
-                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}, { path : 'orderStatus'}]);
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);
                         return [pay]
                     } else if(args.orderId == null && isAdmin) {
                         const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
@@ -689,7 +690,7 @@ const resolvers = {
         productSpecs : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
-                    await Productspecs.create({
+                    const ProSpecs = await Productspecs.create({
                         category : args.input.category,
                         specs : args.input.specs,
                         label : args.input.label
@@ -715,7 +716,7 @@ const resolvers = {
         productSpecsDetails : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
-                    await Productdetails.create({
+                    const ProSpecsDetails = await Productdetails.create({
                         specs : args.input.specs,
                         name : args.input.name,
                         label : args.input.label

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {  Card, CardBody, CardHeader, Col, Row, FormGroup,Input,Label,Form,Progress  } from 'reactstrap';
+import {  Card, CardBody, CardHeader, Col, Row, FormGroup,Input,Label,Form,Progress,CardFooter,Button  } from 'reactstrap';
 import classes from './Media.module.css';
 import {checkFileSize, checkMimeType, maxSelectFile} from './Funcs';
 import { ToastContainer } from 'react-toastify';
@@ -9,11 +9,6 @@ const AddMedia =()=> {
 
 const [loadedFiles,setLoadedFiles] = useState([]);
 const[loaded,setLoaded] = useState(25)
-const DragOver=(event)=>{
-  event.preventDefault();
-  event.stopPropagation();
-  console.log(event)
-}
 
 const onFileLoad=(event)=>{
   if(maxSelectFile(event) && checkMimeType(event) && checkFileSize(event))
@@ -28,16 +23,7 @@ const onFileLoad=(event)=>{
     }
     setLoadedFiles(newLoadedFiles);
 
-    const data = new FormData()
-    for(var x = 0; x<files.length; x++) {
-        data.append('file', files[x])
-    }
-  
-    axios.post("http://localhost:8000/upload", data, {
-        onUploadProgress: ProgressEvent => {
-          setLoaded(ProgressEvent.loaded / ProgressEvent.total*100)
-      },
-    })
+    
   }
   
 }
@@ -62,7 +48,18 @@ const onDropHandler = (e) =>{
     }
     setLoadedFiles(newLoadedFiles);
 }
-
+const Upload =()=>{
+  const data = new FormData()
+  for(var x = 0; x<loadedFiles.length; x++) {
+      data.append('file', loadedFiles[x].file)
+  }
+  console.log(loadedFiles);
+  // axios.post("http://localhost:8000/upload", data, {
+  //     onUploadProgress: ProgressEvent => {
+  //       setLoaded(ProgressEvent.loaded / ProgressEvent.total*100)
+  //   },
+  // })
+}
     return (
       <div className="animated fadeIn">
         <Row>
@@ -75,13 +72,13 @@ const onDropHandler = (e) =>{
                     <h6>بارگذاری رسانه جدید</h6>
                 </CardHeader>
                 <CardBody >
-                {
+                {/* {
                   loadedFiles.length!==0 ?
                     <Progress className={classes.progressBar} max="100" color="success" value={loaded} >
                       {Math.round(loaded,2) }%
                     </Progress>
                   :null
-                }
+                } */}
 
                     <div className={classes.addMediaSection}
                      onDragOver={onDragOverHandler}
@@ -119,6 +116,9 @@ const onDropHandler = (e) =>{
                     </div>
                     
                 </CardBody>
+                <CardFooter>
+                <Button type="submit" size="sm" color="primary" onClick={Upload} ><strong>آپلود</strong> </Button>
+              </CardFooter>
              </Card>
           </Col>
         </Row>
