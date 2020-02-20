@@ -1,7 +1,6 @@
 const User = require('app/models/users');
 const bcrypt = require('bcryptjs');
 const ImageSize = require('image-size');
-const FileType = require('file-type');
 const mkdirp = require('mkdirp');
 const path = require('path');
 const fs = require('fs');
@@ -497,26 +496,21 @@ const resolvers = {
 
         multimedia : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
-                try {
-                    for (let index = 0; index < args.length; index++) {
-                        const element = args[index];
-                        const type = await FileType.fromFile(element.image);
+                try {         
                         const { createReadStream, filename } = await args.image;
                         const stream = createReadStream();
                         const { filePath } = await saveImage({ stream, filename});
 
-                        await Details.create({
+                        await Multimedia.create({
                             name : filename,
-                            dimwidth : getImageSize(type).dimwidth,
-                            dimheight :getImageSize(type).dimheight,
                             dir : filePath
                         })
-                    }
 
-                    return {
-                        status : 200,
-                        message : 'تصاویر در رسانه ذخیره شد'
-                    }
+
+                        return {
+                            status : 200,
+                            message : 'تصاویر در رسانه ذخیره شد'
+                        }
 
                 } catch {
                     const error = new Error('امکان ذخیره تصاویر وجود ندارد!');
@@ -1569,6 +1563,8 @@ let deleteAttributeProduct = async (args) => {
 }
 
 let getImageSize = (type) => {
+    console.log(type);
+    return;
     if(type.ext === ('png' || 'jpg' || 'jpeg')) {
         ImageSize(args.file, (err, dimension) => {
             if(err) {

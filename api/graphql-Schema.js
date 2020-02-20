@@ -25,7 +25,7 @@ const typeDefs = gql`
 
     type Mutation {
         register(input : LRInput) : operation!,
-        multimedia(file : [Upload!]!) : operation!,
+        multimedia(image : Upload!) : operation!,
         category(input : InputCategory) : operation!,
         survey(input : InputSurvey) : operation!,
         brand(input : InputBrand) : operation!,

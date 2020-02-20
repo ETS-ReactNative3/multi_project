@@ -8,6 +8,7 @@ const Media =(props) =>{
         setModal(!modal)
       }
 const setChange =(picPath)=>{
+    setModal(true);
     setPicPath(picPath)
 }
     return (
@@ -22,81 +23,10 @@ const setChange =(picPath)=>{
                  </CardHeader>
                  <CardBody>
                     <div className={classes.mediaSection}>
-                        <div className={classes.media} onClick={()=>{toggleLarge();setChange('https://dkstatics-public.digikala.com/digikala-products/114170147.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90');}}>
+                        <div className={classes.media} onClick={()=>{setChange('https://dkstatics-public.digikala.com/digikala-products/114170147.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90');}}>
                             <img src="https://dkstatics-public.digikala.com/digikala-products/114170147.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
                         </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114626465.jpg?x-oss-process=image/resize,m_lfit,h_350,w_350/quality,q_60" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114395955.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="imapicge" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/113441476.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/111004423.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/113577321.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114170147.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114626465.jpg?x-oss-process=image/resize,m_lfit,h_350,w_350/quality,q_60" alt="pic" />
-                        </div>
-                        <div className={classes.media}> 
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114395955.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/113441476.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/111004423.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/113577321.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90"  alt="pic"/>
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114170147.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114626465.jpg?x-oss-process=image/resize,m_lfit,h_350,w_350/quality,q_60" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114395955.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/113441476.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/111004423.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/113577321.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114170147.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114626465.jpg?x-oss-process=image/resize,m_lfit,h_350,w_350/quality,q_60" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114395955.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/113441476.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/111004423.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/113577321.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="pic" />
-                        </div>
-                        <div className={classes.media}>
-                            <img src="https://dkstatics-public.digikala.com/digikala-products/114170147.jpg?x-oss-process=image/resize,m_lfit,h_600,w_600/quality,q_90" alt="imapicge" />
-                        </div>
+                        
                     </div>
                     <Modal isOpen={modal} toggle={toggleLarge}
                         className={'modal-lg ' + props.className}>
