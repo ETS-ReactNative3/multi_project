@@ -18,6 +18,10 @@ const typeDefs = gql`
         verifyRegister : operation,
         getAllPayment(orderId : ID) : [Payment],
         getAllOrderStatus : [OrderStatus],
+        getAllMultimedia(page : Int, limit : Int) : [Multimedia]
+
+        sortPoduct(categoryId : ID, viewCount : Boolean, soldCount : Boolean, priceUp : Boolean, priceDown : Boolean, newP : Boolean, suggestion : Boolean) : [product],
+
         
         MainPageApp : mainInfo,
 
@@ -25,7 +29,7 @@ const typeDefs = gql`
 
     type Mutation {
         register(input : LRInput) : operation!,
-        multimedia(file : [Upload!]!) : operation!,
+        multimedia(image : Upload!) : operation!,
         category(input : InputCategory) : operation!,
         survey(input : InputSurvey) : operation!,
         brand(input : InputBrand) : operation!,
@@ -456,6 +460,15 @@ const typeDefs = gql`
         image : String,
         default : Boolean,
         _id : ID,
+    }
+
+    type Multimedia {
+        name : String,
+        dir : String!,
+        format : String,
+        dimwidth : String,
+        dimheight : String,
+        createdAt : Date
     }
 
 
