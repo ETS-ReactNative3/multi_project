@@ -20,10 +20,30 @@ const User = Schema({
     payCach : [{type : Schema.Types.ObjectId, ref : 'Product'}],
     verify : { type : Boolean, default : false},
 }, {
-    timestamps : true
+    timestamps : true,
+    toJSON : { virtuals : true }
 })
 
 User.plugin(mongoosePaginate);
+
+User.virtual('comment', {
+    ref : 'Comment',
+    localField : '_id',
+    foreignField : 'user'
+})
+
+User.virtual('payment', {
+    ref : 'Payment',
+    localField : '_id',
+    foreignField : 'user'
+})
+
+User.virtual('favorite', {
+    ref : 'Favorite',
+    localField : '_id',
+    foreignField : 'user'
+})
+
 User.statics.CreateToken = async ({id}, secretID, exp) => {
     return await jwt.sign({id}, secretID, { expiresIn : exp}); 
 }

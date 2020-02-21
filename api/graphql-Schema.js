@@ -3,7 +3,7 @@ const { gql } = require('apollo-server-express');
 const typeDefs = gql`
     type Query {
         login(input : LRInput) : Token!,
-        getUsers : [User]!,
+        getUsers(userId : ID) : [User]!,
         getProduct(page : Int, limit : Int, productId : ID, categoryId : ID) : [product!]!,
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
@@ -45,9 +45,10 @@ const typeDefs = gql`
         comment(input : InputComment) : operation!,
         addSurveyValue(input : InputSurveyValue) : operation!
         slider(imageId : ID) : operation!,
-        payment( input : Inputpayment) : operation!,
+        payment( input : Inputpayment) : String!,
         receptor(input : InputReceptor) : operation,
         OrderStatus(name : String!, image : Upload!, default : Boolean) : operation!,
+        favorite(productId : ID!) : operation!
 
 
         UpdateCategory(input : InputCategory) : operation!
@@ -78,13 +79,10 @@ const typeDefs = gql`
 
     input Inputpayment {
         product : ID!,
-        payment : Boolean!,
-        resnumber : String,
-        attribute : ID,
-        discount : Int,
-        count : Int,
-        price : Int,
+        attribute : ID!,
         receptor : ID,
+        count : Int = 1,
+        discount : Int = 0
     }
 
     input InputSurveyValue {
@@ -273,15 +271,20 @@ const typeDefs = gql`
     }
 
     type User {
+        _id : ID,
         fname : String,
         lname : String,
         code : Int,
         number : String,
         birthday : String,
         gender : Gender,
-        phone : String!,
+        phone : String,
         email : String,
-        password : String!,
+        password : String,
+        verify : Boolean,
+        payment : [Payment],
+        comment : [Comment],
+        favorite : [Favorite]
     }
 
     type UploadFile {
@@ -470,6 +473,11 @@ const typeDefs = gql`
         dimwidth : String,
         dimheight : String,
         createdAt : Date
+    }
+
+    type Favorite {
+        user : User,
+        product : product
     }
 
 

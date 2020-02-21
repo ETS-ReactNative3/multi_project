@@ -38,6 +38,9 @@ const User = React.lazy(() => import('./views/Users/User'));
 const AddUser = React.lazy(() => import('./views/Users/AddUser'));
 const Orders =  React.lazy(() => import('./views/Users/Orders'));
 const Order = React.lazy(() => import('./views/Users/Order'));
+const UserComments = React.lazy(() => import('./views/Users/Comments'));
+const UserCommentInfo = React.lazy(() => import('./views/Users/CommentInfo'));
+const Favorites = React.lazy(() => import('./views/Users/Favorites'));
 const Media = React.lazy(() => import('./views/Media/Media'));
 const AddMedia = React.lazy(() => import('./views/Media/AddMedia'));
 const Category = React.lazy(() => import('./views/Shop/Category'));
@@ -115,9 +118,12 @@ const routes = [
   { path: '/charts', name: 'Charts', component: Charts },
   { path: '/users', exact: true,  name: 'کاربران', component: Users },
   { path: '/users/adduser', exact: true,  name: 'اضافه کردن کاربر', component: AddUser },
-  { path: '/users/:id', exact: true, name: 'مشخصات کاربران', component: User },
+  { path: '/users/userinfo/:id', exact: true, name: 'مشخصات کاربران', component: User },
   { path: '/users/orders/:userid', exact: true, name: 'سفارشات کاربر', component: Orders },
-  { path: '/users/orders/:userid/order/:orderid', exact: true, name: ' جزئیات سفارش کاربر ', component: Order },
+  { path: '/users/orders/order/:orderNumber', exact: true, name: ' جزئیات سفارش کاربر ', component: Order },
+  { path: '/users/comments/:userid', exact: true, name: 'کامنت های کاربر', component: UserComments },
+  { path: '/users/comments/commentDetails/:commentid', exact: true, name: 'جزئیات کامنت', component: UserCommentInfo },
+  { path: '/users/favotites/:userid', exact: true, name: 'محصولات مورد علاقه کاربر', component: Favorites },
   { path: '/media/allmedia', exact: true, name: ' کتابخانه', component: Media },
   { path: '/media/addMedia', exact: true, name: ' افزودن', component: AddMedia },
   { path: '/media/font-awesome', name: 'Font Awesome', component: FontAwesome },

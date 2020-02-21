@@ -31,7 +31,7 @@ module.exports = class Application {
 
             return { data, status : code, message};
         }, 
-            context : async ({ req }) => {
+            context : async ({ req , res}) => {
 
                     const secretID = 'asdasw!@#ASdjshxwe.xfisdyf6%$qwsdahgsd#$';
                     let check = await User.CheckToken(req, secretID);
@@ -40,6 +40,7 @@ module.exports = class Application {
                         isAdmin = await User.findById(check.id);
                     }
                     return {
+                        res,
                         isAdmin : isAdmin.level,
                         check,
                         secretID

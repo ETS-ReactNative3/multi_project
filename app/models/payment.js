@@ -11,7 +11,7 @@ const Payment = Schema({
     count : { type : Number, required : true , default : 1},
     price : { type : Number, required : true},
     receptor : { type : Schema.Types.ObjectId, ref : 'Receptor'},
-    orderStatu1s : { type : Schema.Types.ObjectId, ref : 'OrderStatus'}
+    orderStatus : { type : Schema.Types.ObjectId, ref : 'OrderStatus'}
 }, {
     timestamps : true
 })

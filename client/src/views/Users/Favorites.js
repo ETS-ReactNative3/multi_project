@@ -27,7 +27,7 @@ const UserRow = (props) =>{
   )
 }
 
-const Orders =(props)=> {
+const Favorites =(props)=> {
     const {userid} =props.match.params;
     if(!userid){
       props.history.replace('/dashboard')
@@ -47,23 +47,16 @@ const Orders =(props)=> {
           query: `
           query getAllUsers($userId : ID) {
             getUsers(userId : $userId) {
-              _id,
+              _id
               fname,
               lname,
-              phone,
-              payment {
-                _id,
-                orderStatus{
-                  name,
-                },
-                payment,
-                price,
-                createdAt,
+    		  favorite {
                 product {
-                  fname
+                  attribute {
+                    color
+                  }
                 }
-              },
-             
+              }
             }
           }
             `,
@@ -77,7 +70,8 @@ const Orders =(props)=> {
         toast.error(result.data.errors[0].message);
       }
       else{
-        setOrders(result.data.data.getUsers)
+        setOrders(result.data.data.getUsers);
+        console.log(result.data.data.getUsers);
         setLoading(false)
       }
      
@@ -108,7 +102,7 @@ const Orders =(props)=> {
                     orders.map((order)=>
                     <Card key={order._id}>
                     <CardHeader>
-                        <i className="fa fa-align-justify"></i> سفارشات  { ' '}
+                        <i className="fa fa-align-justify"></i> محصولات مورد علاقه  { ' '}
                         <small className="text-muted">{`${order.fname} ${order.lname}` }</small>
                       </CardHeader>
                       <CardBody>
@@ -126,12 +120,12 @@ const Orders =(props)=> {
                           </thead>
                           <tbody>
                             
-                            {
+                            {/* {
                              
                                order.payment.map((payment) =>
                                <UserRow key={payment._id} payment={payment}/>
                                 )
-                            }
+                            } */}
                           </tbody>
                         </Table>
                       </CardBody>
@@ -152,4 +146,4 @@ const Orders =(props)=> {
   
 }
 
-export default React.memo(Orders);
+export default React.memo(Favorites);
