@@ -5,6 +5,9 @@ const Schema = mongoose.Schema;
 
 const Multimedia = Schema({
     name : { type : String, required : true},
+    dimwidth : { type : String },
+    dimheight : { type : String },
+    format : { type : String },
     dir : { type : String, required : true}
 }, {
     timestamps : true

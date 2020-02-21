@@ -52,7 +52,12 @@ const Comments =(props)=> {
       }
       else{
         const {getAllComment} = result.data.data;
-        setComments(getAllComment);
+        if(getAllComment)
+        {
+          setComments(getAllComment);
+        }
+        
+       console.log( getAllComment)
         setLoading(false);
       }
      

@@ -1,6 +1,7 @@
 const User = require('app/models/users');
 const bcrypt = require('bcryptjs');
 const ImageSize = require('image-size');
+const FileType = require('file-type')
 const mkdirp = require('mkdirp');
 const path = require('path');
 const fs = require('fs');
@@ -79,17 +80,17 @@ const resolvers = {
 
         getProduct : async (param, args, { check, isAdmin }) => {
             if(check) {
+                let page = args.page || 1;
+                let limit = args.limit || 10;
                 if(args.productId == null && args.categoryId == null) {
-                    let page = args.page || 1;
-                    let limit = args.limit || 10;
                     const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
                     return producs.docs
                 } else if(args.productId != null && args.categoryId == null) {
                     const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
                     return [product]
                 } else if(args.categoryId != null && args.productId == null) {
-                    const product = await Product.find({ category : args.categoryId});
-                    return [product]
+                    const product = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute'}]});
+                    return product.docs
                 }
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
@@ -110,7 +111,7 @@ const resolvers = {
                         let limit = args.input.limit || 10;
                         const categorys = await Category.find({ parent : args.input.catId }).skip((page - 1) * limit).limit(limit).populate('parent').exec();
                         return categorys
-                } else {
+                } else if(args.input.parentCategory == false && args.input.mainCategory == false){
                     let page = args.input.page || 1;
                     let limit = args.input.limit || 10;
                     const categorys = await Category.find({}).skip((page - 1) * limit).limit(limit).populate('parent').exec();
@@ -343,26 +344,45 @@ const resolvers = {
             
         // }
 
-        getAllPayment : async (param, args, { check, isAdmin }) => {
+        getAllComment : async (param, args, { check }) => {
             if(check) {
-                try {
-                    console.log(args.orderId)
-                    if(args.orderId) {
-                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);
-                        return [pay]
-                    } else if(args.orderId == null && isAdmin) {
-                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
-                        return pay
-                    } else {
-                        const error = new Error('سفارشی برای نمایش وجود ندارد!');
-                        error.code = 401;
-                        throw error;
+                    let page = args.page || 1;
+                    let limit = args.limit || 10;
+                    if(! args.productId ) {
+                        const comments = await Comment.paginate({}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی برای این محصول ثبت نشده است!'
+                            }
+                        }
+                        return comments.docs;
+
+                    } else if(args.productId) {
+                        const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی برای این محصول ثبت نشده است!'
+                            }
+                        }
+    
+                        return comments.docs;
+
+                    } else if(args.commentId != null && args.productId == null) {
+                        const comments = await Comment.paginate({_id : args.commentId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی با این مشخصات وجود ندارد!'
+                            }
+                        }
+    
+                        return comments.docs;
                     }
-                } catch {
-                    const error = new Error('سفارشی برای نمایش وجود ندارد!');
-                    error.code = 401;
-                    throw error;
-                }
+
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
@@ -450,9 +470,73 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
-        }
+        }, 
 
-        
+        sortPoduct : async (param, args) => {
+            try {
+                switch (args.categoryId != null) {
+                    case args.viewCount == true :
+                        const productsView = await Product.paginate({ category : args.categoryId}, { sort : { viewCount : 1}});
+                        return productsView.docs;
+                    case args.soldCount == true :
+                        const productsSold = await Product.paginate({ category : args.categoryId}, { sort : { soldCount : 1}});
+                        return productsSold.docs;
+                    case args.priceUp == true :
+                        const productsPriceUp = await Product.paginate({category : args.categoryId}, {page, limit, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        return productsPriceUp.docs;
+                    case args.priceDown == true :
+                        const productspriceDown = await Product.paginate({category : args.categoryId}, {page, limit, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        return productspriceDown.docs;
+                    case args.newP == true :
+                        const producsNew = await Product.paginate({category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        return producsNew.docs;
+                    case args.suggestion == true : 
+                        const productsSuggestion = await Product.paginate([{category : args.categoryId }, {suggestion : true}], {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        return productsSuggestion.docs;
+                    default:
+                        break;
+                }
+            } catch {
+                const error = new Error('هیج کالایی برای نمایش وجود ندارد!');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        getAllMultimedia : async (param, args, {check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    let page = args.page || 1;
+                    let limit = args.limit || 10;
+                    const multimedia = await Multimedia.paginate({}, {page, limit, sort : { createdAt : 1}});
+                    let arr = [];
+                    for (let index = 0; index < multimedia.docs.length; index++) {
+                        const element = multimedia.docs[index];
+                        ImageSize(path.join(__dirname, `/public${element.dir}`), async (err, dimensions) =>{
+                            element.dimwidth = await dimensions.width;
+                            element.dimheight = await dimensions.height;
+                          });
+
+                          const type = await FileType.fromFile(path.join(__dirname, `/public${element.dir}`));
+                          element.format = type.ext;
+                          console.log(element);
+   
+                    }
+
+                    return multimedia.docs;
+
+                } catch {
+                    const error = new Error('دسترسی شما به محتوای چند رسانه ای مسدود شده است!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
 
     },
 
