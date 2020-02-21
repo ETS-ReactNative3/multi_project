@@ -8,6 +8,7 @@ const fs = require('fs');
 const Kavenegar = require('kavenegar');
 const jwt = require('jsonwebtoken');
 
+
 // const uniquestring = require('unique-string');
 // const nodemailer = require('nodemailer');
 // const directTransport = require('nodemailer-direct-transport');
@@ -34,6 +35,7 @@ const VlidationRegister = require('app/models/validation-register');
 const Payment = require('app/models/payment');
 const Receptor = require('app/models/receptor');
 const OrderStatus = require('app/models/order-status');
+const Favorite = require('app/models/favorite');
 
 
 
@@ -69,8 +71,10 @@ const resolvers = {
         getUsers : async (param, args, { check, isAdmin }) => {
 
             if(check && isAdmin) {
-                const users = await User.find({});
-                return users;
+                let page = args.page || 1;
+                let limit = args.limit || 10;
+                const users = await User.paginate({}, {page, limit, sort : { createAt : -1}, populate : [{ path : 'comment', populate : {path : 'product'}}, { path : 'payment', populate : { path : 'product'}}, { path : 'favorite'}]})
+                return users.docs;
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
@@ -344,26 +348,45 @@ const resolvers = {
             
         // }
 
-        getAllPayment : async (param, args, { check, isAdmin }) => {
+        getAllComment : async (param, args, { check }) => {
             if(check) {
-                try {
-                    console.log(args.orderId)
-                    if(args.orderId) {
-                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);
-                        return [pay]
-                    } else if(args.orderId == null && isAdmin) {
-                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
-                        return pay
-                    } else {
-                        const error = new Error('سفارشی برای نمایش وجود ندارد!');
-                        error.code = 401;
-                        throw error;
+                    let page = args.page || 1;
+                    let limit = args.limit || 10;
+                    if(! args.productId ) {
+                        const comments = await Comment.paginate({}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی برای این محصول ثبت نشده است!'
+                            }
+                        }
+                        return comments.docs;
+
+                    } else if(args.productId) {
+                        const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی برای این محصول ثبت نشده است!'
+                            }
+                        }
+    
+                        return comments.docs;
+
+                    } else if(args.commentId != null && args.productId == null) {
+                        const comments = await Comment.paginate({_id : args.commentId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
+
+                        if(!comments) {
+                            return {
+                                status : 401,
+                                message : 'کامنتی با این مشخصات وجود ندارد!'
+                            }
+                        }
+    
+                        return comments.docs;
                     }
-                } catch {
-                    const error = new Error('سفارشی برای نمایش وجود ندارد!');
-                    error.code = 401;
-                    throw error;
-                }
+
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
@@ -499,7 +522,6 @@ const resolvers = {
 
                           const type = await FileType.fromFile(path.join(__dirname, `/public${element.dir}`));
                           element.format = type.ext;
-   
                     }
 
                     return multimedia.docs;
@@ -515,8 +537,6 @@ const resolvers = {
                 throw error;
             }
         },
-
-
     },
 
     Mutation : {
@@ -984,6 +1004,46 @@ const resolvers = {
             }
         },
 
+        favorite : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const user = await User.findById(check.id);
+                    if(!user) {
+                        return {
+                            status : 401,
+                            message : 'چنین کاربری در سیستم ثبت نام نکرده است!'
+                        }
+                    }
+                    
+                    const product = await Product.findById(args.productId);
+                    if(!product) {
+                        return {
+                            status : 401,
+                            message : 'چنین محصولی در سیستم ثبت نشده است!'
+                        }
+                    }
+
+                    await Favorite.create({
+                        user : user._id,
+                        product : args.productId
+                    })
+
+                    return {
+                        status : 200,
+                        message : 'محصول مورد نظر به لیست علاقه مندی اضافه شد.'
+                    }
+                } catch {
+                    const error = new Error('امکان درج محصول مورد نظر به لیست علاقه مندی وجود ندار!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error; 
+            }
+        },
+
         // edit method for all section
 
         UpdateCategory : async (param, args, { check, isAdmin }) => {
@@ -1401,55 +1461,83 @@ const resolvers = {
             }
         },
 
-        payment : async (param, args, { check }) => {
-            if(check) {
-                try {
-                    const user = await User.findById(check.id);
-                    if(user.fname != null) {
-                        const product = await Product.findById(args.input.product);
-        
-                        if(!product) {
-                            return {
-                                status : 401,
-                                message : 'خرید این محصول مجاز نمی باشد'
-                            }
-                        }
-                        
-                        const payment = await Payment.create({
-                            user : check.id,
-                            product,
-                            payment : args.input.payment,
-                            resnumber : args.input.resnumber,
-                            attribute : args.input.attribute,
-                            discount : args.input.discount,
-                            count : args.input.count,
-                            price : args.input.price,
-                            receptor : args.input.receptor
-                        })
-            
-                        await User.findByIdAndUpdate(check.id, { $push : { payCach : payment._id}});
-                        return {
-                            status : 200,
-                            message : 'سفارش شما ثبت شد.'
-                        }
-                    } else {
-                        return {
-                            status : 401,
-                            message : 'اطلاعات خریدار ناقص است!!'
-                        }
-                    }
+        // payment : async (param, args, { check, res }) => {
+        //     if(check) {
+        //         try {
+        //             const user = await User.findById(check.id);
+        //             if(user.fname != null) {
+        //                 const product = await Product.findById(args.input.product);
+        //                 const attribute = await Productattribute.findById(args.input.attribute);
+
+        //                 if(!product) {
+        //                     return {
+        //                         status : 401,
+        //                         message : 'خرید این محصول مجاز نمی باشد'
+        //                     }
+        //                 }
+
+        //                 if(!attribute) {
+        //                     return {
+        //                         status : 401,
+        //                         message : 'قیمت گذاری این کالا به درستی انجام نشده است!'
+        //                     }
+        //                 }
+
+        //                    // pay process
+
+        //                     let params = {
+        //                         MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
+        //                         Amount: attribute.price * args.input.count,
+        //                         CallbackURL: 'http://localhost:3000/course/payment/callbackurl',
+        //                         Description: `خرید محصول ${product.ename}`,
+        //                         Mobile : user.phone,
+        //                     }
+
+        //                     let options = getOptions('https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json', params);
+
+        //                     // options
+        //                     //     .then(data => {
+        //                     //         console.log(data.uri)
+        //                     //     })
+        //                     // return;
+
+        //                     request(options)
+        //                         .then(data => {
+        //                             Payment.create({
+        //                                 user : check.id,
+        //                                 product : product._id,
+        //                                 resnumber : data.Authority,
+        //                                 attribute : args.input.attribute,
+        //                                 discount : args.input.discount,
+        //                                 count : args.input.count,
+        //                                 price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
+        //                                 receptor : args.input.receptor
+        //                             })
+
+        //                             return `https://www.zarinpal.com/pg/StartPay/${data.Authority}`;
+        //                         })
+        //                         .catch(err => console.log(err.message));
+
+
+        //                 // return link
+        //             } else {
+        //                 return {
+        //                     status : 401,
+        //                     message : 'اطلاعات خریدار ناقص است!!'
+        //                 }
+        //             }
                     
-                } catch {
-                    const error = new Error('امکان ثبت سفارش وجود ندارد!');
-                    error.code = 401;
-                    throw error;
-                }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
-        },
+        //         } catch {
+        //             const error = new Error('امکان ثبت سفارش وجود ندارد!');
+        //             error.code = 401;
+        //             throw error;
+        //         }
+        //     } else {
+        //         const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+        //         error.code = 401;
+        //         throw error;
+        //     }
+        // },
 
         receptor : async (param, args, { check }) => {
             if(check) {
@@ -1719,5 +1807,18 @@ let saveSurveyValue = async (args) => {
     }
     
 }
+
+// let getOptions= (url, params) => {
+//     return {
+//         method: 'POST',
+//         url: url,
+//         header: {
+//             'cache-control': 'no-cache',
+//             'content-type': 'application/json'
+//         },
+//         body: params,
+//         json : true
+//     }
+// }
 
 module.exports = resolvers;
