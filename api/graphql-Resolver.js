@@ -7,6 +7,8 @@ const path = require('path');
 const fs = require('fs');
 const Kavenegar = require('kavenegar');
 const jwt = require('jsonwebtoken');
+const request = require('request-promise');
+
 
 
 // const uniquestring = require('unique-string');
@@ -69,12 +71,17 @@ const resolvers = {
         },
 
         getUsers : async (param, args, { check, isAdmin }) => {
-
             if(check && isAdmin) {
                 let page = args.page || 1;
                 let limit = args.limit || 10;
-                const users = await User.paginate({}, {page, limit, sort : { createAt : -1}, populate : [{ path : 'comment', populate : {path : 'product'}}, { path : 'payment', populate : { path : 'product'}}, { path : 'favorite'}]})
-                return users.docs;
+                if(args.userId == null) {
+                    const users = await User.paginate({}, {page, limit, sort : { createAt : -1}})
+                    return users.docs;
+                } else {
+                    const user = await User.findById(args.userId).sort({ createAt : -1}).populate([{ path : 'comment', populate : {path : 'product'}}, { path : 'payment', populate : { path : 'product'}}, { path : 'favorite', populate : { path : 'product', populate : { path : 'attribute'}}}])
+                    return [user];
+                }
+
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
@@ -1461,83 +1468,89 @@ const resolvers = {
             }
         },
 
-        // payment : async (param, args, { check, res }) => {
-        //     if(check) {
-        //         try {
-        //             const user = await User.findById(check.id);
-        //             if(user.fname != null) {
-        //                 const product = await Product.findById(args.input.product);
-        //                 const attribute = await Productattribute.findById(args.input.attribute);
+        payment : async (param, args, { check, res} ) => {
+            if(check) {
+                try {
+                    const user = await User.findById(check.id);
+                    if(user.fname != null) {
+                        const product = await Product.findById(args.input.product);
+                        const attribute = await Productattribute.findById(args.input.attribute);
+                        if(!product) {
+                            return {
+                                status : 401,
+                                message : 'خرید این محصول مجاز نمی باشد'
+                            }
+                        }
 
-        //                 if(!product) {
-        //                     return {
-        //                         status : 401,
-        //                         message : 'خرید این محصول مجاز نمی باشد'
-        //                     }
-        //                 }
+                        if(!attribute) {
+                            return {
+                                status : 401,
+                                message : 'قیمت گذاری این کالا به درستی انجام نشده است!'
+                            }
+                        }
 
-        //                 if(!attribute) {
-        //                     return {
-        //                         status : 401,
-        //                         message : 'قیمت گذاری این کالا به درستی انجام نشده است!'
-        //                     }
-        //                 }
+                           // pay process
 
-        //                    // pay process
+                            let params = {
+                                MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
+                                Amount: attribute.price * args.input.count,
+                                CallbackURL: 'http://localhost:3000/course/payment/callbackurl',
+                                Description: `خرید محصول ${product.ename}`,
+                                Mobile : user.phone,
+                            }
 
-        //                     let params = {
-        //                         MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
-        //                         Amount: attribute.price * args.input.count,
-        //                         CallbackURL: 'http://localhost:3000/course/payment/callbackurl',
-        //                         Description: `خرید محصول ${product.ename}`,
-        //                         Mobile : user.phone,
-        //                     }
+                            let options = getOptions('https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json', params);
 
-        //                     let options = getOptions('https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json', params);
+                            // options
+                            //     .then(data => {
+                            //         console.log(data.uri)
+                            //     })
+                            // return;
 
-        //                     // options
-        //                     //     .then(data => {
-        //                     //         console.log(data.uri)
-        //                     //     })
-        //                     // return;
+                            const data = await request(options);
 
-        //                     request(options)
-        //                         .then(data => {
-        //                             Payment.create({
-        //                                 user : check.id,
-        //                                 product : product._id,
-        //                                 resnumber : data.Authority,
-        //                                 attribute : args.input.attribute,
-        //                                 discount : args.input.discount,
-        //                                 count : args.input.count,
-        //                                 price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
-        //                                 receptor : args.input.receptor
-        //                             })
+                            if(! data) {
+                                return {
+                                    status : 401,
+                                    message : 'امکان خرید محصول در حال حاضر وجود ندارد بعدا امتحان نمایید!'
+                                }
+                            } 
 
-        //                             return `https://www.zarinpal.com/pg/StartPay/${data.Authority}`;
-        //                         })
-        //                         .catch(err => console.log(err.message));
+                            await Payment.create({
+                                user : check.id,
+                                product : product._id,
+                                resnumber : data.Authority,
+                                attribute : args.input.attribute,
+                                discount : args.input.discount,
+                                count : args.input.count,
+                                price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100))
+                            })
 
+                            const link = `https://www.zarinpal.com/pg/StartPay/${data.Authority}`;
 
-        //                 // return link
-        //             } else {
-        //                 return {
-        //                     status : 401,
-        //                     message : 'اطلاعات خریدار ناقص است!!'
-        //                 }
-        //             }
+                            return {
+                                status : 200,
+                                payLink : link
+                            }
+
+                    } else {
+                        return {
+                            status : 401,
+                            message : 'اطلاعات خریدار ناقص است!!'
+                        }
+                    }
                     
-        //         } catch {
-        //             const error = new Error('امکان ثبت سفارش وجود ندارد!');
-        //             error.code = 401;
-        //             throw error;
-        //         }
-        //     } else {
-        //         const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-        //         error.code = 401;
-        //         throw error;
-        //     }
-        // },
+                } catch {
+                    const error = new Error('امکان ثبت سفارش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
 
         receptor : async (param, args, { check }) => {
             if(check) {
@@ -1808,17 +1821,21 @@ let saveSurveyValue = async (args) => {
     
 }
 
-// let getOptions= (url, params) => {
-//     return {
-//         method: 'POST',
-//         url: url,
-//         header: {
-//             'cache-control': 'no-cache',
-//             'content-type': 'application/json'
-//         },
-//         body: params,
-//         json : true
-//     }
-// }
+let getOptions= (url, params) => {
+    return {
+        method: 'POST',
+        url: url,
+        header: {
+            'cache-control': 'no-cache',
+            'content-type': 'application/json'
+        },
+        body: params,
+        json : true
+    }
+}
+
+let getLink = (link) => {
+    return link;
+}
 
 module.exports = resolvers;

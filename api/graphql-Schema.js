@@ -3,7 +3,7 @@ const { gql } = require('apollo-server-express');
 const typeDefs = gql`
     type Query {
         login(input : LRInput) : Token!,
-        getUsers : [User]!,
+        getUsers(userId : ID) : [User!]!,
         getProduct(page : Int, limit : Int, productId : ID, categoryId : ID) : [product!]!,
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
@@ -45,7 +45,7 @@ const typeDefs = gql`
         comment(input : InputComment) : operation!,
         addSurveyValue(input : InputSurveyValue) : operation!
         slider(imageId : ID) : operation!,
-        payment( input : Inputpayment) : String!,
+        payment( input : Inputpayment) : operation!,
         receptor(input : InputReceptor) : operation,
         OrderStatus(name : String!, image : Upload!, default : Boolean) : operation!,
         favorite(productId : ID!) : operation!
@@ -238,7 +238,8 @@ const typeDefs = gql`
     type operation {
         _id : ID,
         status : Int,
-        message : String
+        message : String,
+        payLink : String
     }
 
     type ProductOperation {
@@ -271,6 +272,7 @@ const typeDefs = gql`
     }
 
     type User {
+        _id : ID,
         fname : String,
         lname : String,
         code : Int,
