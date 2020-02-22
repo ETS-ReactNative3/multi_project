@@ -6,23 +6,32 @@ import GetToken from '../../context/Auth/GetToken';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import './Order.css'
 
 const UserRow = (props) =>{
-  const payment = props.payment
-  const orderLinlk = `/users/orders/order/${payment._id}`
-  const geyBadgePaymentOpreations = (paymentOperations) =>{
-    return paymentOperations ? 'success': 'danger'
-    }
+  const favorite = props.favorite;
+  
   return (
-    <tr key={payment._id}>
-      <td>{payment._id}</td>
-      <td>{new Date(payment.createdAt).toLocaleDateString('fa-IR')}</td>
-      <td>{payment.orderStatus.name}</td>
-      <td>{payment.price} تومان</td>
-      <td><Badge color={geyBadgePaymentOpreations(payment.payment)}>{payment.payment? 'پرداخت شده': 'لغو شده'}</Badge></td>
+    <tr key={favorite._id} className="favorite-item">
+      <td>
+      <span>{favorite.product.fname}</span>
+      <span>{favorite.product.ename}</span>
+      </td>
+      <td>
+          <img 
+          src={require(`${process.env.REACT_APP_PUBLIC_URL}${favorite.product.image}`)} 
+          alt={favorite.product.image}
+          className="Prieview"
+           /></td>
+      <td>{favorite.product.rate ? favorite.product.rate :'0'}</td>
+      <td>
+          <span className="color-peoduct" style={{background:favorite.product.attribute[0].color}}>
+          
+          </span>
       
-      <td><Link to={orderLinlk}><i className="fa fa-chevron-left fa-lg mt-10"  ></i></Link></td>
+      </td>
+      
+      <td>{favorite.product.attribute[0].price} تومان</td>
     </tr>
   )
 }
@@ -33,7 +42,7 @@ const Favorites =(props)=> {
       props.history.replace('/dashboard')
     }
     const {dispatch} = useContext(AuthContext);
-    const [orders,setOrders] = useState([]);
+    const [favorites,setFavorites] = useState([]);
     const [loading,setLoading] = useState(false);
     const token =  GetToken();
     useEffect(()=>{
@@ -47,13 +56,19 @@ const Favorites =(props)=> {
           query: `
           query getAllUsers($userId : ID) {
             getUsers(userId : $userId) {
-              _id
+              _id,
               fname,
               lname,
     		  favorite {
+                  _id,
                 product {
+                    fname,
+                    ename,
+                    image,
+                    rate,
                   attribute {
-                    color
+                    color,
+                    price
                   }
                 }
               }
@@ -70,7 +85,7 @@ const Favorites =(props)=> {
         toast.error(result.data.errors[0].message);
       }
       else{
-        setOrders(result.data.data.getUsers);
+        setFavorites(result.data.data.getUsers);
         console.log(result.data.data.getUsers);
         setLoading(false)
       }
@@ -99,33 +114,32 @@ const Favorites =(props)=> {
             
               
                  {
-                    orders.map((order)=>
-                    <Card key={order._id}>
+                    favorites.map((favorite)=>
+                    <Card key={favorite._id}>
                     <CardHeader>
                         <i className="fa fa-align-justify"></i> محصولات مورد علاقه  { ' '}
-                        <small className="text-muted">{`${order.fname} ${order.lname}` }</small>
+                        <small className="text-muted">{`${favorite.fname} ${favorite.lname}` }</small>
                       </CardHeader>
                       <CardBody>
-                        <Table responsive striped hover>
+                        <Table responsive  hover>
                           <thead>
-                            <tr>
-                                          
-                              <th scope="col">شماره سفارش</th>            
-                              <th scope="col"> تاریخ ثبت سفارش</th>
-                              <th scope="col">وضعیت سفارش</th>
-                              <th scope="col">مبلغ کل</th>
-                              <th scope="col">عملیات پرداخت</th>
-                              <th scope="col">جزئیات</th>
+                            <tr >                                   
+                              <th scope="col">نام محصول</th>          
+                              <th scope="col">عکس</th>
+                              <th scope="col">امتیاز</th>
+                              <th scope="col">رنگ</th>
+                              <th scope="col">قیمت</th>
+                              
                             </tr>
                           </thead>
                           <tbody>
                             
-                            {/* {
+                            {
                              
-                               order.payment.map((payment) =>
-                               <UserRow key={payment._id} payment={payment}/>
+                             favorite.favorite.map((item) =>
+                               <UserRow key={item._id} favorite={item}/>
                                 )
-                            } */}
+                            }
                           </tbody>
                         </Table>
                       </CardBody>

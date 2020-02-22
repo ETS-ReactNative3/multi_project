@@ -2,15 +2,22 @@ const Payment = require('app/models/payment');
 const request = require('request-promise');
 const User = require('app/models/users');
 const Product = require('app/models/product')
+const Productattribute = require('app/models/p_attribute');
+const AutoBind = require('auto-bind');
 
 class paymentController {
+    constructor() {
+        AutoBind(this)
+    }
     async pay(req, res, next) {
+        const secretID = 'asdasw!@#ASdjshxwe.xfisdyf6%$qwsdahgsd#$';
+        let check = await User.CheckToken(req, secretID);
         if(check) {
             try {
                 const user = await User.findById(check.id);
                 if(user.fname != null) {
-                    const product = await Product.findById(args.input.product);
-                    const attribute = await Productattribute.findById(args.input.attribute);
+                    const product = await Product.findById(req.body.product);
+                    const attribute = await Productattribute.findById(req.body.attribute);
 
                     if(!product) {
                         return {
@@ -30,7 +37,7 @@ class paymentController {
 
                         let params = {
                             MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
-                            Amount: attribute.price * args.input.count,
+                            Amount: attribute.price * req.body.count,
                             CallbackURL: 'http://localhost:3000/course/payment/callbackurl',
                             Description: `خرید محصول ${product.ename}`,
                             Mobile : user.phone,
@@ -47,35 +54,36 @@ class paymentController {
                         request(options)
                             .then(data => {
                                 Payment.create({
-                                    user : check.id,
+                                    user : user._id,
                                     product : product._id,
                                     resnumber : data.Authority,
-                                    attribute : args.input.attribute,
-                                    discount : args.input.discount,
-                                    count : args.input.count,
-                                    price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
-                                    receptor : args.input.receptor
+                                    attribute : req.body.attribute,
+                                    discount : req.body.discount,
+                                    count : req.body.count,
+                                    price : (attribute.price* req.body.count) - ((attribute.price* req.body.count) * (req.body.discount/100)),
                                 })
 
                                 res.json(`https://www.zarinpal.com/pg/StartPay/${data.Authority}`);
                             })
                             .catch(err => res.json(err.message));
                 } else {
-                    return {
+                    res.json({
                         status : 401,
                         message : 'اطلاعات خریدار ناقص است!!'
-                    }
+                    })
                 }
                 
             } catch {
-                const error = new Error('امکان ثبت سفارش وجود ندارد!');
-                error.code = 401;
-                throw error;
+                res.json({
+                    status : 401,
+                    message : 'امکان ثبت سفارش وجود ندارد!'
+                })
             }
         } else {
-            const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-            error.code = 401;
-            throw error;
+            res.json({
+                status : 401,
+                message : 'دسترسی شما به اطلاعات مسدود شده است.'
+            })
         }
     }
 

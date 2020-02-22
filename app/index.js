@@ -31,8 +31,7 @@ module.exports = class Application {
 
             return { data, status : code, message};
         }, 
-            context : async ({ req , res}) => {
-
+            context : async ({ req }) => {
                     const secretID = 'asdasw!@#ASdjshxwe.xfisdyf6%$qwsdahgsd#$';
                     let check = await User.CheckToken(req, secretID);
                     let isAdmin = false
@@ -40,7 +39,6 @@ module.exports = class Application {
                         isAdmin = await User.findById(check.id);
                     }
                     return {
-                        res,
                         isAdmin : isAdmin.level,
                         check,
                         secretID
@@ -68,7 +66,7 @@ module.exports = class Application {
         app.use(express.static(config.layout.PUBLIC_DIR));
         app.use(bodyParser.json({ limit: "50mb" }));
         app.use(bodyParser.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }))
-        app.use(methodOverride('_method'));
+        // app.use(methodOverride('_method'));
 
         // app.use(session({...config.session}));
         //app.use(cookieParser());
