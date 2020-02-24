@@ -8,7 +8,8 @@ const fs = require('fs');
 const Kavenegar = require('kavenegar');
 const jwt = require('jsonwebtoken');
 const request = require('request-promise');
-
+const moment = require('moment-jalaali');
+moment.loadPersian({usePersianDigits : true , dialect : 'persian-modern'});
 
 
 // const uniquestring = require('unique-string');
@@ -43,6 +44,191 @@ const Favorite = require('app/models/favorite');
 
 const resolvers = {
     Query : {
+        // main dashboard >>>>>>>>>>>>>>>>>>>>>>>
+
+        userAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const userAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const users = await User.find({});
+                    for (let index = 0; index < users.length; index++) {
+                        const element = users[index];
+                        const month = moment(element.createAt).format('jMMMM');
+                        userAtmonth.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        paymentProveAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const paymentAtmonthProve = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const paymentsProve = await Payment.find({payment : true});
+                    for (let index = 0; index < paymentsProve.length; index++) {
+                        const element = paymentsProve[index];
+                        const month = moment(element.createAt).format('jMMMM');
+                        paymentAtmonthProve.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        paymentNotProveAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const paymentAtmonthNotProve = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const paymentsNotProve = await Payment.find({payment : false});
+                    for (let index = 0; index < paymentsNotProve.length; index++) {
+                        const element = paymentsNotProve[index];
+                        const month = moment(element.createAt).format('jMMMM');
+                        paymentAtmonthNotProve.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        sellerAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const sellerAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const sellers = await Seller.find({});
+                    for (let index = 0; index < sellers.length; index++) {
+                        const element = sellers[index];
+                        const month = moment(element.createAt).format('jMMMM');
+                        sellerAtmonth.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        commentAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const sellerAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const sellers = await Comment.find({});
+                    for (let index = 0; index < sellers.length; index++) {
+                        const element = sellers[index];
+                        const month = moment(element.createAt).format('jMMMM');
+                        sellerAtmonth.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        paymentAtDay : async (param, args, { check, isAdmin}) => {
+            const d = new Date();
+            const day = [];
+            const pay = await Payment.find({})
+
+            for (let index = 0; index < 10; index++) {
+                const t = pay.filter(item => {
+                    const data = item.createdAt.getDate();
+                    const q = d.getDate() - index;
+                    return data == q ? item : null
+                })
+
+
+                day.push({
+                    day : d.getDate() - index,
+                    count : t.length
+                })
+                
+            }
+
+            return day;
+
+
+            // for (let i = 0; i < 10; i++) 
+                // for (let j = 0; j < pay.length; j++) {
+                //     const element = pay[j];
+                //     if(element.createdAt.getDate() == d.getDate() - i) {
+                //         num++;
+                //         map.set(d.getDate() - i, num)
+
+                //         // day.map(key => {
+                //         //     if(key.day == d.getDate() - i) {
+                //         //         key.count++ 
+                //         //     } else {
+                //         //         day.map(key => {
+                //         //             key.day = d.getDate() - i,
+                //         //             key.count= key.count++
+                //         //         })
+                //         //     }
+                //         // })
+
+
+                //     }
+                // }
+
+//             const dateNow = moment().toISOString();
+//             const date = moment(dateNow,'jYYYY/jM/jD');
+//             const  x = date.jDate() - 1;
+//             const convert = d.setDate(x)
+//             console.log(convert);
+// return;
+//             const pay = await Payment.find({ createdAt : date.jDate()})
+
+//             for (let index = 0; index < 10; index++) {
+                
+                
+//             }
+//             return;
+        },
+
+
+        // end of dashboard <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
         login : async (param, args, { secretID }) => {
             const user = await User.findOne({ phone : args.input.phone});
             if(!user) {
@@ -546,6 +732,10 @@ const resolvers = {
                 throw error;
             }
         },
+
+        paymentCallback : async (param, args) => {
+            console.log('ok')
+        }
     },
 
     Mutation : {
@@ -1490,8 +1680,8 @@ const resolvers = {
 
                             let params = {
                                 MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
-                                Amount: attribute.price * args.input.count,
-                                CallbackURL: 'http://localhost:3000/course/payment/callbackurl',
+                                Amount: (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
+                                CallbackURL: 'http://localhost:4000/api/product/payment/callbackurl',
                                 Description: `خرید محصول ${product.ename}`,
                                 Mobile : user.phone,
                             }
@@ -1833,8 +2023,35 @@ let getOptions= (url, params) => {
     }
 }
 
-let getLink = (link) => {
-    return link;
-}
+let getLink = () => {
+    
+    let d = {
+        query : `
+        query paymentCallback{
+            paymentCallback {
+              status
+            }
+          }
+        `
+    };
+
+    let formD = new FormData();
+        formD.append('operations' , JSON.stringify(d));
+
+        let optitons = {
+        method : 'GET',
+        // headers : { 
+        //     'token' : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkZGY3NGMwMzZjN2Q1NTZhY2ZjM2IxYyIsImVtYWlsIjoiYWxpQGdtYWlsLmNvbSIsImlhdCI6MTU3NTEwNTcxMywiZXhwIjoxNTc1MTA5MzEzfQ.ujaPfjWBByJaa04-AsR_L_6sK9lEd_RNygCtM-S2EDs'
+        // },
+        body : formD
+        };
+
+        let url = 'http://localhost:4000/graphql';
+
+        fetch(url,optitons)
+        .then(res => res.json())
+        .then(res => console.log(res))
+        .catch(err => console.log(err));
+        }
 
 module.exports = resolvers;

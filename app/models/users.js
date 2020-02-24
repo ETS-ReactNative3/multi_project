@@ -17,7 +17,7 @@ const User = Schema({
     state : [{ type : Schema.Types.ObjectId, ref : 'State', default : null }],
     city : [{ type : Schema.Types.ObjectId, ref : 'City', default : null}],
     address : { type : String, default : null},
-    payCach : [{type : Schema.Types.ObjectId, ref : 'Product'}],
+    payCash : [{type : Schema.Types.ObjectId, ref : 'Product'}],
     verify : { type : Boolean, default : false},
 }, {
     timestamps : true,
