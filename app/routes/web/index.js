@@ -6,6 +6,6 @@ const Payment = require('app/http/controller/api/paymentController')
 
 router.use('/admin', adminRoutes);
 router.use('/auth', authRoutes);
-router.post('/api/product/payment', Payment.pay);
+router.get('/api/product/payment/callbackurl', Payment.pay);
 
 module.exports = router

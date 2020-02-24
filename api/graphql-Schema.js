@@ -18,9 +18,17 @@ const typeDefs = gql`
         verifyRegister : operation,
         getAllPayment(orderId : ID) : [Payment],
         getAllOrderStatus : [OrderStatus],
-        getAllMultimedia(page : Int, limit : Int) : [Multimedia]
-
+        getAllMultimedia(page : Int, limit : Int) : [Multimedia],
+        paymentCallback : operation!
         sortPoduct(categoryId : ID, viewCount : Boolean, soldCount : Boolean, priceUp : Boolean, priceDown : Boolean, newP : Boolean, suggestion : Boolean) : [product],
+
+        userAtmonth : [AtMonth],
+        productAtmonth : [AtMonth],
+        paymentProveAtmonth : [AtMonth],
+        paymentNotProveAtmonth : [AtMonth],
+        sellerAtmonth : [AtMonth],
+        commentAtmonth : [AtMonth],
+        paymentAtDay : [AtDay],
 
         
         MainPageApp : mainInfo,
@@ -478,6 +486,16 @@ const typeDefs = gql`
     type Favorite {
         user : User,
         product : product
+    }
+
+    type AtMonth {
+        month : String,
+        value : Int
+    }
+
+    type AtDay {
+        day : Int,
+        count : Int
     }
 
 
