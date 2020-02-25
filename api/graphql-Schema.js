@@ -30,7 +30,8 @@ const typeDefs = gql`
         commentAtmonth : [AtMonth],
         paymentAtDay : pay,
         paymenPricetAtDay : [atDay],
-        allUserCount : AtUser
+        allUserCount : AtUser,
+        allOrderStatus : [AtOrder],
 
 
         
@@ -514,6 +515,10 @@ const typeDefs = gql`
         Female : Int
     }
 
+    type AtOrder {
+        order : String,
+        count : Int
+    }
 
 `;
 
