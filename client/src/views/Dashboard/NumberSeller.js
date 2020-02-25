@@ -1,24 +1,17 @@
-import React,{useEffect, useState} from 'react';
+import React,{useEffect, useState,useContext} from 'react';
 import {
     Card,
     CardBody,
-    Col
+    Col,
+    Spinner
 } from 'reactstrap';
 import { Line} from 'react-chartjs-2';
 import { CustomTooltips } from '@coreui/coreui-plugin-chartjs-custom-tooltips';
+import {AuthContext} from '../../context/Auth/AuthContext';
+import GetToken from '../../context/Auth/GetToken';
+import axios from 'axios';
 
 
-const cardChartData = {
-    labels: ['فروردین', 'اردیبهشت', 'خرداد ', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذز', 'دی ', 'بهمن', 'اسفند'],
-    datasets: [
-      {
-        label: ' فروشنده',
-        backgroundColor: 'rgba(255,255,255,.3)',
-        borderColor: 'transparent',
-        data: [78, 81, 80, 45, 34, 12, 40, 75, 34, 89, 32, 68],
-      },
-    ],
-  };
   
   const cardChartOpts = {
     tooltips: {
@@ -46,6 +39,58 @@ const cardChartData = {
   
   
 const NumberSeller = (props)=>{
+  const {dispatch} = useContext(AuthContext);
+  const token =  GetToken();
+  const [chartData,setChartData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: 'فروشنده',
+        backgroundColor: 'rgba(255,255,255,.3)',
+        borderColor: 'transparent',
+        data: [],
+      },
+    ],
+  }
+ 
+)
+  useEffect(()=>{
+    dispatch({type:'check',payload:props});
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        query sellerAtmonth {
+          sellerAtmonth {
+           month,,
+            value
+          }
+        }
+          `
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      //dispatch({type:'logout',payload:props});
+      console.log(result.data.errors)
+    }
+    else{
+      const {sellerAtmonth  } = result.data.data;
+      const arrayHolder = {...chartData};
+      sellerAtmonth.map(item=>{
+        arrayHolder.labels.push(item.month);
+        arrayHolder.datasets[0].data.push(item.value)
+      })
+      setChartData(arrayHolder);
+    }
+   
+  }).catch(error=>{
+     console.log(error)
+  });
+
+  },[])
+
 
     return(
         
@@ -56,7 +101,7 @@ const NumberSeller = (props)=>{
                 <div>تعداد فروشنده ها </div>
               </CardBody>
               <div className="chart-wrapper" style={{ height: '70px' }}>
-                <Line data={cardChartData} options={cardChartOpts} height={70} />
+              {chartData.labels.length !==0 ?<Line data={chartData} options={cardChartOpts} height={70} />:<Spinner />}
               </div>
             </Card>
           </Col>

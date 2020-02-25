@@ -1,18 +1,34 @@
-import React,{useEffect, useState} from 'react';
+import React,{useEffect, useState, useContext} from 'react';
 import {
     Card,
     Col,
     CardHeader,
     CardBody,
     CardFooter,
-    Row
+    Row,
+    Spinner
 } from 'reactstrap';
 import { Line } from 'react-chartjs-2';
 import { CustomTooltips } from '@coreui/coreui-plugin-chartjs-custom-tooltips';
 import classes from './Dashboard.module.css';
-//Line
-const line = {
-    labels: ['24', '25', '26', '27', '28', '29', '30', '01', '02' , '03'],
+
+import {AuthContext} from '../../context/Auth/AuthContext';
+import GetToken from '../../context/Auth/GetToken';
+import axios from 'axios';
+
+  const options = {
+    tooltips: {
+      enabled: false,
+      custom: CustomTooltips
+    },
+    maintainAspectRatio: false
+  }
+    
+const NumberStatus = (props)=>{
+  const {dispatch} = useContext(AuthContext);
+  const token =  GetToken();
+  const [chartData,setChartData] = useState({
+    labels: [],
     datasets: [
       {
         label: 'پرداختی',
@@ -33,21 +49,48 @@ const line = {
         pointHoverBorderWidth: 2,
         pointRadius: 1,
         pointHitRadius: 10,
-        data: [65, 59, 80, 81, 56, 55, 40, 22, 41, 15],
+        data: [],
       },
     ],
-  };
-  
-  const options = {
-    tooltips: {
-      enabled: false,
-      custom: CustomTooltips
-    },
-    maintainAspectRatio: false
-  }
-    
-const NumberStatus = (props)=>{
+  })
+  useEffect(()=>{
+    dispatch({type:'check',payload:props});
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        query paymentAtday {
+          paymentAtDay {
+            day,
+            count
+          }
+        }  
+          `
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      //dispatch({type:'logout',payload:props});
+      console.log(result.data.errors)
+    }
+    else{
+     // console.log(result.data.data.paymentAtDay);
+      const {paymentAtDay} = result.data.data;
+      const arrayHolder = {...chartData};
+      paymentAtDay.map(item=>{
+        arrayHolder.labels.push(item.day);
+        arrayHolder.datasets[0].data.push(item.count)
+      })
+      setChartData(arrayHolder);
+    }
+   
+  }).catch(error=>{
+     console.log(error)
+  });
 
+  },[])
+  // console.log(chartData)
     return(
         
         <Col xs="6" sm="6" lg="6">
@@ -57,7 +100,7 @@ const NumberStatus = (props)=>{
           </CardHeader>
           <CardBody>
             <div className="chart-wrapper">
-              <Line data={line} options={options} />
+              {chartData.labels.length !==0 ?<Line data={chartData} options={options} />:<Spinner />}
             </div>
           </CardBody>
           <CardFooter>

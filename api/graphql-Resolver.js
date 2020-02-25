@@ -53,11 +53,12 @@ const resolvers = {
                     const users = await User.find({});
                     for (let index = 0; index < users.length; index++) {
                         const element = users[index];
-                        const month = moment(element.createAt).format('jMMMM');
+                        const month = moment(element.createdAt).format('jMMMM');
                         userAtmonth.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+                    return userAtmonth;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
                     error.code = 401;
@@ -77,11 +78,12 @@ const resolvers = {
                     const paymentsProve = await Payment.find({payment : true});
                     for (let index = 0; index < paymentsProve.length; index++) {
                         const element = paymentsProve[index];
-                        const month = moment(element.createAt).format('jMMMM');
+                        const month = moment(element.createdAt).format('jMMMM');
                         paymentAtmonthProve.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+                    return paymentAtmonthProve;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
                     error.code = 401;
@@ -101,11 +103,12 @@ const resolvers = {
                     const paymentsNotProve = await Payment.find({payment : false});
                     for (let index = 0; index < paymentsNotProve.length; index++) {
                         const element = paymentsNotProve[index];
-                        const month = moment(element.createAt).format('jMMMM');
+                        const month = moment(element.createdAt).format('jMMMM');
                         paymentAtmonthNotProve.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+                    return paymentAtmonthNotProve;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
                     error.code = 401;
@@ -125,11 +128,13 @@ const resolvers = {
                     const sellers = await Seller.find({});
                     for (let index = 0; index < sellers.length; index++) {
                         const element = sellers[index];
-                        const month = moment(element.createAt).format('jMMMM');
+                        const month = moment(element.createdAt).format('jMMMM');
                         sellerAtmonth.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+
+                    return sellerAtmonth;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
                     error.code = 401;
@@ -145,15 +150,16 @@ const resolvers = {
         commentAtmonth : async (param, args, { check , isAdmin}) => {
             if(check && isAdmin) {
                 try {
-                    const sellerAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
-                    const sellers = await Comment.find({});
-                    for (let index = 0; index < sellers.length; index++) {
-                        const element = sellers[index];
-                        const month = moment(element.createAt).format('jMMMM');
-                        sellerAtmonth.map(key => {
+                    const commentAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const comment = await Comment.find({});
+                    for (let index = 0; index < comment.length; index++) {
+                        const element = comment[index];
+                        const month = moment(element.createdAt).format('jMMMM');
+                        commentAtmonth.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+                    return commentAtmonth;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
                     error.code = 401;
