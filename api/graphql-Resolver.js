@@ -1759,6 +1759,7 @@ const resolvers = {
                 try {
                     const user = await User.findById(check.id);
                     if(user.fname != null) {
+                        const ostatus = await OrderStatus.findOne({ default : true });
                         const product = await Product.findById(args.input.product);
                         const attribute = await Productattribute.findById(args.input.attribute);
                         if(!product) {
@@ -1809,7 +1810,8 @@ const resolvers = {
                                 attribute : args.input.attribute,
                                 discount : args.input.discount,
                                 count : args.input.count,
-                                price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100))
+                                price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
+                                orderStatus : ostatus._id
                             })
 
                             const link = `https://www.zarinpal.com/pg/StartPay/${data.Authority}`;
