@@ -53,11 +53,13 @@ const resolvers = {
                     const users = await User.find({});
                     for (let index = 0; index < users.length; index++) {
                         const element = users[index];
-                        const month = moment(element.createAt).format('jMMMM');
+                        const month = moment(element.createdAt).format('jMMMM');
                         userAtmonth.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+
+                    return userAtmonth;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
                     error.code = 401;
@@ -77,11 +79,14 @@ const resolvers = {
                     const paymentsProve = await Payment.find({payment : true});
                     for (let index = 0; index < paymentsProve.length; index++) {
                         const element = paymentsProve[index];
-                        const month = moment(element.createAt).format('jMMMM');
+                        const month = moment(element.createdAt).format('jMMMM');
+                        console.log(month);
                         paymentAtmonthProve.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+
+                    return paymentAtmonthProve;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
                     error.code = 401;
@@ -101,11 +106,13 @@ const resolvers = {
                     const paymentsNotProve = await Payment.find({payment : false});
                     for (let index = 0; index < paymentsNotProve.length; index++) {
                         const element = paymentsNotProve[index];
-                        const month = moment(element.createAt).format('jMMMM');
+                        const month = moment(element.createdAt).format('jMMMM');
                         paymentAtmonthNotProve.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+
+                    return paymentAtmonthNotProve;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
                     error.code = 401;
@@ -125,11 +132,13 @@ const resolvers = {
                     const sellers = await Seller.find({});
                     for (let index = 0; index < sellers.length; index++) {
                         const element = sellers[index];
-                        const month = moment(element.createAt).format('jMMMM');
+                        const month = moment(element.createdAt).format('jMMMM');
                         sellerAtmonth.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+
+                    return sellerAtmonth;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
                     error.code = 401;
@@ -145,15 +154,17 @@ const resolvers = {
         commentAtmonth : async (param, args, { check , isAdmin}) => {
             if(check && isAdmin) {
                 try {
-                    const sellerAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
-                    const sellers = await Comment.find({});
-                    for (let index = 0; index < sellers.length; index++) {
-                        const element = sellers[index];
-                        const month = moment(element.createAt).format('jMMMM');
-                        sellerAtmonth.map(key => {
+                    const commentAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const comment = await Comment.find({});
+                    for (let index = 0; index < comment.length; index++) {
+                        const element = comment[index];
+                        const month = moment(element.createdAt).format('jMMMM');
+                        commentAtmonth.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+
+                    return commentAtmonth;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
                     error.code = 401;
@@ -169,62 +180,102 @@ const resolvers = {
         paymentAtDay : async (param, args, { check, isAdmin}) => {
             const d = new Date();
             const day = [];
-            const pay = await Payment.find({})
+            const pay = await Payment.find({});
+            let countallPay = 0
+            let allPay = 0;
+            let countPayNow = 0
 
-            for (let index = 0; index < 10; index++) {
-                const t = pay.filter(item => {
-                    const data = item.createdAt.getDate();
-                    const q = d.getDate() - index;
+            for (let index = 10; index >= 0; index--) {
+                const t = pay.filter(item => {  
+                    const data = moment(item.createdAt).jDate();
+                    const q = moment(d - index * 24 * 60 *60 * 1000).jDate();
                     return data == q ? item : null
                 })
 
+                t.map(item => {
+                    if(item.payment == true) {
+                        allPay += item.price
+                    }
+
+                    if( moment(item.createdAt).jDate() == moment(d).jDate() && item.payment == true) {
+                        countPayNow += item.price
+                    }
+                })
+                
+
+                countallPay += t.length
 
                 day.push({
-                    day : d.getDate() - index,
+                    day : moment(d - index * 24 * 60 *60 * 1000).jDate(),
                     count : t.length
                 })
                 
             }
-
-            return day;
-
-
-            // for (let i = 0; i < 10; i++) 
-                // for (let j = 0; j < pay.length; j++) {
-                //     const element = pay[j];
-                //     if(element.createdAt.getDate() == d.getDate() - i) {
-                //         num++;
-                //         map.set(d.getDate() - i, num)
-
-                //         // day.map(key => {
-                //         //     if(key.day == d.getDate() - i) {
-                //         //         key.count++ 
-                //         //     } else {
-                //         //         day.map(key => {
-                //         //             key.day = d.getDate() - i,
-                //         //             key.count= key.count++
-                //         //         })
-                //         //     }
-                //         // })
-
-
-                //     }
-                // }
-
-//             const dateNow = moment().toISOString();
-//             const date = moment(dateNow,'jYYYY/jM/jD');
-//             const  x = date.jDate() - 1;
-//             const convert = d.setDate(x)
-//             console.log(convert);
-// return;
-//             const pay = await Payment.find({ createdAt : date.jDate()})
-
-//             for (let index = 0; index < 10; index++) {
-                
-                
-//             }
-//             return;
+            return {
+                day,
+                countallPay,
+                allPay,
+                countPayNow
+            };
         },
+
+        paymenPricetAtDay : async (param, args, { check, isAdmin}) => {
+            const d = new Date();
+            const day = [];
+            const pay = await Payment.find({});
+
+            for (let index = 10; index >= 0; index--) {
+                const t = pay.filter(item => {
+                        const data = moment(item.createdAt).jDate();
+                        const q = moment(d - index * 24 * 60 *60 * 1000).jDate();
+                        return data == q ? item : null
+                })
+
+                let price = 0;
+
+                t.map(item => {
+                    if(moment(item.createdAt).jDate() == moment(d - index * 24 * 60 *60 * 1000).jDate() && item.payment == true) {
+                        price += item.price
+                    }
+                })
+
+                console.log(price)
+
+
+                day.push({
+                    day : moment(d - index * 24 * 60 *60 * 1000).jDate(),
+                    count : price
+                })
+
+                // console.log(t);
+                
+            }
+            return day;
+        },
+
+        allUserCount : async (param, args, { check, isAdmin}) =>{
+            if(check && isAdmin) {
+                try {
+                    const Maleusers = await User.find({gender : 'Male'}).count();
+                    const Femaleusers = await User.find({gender : 'Female'}).count();
+
+                    return {
+                        Male : ( Maleusers * 100 ) / (Maleusers + Femaleusers),
+                        Female : ( Femaleusers * 100 ) / (Maleusers + Femaleusers)
+                    }
+
+                } catch {
+                    const error = new Error('اطلاعات کاربران در دسترس نمی باشد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+        
 
 
         // end of dashboard <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
