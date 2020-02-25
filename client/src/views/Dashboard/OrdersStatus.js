@@ -1,30 +1,36 @@
-import React,{useEffect, useState} from 'react';
+import React,{useEffect, useState, useContext} from 'react';
 import {
     Card,
     CardBody,
     Col,
-    CardHeader
+    CardHeader,
+    Spinner
 } from 'reactstrap';
 import {  Doughnut } from 'react-chartjs-2';
+import {AuthContext} from '../../context/Auth/AuthContext';
+import GetToken from '../../context/Auth/GetToken';
+import axios from 'axios';
 
-
-const doughnut = {
+  
+  
+const OrdersStatus = (props)=>{
+  const {dispatch} = useContext(AuthContext);
+  const token =  GetToken();
+  const [chartData,setChartData] = useState({
     labels: [
-      'در حال پردازش',
-      'در صف بررسی',
-      'در حال آماده سازی',
-      'خروج از مرکز پردازش',
-      'تحویل شده'
     ],
     datasets: [
       {
-        data: [300, 50, 100, 75, 25],
+        data: [],
         backgroundColor: [
           '#FF6384',
           '#36A2EB',
           '#FFCE56',
           '#d34836',
-          '#72cb93'
+          '#72cb93',
+          '#2f353a',
+          '#e4e5e6',
+          '#000000'
         ],
         hoverBackgroundColor: [
           '#FF6384',
@@ -32,13 +38,47 @@ const doughnut = {
           '#FFCE56',
         ],
       }],
-  };
+  }
   
-  
-  
-  
-const OrdersStatus = (props)=>{
+)
+  useEffect(()=>{
+    dispatch({type:'check',payload:props});
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        query allOrderStatus {
+          allOrderStatus {
+           order,
+            count
+          }
+        }
+          `
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      //dispatch({type:'logout',payload:props});
+      console.log(result.data.errors)
+    }
+    else{
+      const {allOrderStatus  } = result.data.data;
+      console.log(allOrderStatus);
+      const arrayHolder = {...chartData};
+      allOrderStatus.map(item=>{
+        arrayHolder.labels.push(item.order);
+        arrayHolder.datasets[0].data.push(item.count)
+      })
+      setChartData(arrayHolder);
+      console.log(arrayHolder);
+  }
+   
+  }).catch(error=>{
+     console.log(error)
+  });
 
+  },[])
     return(
         
         <Col xs="6" sm="6" lg="6">
@@ -48,7 +88,7 @@ const OrdersStatus = (props)=>{
               </CardHeader>
               <CardBody>
                 <div className="chart-wrapper">
-                  <Doughnut data={doughnut} />
+                {chartData.labels.length !==0 ? <Doughnut data={chartData} />:<Spinner />}
                 </div>
               </CardBody>
            </Card>

@@ -35,6 +35,7 @@ const cardChartOpts = {
 const NumberUser = (props)=>{
   const {dispatch} = useContext(AuthContext);
   const token =  GetToken();
+  const [sum,setSum] = useState(0);
   const [chartData,setChartData] = useState({
     labels: [],
     datasets: [
@@ -72,11 +73,15 @@ const NumberUser = (props)=>{
     else{
       const {userAtmonth  } = result.data.data;
       const arrayHolder = {...chartData};
+      let sum =0;
       userAtmonth.map(item=>{
+        sum += item.value;
         arrayHolder.labels.push(item.month);
         arrayHolder.datasets[0].data.push(item.value)
       })
+      setSum(sum)
       setChartData(arrayHolder);
+      
     }
    
   }).catch(error=>{
@@ -88,7 +93,7 @@ const NumberUser = (props)=>{
         <Col xs="12" sm="6" lg="4">
             <Card className="text-white bg-danger">
               <CardBody className="pb-0">
-                <div className="text-value">9.823</div>
+                <div className="text-value">{sum !==0?sum:null}</div>
                 <div>تعداد کاربران </div>
               </CardBody>
               <div className="chart-wrapper mx-3" style={{ height: '70px' }}>

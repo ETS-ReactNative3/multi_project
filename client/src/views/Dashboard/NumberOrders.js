@@ -47,6 +47,7 @@ import axios from 'axios';
 const NumberOrders = (props)=>{
   const {dispatch} = useContext(AuthContext);
   const token =  GetToken();
+  const [sum,setSum] = useState(0);
   const [chartData,setChartData] = useState({
     labels: [],
     datasets: [
@@ -84,10 +85,13 @@ const NumberOrders = (props)=>{
     else{
       const {paymentProveAtmonth  } = result.data.data;
       const arrayHolder = {...chartData};
+      let sum =0;
       paymentProveAtmonth.map(item=>{
+        sum += item.value;
         arrayHolder.labels.push(item.month);
         arrayHolder.datasets[0].data.push(item.value)
       })
+      setSum(sum)
       setChartData(arrayHolder);
     }
    
@@ -101,7 +105,7 @@ const NumberOrders = (props)=>{
         <Col xs="12" sm="6" lg="4">
         <Card className="text-white bg-warning">
           <CardBody className="pb-0">
-            <div className="text-value">225</div>
+            <div className="text-value">{sum !==0?sum:null}</div>
             <div>تعداد سفارشات </div>
           </CardBody>
           <div className="chart-wrapper" style={{ height: '70px' }}>
