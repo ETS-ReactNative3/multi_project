@@ -275,8 +275,53 @@ const resolvers = {
                 throw error;
             }
         },
-        
 
+        allOrderStatus : async (param, args, { check, isAdmin}) => {
+            const orderStatus = await OrderStatus.find({});
+            const payment = await Payment.find({ payment : true}).populate('orderStatus');
+
+            const t = orderStatus.map(item => {
+                return {
+                    order : item.name,
+                    count : 0
+                }
+            })
+
+            for (let index = 0; index < payment.length; index++) {
+                const element = payment[index];
+                t.map(item => {
+                    item.order === element.orderStatus.name ? item.count++ : item.count
+                })
+            }
+
+            return t;
+        },
+
+        productAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const productAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const product = await Product.find({});
+                    for (let index = 0; index < product.length; index++) {
+                        const element = product[index];
+                        const month = moment(element.createdAt).format('jMMMM');
+                        productAtmonth.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+
+                    return productAtmonth;
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
 
         // end of dashboard <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
