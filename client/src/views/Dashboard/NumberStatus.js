@@ -27,6 +27,9 @@ import axios from 'axios';
 const NumberStatus = (props)=>{
   const {dispatch} = useContext(AuthContext);
   const token =  GetToken();
+  const [countallPay,setCounAllPay] = useState(0);
+  const [allPay, seAllPay] = useState(0);
+  const [countPayNow,setCountPayNow] = useState(0);
   const [chartData,setChartData] = useState({
     labels: [],
     datasets: [
@@ -63,10 +66,15 @@ const NumberStatus = (props)=>{
         query: `
         query paymentAtday {
           paymentAtDay {
-            day,
-            count
+            day {
+              day,
+              count
+            },
+            countallPay,
+            allPay,
+            countPayNow
           }
-        }  
+        } 
           `
     }
   }).then((result) => {
@@ -75,10 +83,12 @@ const NumberStatus = (props)=>{
       console.log(result.data.errors)
     }
     else{
-     // console.log(result.data.data.paymentAtDay);
-      const {paymentAtDay} = result.data.data;
+      const {day,countallPay,allPay,countPayNow} = result.data.data.paymentAtDay;
+      setCounAllPay(countallPay);
+      seAllPay(allPay);
+      setCountPayNow(countPayNow)
       const arrayHolder = {...chartData};
-      paymentAtDay.map(item=>{
+      day.map(item=>{
         arrayHolder.labels.push(item.day);
         arrayHolder.datasets[0].data.push(item.count)
       })
@@ -98,27 +108,31 @@ const NumberStatus = (props)=>{
           <CardHeader>
             تعداد پرداختی های ده روز گذشته
           </CardHeader>
+          {chartData.labels.length !==0 ?
+          <>
           <CardBody>
             <div className="chart-wrapper">
-              {chartData.labels.length !==0 ?<Line data={chartData} options={options} />:<Spinner />}
+              <Line data={chartData} options={options} />
             </div>
           </CardBody>
           <CardFooter>
             <Row>
               <Col xs="4" sm="4" lg="4" className={classes.show_info_line_chart}>
                 <span>دریافتی امروز</span>
-                <span> 1000000 تومان</span>
+                <span> {countPayNow} تومان</span>
               </Col>
               <Col xs="4" sm="4" lg="4" className={classes.show_info_line_chart}>
                 <span> تعداد پرداختی ها</span>
-                <span> 1112</span>
+                <span> {countallPay}</span>
               </Col>
               <Col xs="4" sm="4" lg="4" className={classes.show_info_line_chart} style={{border:'0'}}>
                 <span>دریافت کل</span>
-                <span> 25000000 تومان</span>
+                <span> {allPay} تومان</span>
               </Col>
             </Row>
           </CardFooter>
+          </>
+          :<Spinner />}
         </Card>
     </Col>
     )

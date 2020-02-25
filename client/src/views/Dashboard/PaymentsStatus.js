@@ -1,15 +1,34 @@
-import React,{useEffect, useState} from 'react';
+import React,{useEffect, useState, useContext} from 'react';
 import {
     Card,
     Col,
     CardHeader,
-    CardBody
+    CardBody,
+    CardFooter,
+    Row,
+    Spinner
 } from 'reactstrap';
 import { Line } from 'react-chartjs-2';
 import { CustomTooltips } from '@coreui/coreui-plugin-chartjs-custom-tooltips';
-//Line2
-const line = {
-    labels: ['24', '25', '26', '27', '28', '29', '30', '01', '02' , '03'],
+import {AuthContext} from '../../context/Auth/AuthContext';
+import GetToken from '../../context/Auth/GetToken';
+import axios from 'axios';
+
+  
+  const options = {
+    tooltips: {
+      enabled: false,
+      custom: CustomTooltips
+    },
+    maintainAspectRatio: false
+  }
+    
+const PaymentsStatus = (props)=>{
+  const {dispatch} = useContext(AuthContext);
+  const token =  GetToken();
+  const [loading,setLoading] = useState(true)
+  const [chartData,setChartData] = useState({
+    labels: [],
     datasets: [
       {
         label: 'مبلغ پرداختی',
@@ -30,21 +49,47 @@ const line = {
         pointHoverBorderWidth: 2,
         pointRadius: 1,
         pointHitRadius: 10,
-        data: [1500000, 2000000, 1750000, 787000, 525000, 1250000, 5110000, 4440000, 5200000, 1000000],
+        data: [],
       },
     ],
-  };
-  
-  const options = {
-    tooltips: {
-      enabled: false,
-      custom: CustomTooltips
-    },
-    maintainAspectRatio: false
-  }
-    
-const PaymentsStatus = (props)=>{
+  })
+  useEffect(()=>{
+    dispatch({type:'check',payload:props});
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        query paymenPricetAtDay {
+          paymenPricetAtDay {
+            day,
+            count
+          }
+        }
+          `
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      //dispatch({type:'logout',payload:props});
+      console.log(result.data.errors)
+    }
+    else{
+      const {paymenPricetAtDay} = result.data.data;
+      const arrayHolder = {...chartData};
+      paymenPricetAtDay.map(item=>{
+        arrayHolder.labels.push(item.day);
+        arrayHolder.datasets[0].data.push(item.count)
+      })
+      setChartData(arrayHolder);
+      setLoading(false)
+    }
+   
+  }).catch(error=>{
+     console.log(error)
+  });
 
+  },[])
     return(
         
         <Col xs="6" sm="6" lg="6">
@@ -54,7 +99,7 @@ const PaymentsStatus = (props)=>{
                 </CardHeader>
                 <CardBody>
                   <div className="chart-wrapper">
-                    <Line data={line} options={options} />
+                   {loading? <Spinner /> : <Line data={chartData} options={options} />} 
                   </div>
                 </CardBody>
             </Card>

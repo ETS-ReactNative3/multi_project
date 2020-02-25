@@ -28,7 +28,10 @@ const typeDefs = gql`
         paymentNotProveAtmonth : [AtMonth],
         sellerAtmonth : [AtMonth],
         commentAtmonth : [AtMonth],
-        paymentAtDay : [AtDay],
+        paymentAtDay : pay,
+        paymenPricetAtDay : [atDay],
+        allUserCount : AtUser
+
 
         
         MainPageApp : mainInfo,
@@ -495,9 +498,22 @@ const typeDefs = gql`
         value : Int
     }
 
-    type AtDay {
+    type pay {
+        day : [atDay],
+        countallPay : Int,
+        allPay : Int,
+        todayPay : Int,
+        countPayNow : Int
+    }
+
+    type atDay {
         day : Int,
         count : Int
+    }
+
+    type AtUser {
+        Male : Int,
+        Female : Int
     }
 
 

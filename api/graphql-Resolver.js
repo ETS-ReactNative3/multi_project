@@ -58,6 +58,7 @@ const resolvers = {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+
                     return userAtmonth;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
@@ -79,10 +80,12 @@ const resolvers = {
                     for (let index = 0; index < paymentsProve.length; index++) {
                         const element = paymentsProve[index];
                         const month = moment(element.createdAt).format('jMMMM');
+
                         paymentAtmonthProve.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+
                     return paymentAtmonthProve;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
@@ -108,6 +111,7 @@ const resolvers = {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+
                     return paymentAtmonthNotProve;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
@@ -159,6 +163,7 @@ const resolvers = {
                             key.month === month ? key.value++ : key.value
                         })
                     }
+
                     return commentAtmonth;
                 } catch {
                     const error = new Error('امکان نمایش داده ها وجود ندارد!!');
@@ -175,62 +180,102 @@ const resolvers = {
         paymentAtDay : async (param, args, { check, isAdmin}) => {
             const d = new Date();
             const day = [];
-            const pay = await Payment.find({})
+            const pay = await Payment.find({});
+            let countallPay = 0
+            let allPay = 0;
+            let countPayNow = 0
 
-            for (let index = 0; index < 10; index++) {
-                const t = pay.filter(item => {
-                    const data = item.createdAt.getDate();
-                    const q = d.getDate() - index;
+            for (let index = 10; index >= 0; index--) {
+                const t = pay.filter(item => {  
+                    const data = moment(item.createdAt).jDate();
+                    const q = moment(d - index * 24 * 60 *60 * 1000).jDate();
                     return data == q ? item : null
                 })
 
+                t.map(item => {
+                    if(item.payment == true) {
+                        allPay += item.price
+                    }
+
+                    if( moment(item.createdAt).jDate() == moment(d).jDate() && item.payment == true) {
+                        countPayNow += item.price
+                    }
+                })
+                
+
+                countallPay += t.length
 
                 day.push({
-                    day : d.getDate() - index,
+                    day : moment(d - index * 24 * 60 *60 * 1000).jDate(),
                     count : t.length
                 })
                 
             }
-
-            return day;
-
-
-            // for (let i = 0; i < 10; i++) 
-                // for (let j = 0; j < pay.length; j++) {
-                //     const element = pay[j];
-                //     if(element.createdAt.getDate() == d.getDate() - i) {
-                //         num++;
-                //         map.set(d.getDate() - i, num)
-
-                //         // day.map(key => {
-                //         //     if(key.day == d.getDate() - i) {
-                //         //         key.count++ 
-                //         //     } else {
-                //         //         day.map(key => {
-                //         //             key.day = d.getDate() - i,
-                //         //             key.count= key.count++
-                //         //         })
-                //         //     }
-                //         // })
-
-
-                //     }
-                // }
-
-//             const dateNow = moment().toISOString();
-//             const date = moment(dateNow,'jYYYY/jM/jD');
-//             const  x = date.jDate() - 1;
-//             const convert = d.setDate(x)
-//             console.log(convert);
-// return;
-//             const pay = await Payment.find({ createdAt : date.jDate()})
-
-//             for (let index = 0; index < 10; index++) {
-                
-                
-//             }
-//             return;
+            return {
+                day,
+                countallPay,
+                allPay,
+                countPayNow
+            };
         },
+
+        paymenPricetAtDay : async (param, args, { check, isAdmin}) => {
+            const d = new Date();
+            const day = [];
+            const pay = await Payment.find({});
+
+            for (let index = 10; index >= 0; index--) {
+                const t = pay.filter(item => {
+                        const data = moment(item.createdAt).jDate();
+                        const q = moment(d - index * 24 * 60 *60 * 1000).jDate();
+                        return data == q ? item : null
+                })
+
+                let price = 0;
+
+                t.map(item => {
+                    if(moment(item.createdAt).jDate() == moment(d - index * 24 * 60 *60 * 1000).jDate() && item.payment == true) {
+                        price += item.price
+                    }
+                })
+
+                console.log(price)
+
+
+                day.push({
+                    day : moment(d - index * 24 * 60 *60 * 1000).jDate(),
+                    count : price
+                })
+
+                // console.log(t);
+                
+            }
+            return day;
+        },
+
+        allUserCount : async (param, args, { check, isAdmin}) =>{
+            if(check && isAdmin) {
+                try {
+                    const Maleusers = await User.find({gender : 'Male'}).count();
+                    const Femaleusers = await User.find({gender : 'Female'}).count();
+
+                    return {
+                        Male : ( Maleusers * 100 ) / (Maleusers + Femaleusers),
+                        Female : ( Femaleusers * 100 ) / (Maleusers + Femaleusers)
+                    }
+
+                } catch {
+                    const error = new Error('اطلاعات کاربران در دسترس نمی باشد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+        
 
 
         // end of dashboard <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -747,17 +792,17 @@ const resolvers = {
     Mutation : {
         register : async (param, args, { secretID }) => {            
             try {
-                    const digit = args.input.digit;
-                    const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
-                    const codeToken = await VlidationRegister.findOne({ verifyToken : token});
-                    const verify = await jwt.verify(codeToken, secretID);
+                    // const digit = args.input.digit;
+                    // const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
+                    // const codeToken = await VlidationRegister.findOne({ verifyToken : token});
+                    // const verify = await jwt.verify(codeToken, secretID);
 
-                    if(!verify) {
-                        return {
-                            status : 403,
-                            message : 'درخواست شما اعتبار لازم برای ثبت نام را ندارد!'
-                        }
-                    } else {
+                    // if(!verify) {
+                    //     return {
+                    //         status : 403,
+                    //         message : 'درخواست شما اعتبار لازم برای ثبت نام را ندارد!'
+                    //     }
+                    // } else {
                         const salt = await bcrypt.genSaltSync(15);
                         const hash = await bcrypt.hashSync(args.input.password, salt);
                         await User.create({
@@ -773,7 +818,7 @@ const resolvers = {
                             message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
                         };
 
-                    } 
+                    // } 
 
             } catch {
                 const error = new Error('ارنباط با سرور محدود شده است!!');
