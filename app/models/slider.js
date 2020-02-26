@@ -3,7 +3,9 @@ const Schema = mongoose.Schema;
 
 
 const Slider = Schema({
-    image : { type : Schema.Types.ObjectId, ref : 'Multimedia'},
+    name : { type : String, required : true},
+    image : [{ type : Schema.Types.ObjectId, ref : 'Multimedia'}],
+    default : { type : Boolean, default : false}
 }, {
     timestamps : true
 })
