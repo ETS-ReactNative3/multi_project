@@ -58,7 +58,8 @@ const Comments = React.lazy(() => import('./views/Comments/Comments'));
 const CommentInfo = React.lazy(() => import('./views/Comments/CommentInfo'));
 const AllOrders = React.lazy(()=>import('./views/Orders/Orders'));
 const OrderDetails = React.lazy(()=>import('./views/Orders/Order'));
-const Status = React.lazy(()=>import('./views/Orders/Status'))
+const Status = React.lazy(()=>import('./views/Orders/Status'));
+const Slider = React.lazy(()=>import('./views/Slider/Slider'));
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
   
@@ -127,6 +128,7 @@ const routes = [
   { path: '/media/allmedia', exact: true, name: ' کتابخانه', component: Media },
   { path: '/media/addMedia', exact: true, name: ' افزودن', component: AddMedia },
   { path: '/media/font-awesome', name: 'Font Awesome', component: FontAwesome },
+  { path: '/slider', name: 'اسلایدر', component: Slider },
 ];
 
 export default routes;

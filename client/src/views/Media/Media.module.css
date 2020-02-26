@@ -18,6 +18,10 @@
     width:126px;
     height:126px;
 }
+.media input[type="checkbox"]{
+    width:19px;
+    height:30px;
+}
 .addMediaSection{
     display: flex;
     flex-flow: column wrap;

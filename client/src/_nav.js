@@ -20,6 +20,11 @@ export default {
       icon: 'icon-pencil',
     },
     {
+      name: 'اسلایدر',
+      url: '/slider',
+      icon: 'icon-pencil',
+    },
+    {
       name: 'نظرات',
       url: '/comments',
       icon: 'icon-puzzle',
