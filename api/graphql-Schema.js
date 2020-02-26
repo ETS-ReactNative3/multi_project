@@ -19,7 +19,8 @@ const typeDefs = gql`
         getAllPayment(orderId : ID) : [Payment],
         getAllOrderStatus : [OrderStatus],
         getAllMultimedia(page : Int, limit : Int) : [Multimedia],
-        paymentCallback : operation!
+        getAllSlider(sliderId : ID) : [Slider]
+
         sortPoduct(categoryId : ID, viewCount : Boolean, soldCount : Boolean, priceUp : Boolean, priceDown : Boolean, newP : Boolean, suggestion : Boolean) : [product],
 
         userAtmonth : [AtMonth],
@@ -56,7 +57,7 @@ const typeDefs = gql`
         warranty(name : String!, label : String) : operation!,
         comment(input : InputComment) : operation!,
         addSurveyValue(input : InputSurveyValue) : operation!
-        slider(imageId : ID) : operation!,
+        addSlider(name : String!, imageId : [ID!]!, default : Boolean = false) : operation!,
         payment( input : Inputpayment) : operation!,
         receptor(input : InputReceptor) : operation,
         OrderStatus(name : String!, image : Upload!, default : Boolean) : operation!,
@@ -73,7 +74,11 @@ const typeDefs = gql`
         UpdateProducctAttribute(input : InputProductAttribute) : operation!,
         UpdateCommentProduct(commentId : ID!) : operation!,
         UpdateOrderStatus(orderstatusId : ID!, name : String!, default : Boolean!) : operation!,
-        UpdatePayment(paymentId : ID!, orderstatusId : ID!) : operation!
+        UpdatePayment(paymentId : ID!, orderstatusId : ID!) : operation!,
+        UpdateSlider(sliderId : ID, name : String, imageId : [ID], default : Boolean) : operation!
+
+
+        DeleteSlider(sliderId : ID!, imageId : ID) : operation!
 
 
     }
@@ -417,13 +422,6 @@ const typeDefs = gql`
         Tselling : [product],
         Nproduct : [product]
     }
-
-    type Slider {
-        image : String,
-        attr : String,
-        label : String
-    }
-
     
     type Comment {
         _id : ID,
@@ -520,6 +518,12 @@ const typeDefs = gql`
     type AtOrder {
         order : String,
         count : Int
+    }
+
+    type Slider {
+        name : String,
+        image : [Multimedia],
+        default : Boolean
     }
 
 `;

@@ -829,8 +829,41 @@ const resolvers = {
             }
         },
 
-        paymentCallback : async (param, args) => {
-            console.log('ok')
+        getAllSlider : async (parram, args, { check, isAdmin}) => {
+            if(check) {
+                try {
+                    if(args.sliderId == null) {
+                        const sliders = await Slider.find({}).populate('image');
+                        if(sliders == null) {
+                            return {
+                                status : 401,
+                                message : 'هیچ اسلایدری در سیستم ایجاد نشده است!'
+                            }
+                        }
+
+                        return sliders;
+
+                    } else {
+                        const slider = await Slider.findById(args.sliderId).populate('image');
+                        if(slider == null) {
+                            return {
+                                status : 401,
+                                message : 'چنین اسلایدری در سیستم ثبت نشده است!'
+                            }
+                        }
+
+                        return [slider]
+                    }
+                } catch {
+                    const error = new Error('اسلایدری برای نمایش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         }
     },
 
@@ -1334,6 +1367,204 @@ const resolvers = {
             }
         },
 
+        payment : async (param, args, { check, res} ) => {
+            if(check) {
+                try {
+                    const user = await User.findById(check.id);
+                    if(user.fname != null) {
+                        const ostatus = await OrderStatus.findOne({ default : true });
+                        const product = await Product.findById(args.input.product);
+                        const attribute = await Productattribute.findById(args.input.attribute);
+                        if(!product) {
+                            return {
+                                status : 401,
+                                message : 'خرید این محصول مجاز نمی باشد'
+                            }
+                        }
+
+                        if(!attribute) {
+                            return {
+                                status : 401,
+                                message : 'قیمت گذاری این کالا به درستی انجام نشده است!'
+                            }
+                        }
+
+                           // pay process
+
+                            let params = {
+                                MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
+                                Amount: (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
+                                CallbackURL: 'http://localhost:4000/api/product/payment/callbackurl',
+                                Description: `خرید محصول ${product.ename}`,
+                                Mobile : user.phone,
+                            }
+
+                            let options = getOptions('https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json', params);
+
+                            // options
+                            //     .then(data => {
+                            //         console.log(data.uri)
+                            //     })
+                            // return;
+
+                            const data = await request(options);
+
+                            if(! data) {
+                                return {
+                                    status : 401,
+                                    message : 'امکان خرید محصول در حال حاضر وجود ندارد بعدا امتحان نمایید!'
+                                }
+                            } 
+
+                            await Payment.create({
+                                user : check.id,
+                                product : product._id,
+                                resnumber : data.Authority,
+                                attribute : args.input.attribute,
+                                discount : args.input.discount,
+                                count : args.input.count,
+                                price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
+                                orderStatus : ostatus._id
+                            })
+
+                            const link = `https://www.zarinpal.com/pg/StartPay/${data.Authority}`;
+
+                            return {
+                                status : 200,
+                                payLink : link
+                            }
+
+                    } else {
+                        return {
+                            status : 401,
+                            message : 'اطلاعات خریدار ناقص است!!'
+                        }
+                    }
+                    
+                } catch {
+                    const error = new Error('امکان ثبت سفارش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        receptor : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const receptor = await Receptor.findOne({ phone : args.input.phone});
+                    if(receptor) {
+                        return {
+                            status : 401,
+                            message : 'این گیرنده قبلا در سیستم درج شده است!'
+                        }
+                    } else {
+                        await Receptor.create({
+                            fname : args.input.fname,
+                            lname : args.input.lname,
+                            code : args.input.code,
+                            number : args.input.number,
+                            phone : args.input.phone,
+                            state : args.input.state,
+                            city : args.input.city,
+                            address : args.input.address,
+                        })
+
+                        return {
+                            status : 200,
+                            message : 'گیرنده مورد نظر درج شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ثبت گیرنده وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        OrderStatus : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    if(args.default) {
+                        const status_def = await OrderStatus.findOne({ default : true});
+                        if(status_def != null) {
+                            return {
+                                status : 401,
+                                message : 'وضعیت سفارش دیگیری را به عنوان گزینه پیشفرض انتخاب کرده اید!'
+                            }
+                        }
+                    }
+
+                    const status = await OrderStatus.findOne({ name : args.name});
+                    if(status != null) {
+                        return {
+                            status : 401,
+                            message : 'قبل یک وضعیت سفارش با این عنوان ایجاد شده است!'
+                        }
+                    } else {
+
+                        const { createReadStream, filename } = await args.image;
+                        const stream = createReadStream();
+                        const { filePath } = await saveImage({ stream, filename});
+
+                        await OrderStatus.create({
+                            name : args.name,
+                            image : filePath,
+                            default : args.default
+                        })
+
+                        return {
+                            status : 200,
+                            message : 'وضعیت سفارش جدید در سیستم ثبت شد.'
+                        }
+
+                    }
+                } catch {
+                    const error = new Error('امکان ثبت وضعیت سفارش جدید وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        addSlider : async (param, args, {check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    await Slider.create({
+                        name : args.name,
+                        image : args.imageId,
+                        default : args.default
+                    })
+
+                    return {
+                        status : 200,
+                        message : 'اسلایدر مورد نظر ایجد شد.'
+                    }
+                } catch {
+                    const error = new Error('امکان ایجاد اسلایدر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
         // edit method for all section
 
         UpdateCategory : async (param, args, { check, isAdmin }) => {
@@ -1539,7 +1770,6 @@ const resolvers = {
 
                         if(!args.input.image) {
                             const pathim = await Product.findById(args.input.id);
-                            console.log(pathim.image[0])
                             imagePath = pathim.image[0];
                         } else {
 
@@ -1727,20 +1957,22 @@ const resolvers = {
             }
         },
 
-        slider : async (param, args, { check, isAdmin }) => {
+        UpdateSlider : async (param, args , { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
-                    await Slider.create({
+
+                    await Slider.findByIdAndUpdate(args.sliderId, { $set : {
+                        name : args.name,
                         image : args.imageId,
-                    })
+                        default : args.default
+                    }})
 
                     return {
                         status : 200,
-                        message : 'تصویر مورد نظر به عنوان بنر درج شد.'
+                        message : 'اسلایدر مورد نظر ویرایش شد.'
                     }
-
                 } catch {
-                    const error = new Error('امکان درج تصویر به عنوان بنر وجود ندارد!');
+                    const error = new Error('امکان ویرایش اسلایدر مورد نظر وجود ندارد!');
                     error.code = 401;
                     throw error;
                 }
@@ -1751,167 +1983,44 @@ const resolvers = {
             }
         },
 
-        payment : async (param, args, { check, res} ) => {
-            if(check) {
-                try {
-                    const user = await User.findById(check.id);
-                    if(user.fname != null) {
-                        const product = await Product.findById(args.input.product);
-                        const attribute = await Productattribute.findById(args.input.attribute);
-                        if(!product) {
-                            return {
-                                status : 401,
-                                message : 'خرید این محصول مجاز نمی باشد'
-                            }
-                        }
 
-                        if(!attribute) {
-                            return {
-                                status : 401,
-                                message : 'قیمت گذاری این کالا به درستی انجام نشده است!'
-                            }
-                        }
-
-                           // pay process
-
-                            let params = {
-                                MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
-                                Amount: (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
-                                CallbackURL: 'http://localhost:4000/api/product/payment/callbackurl',
-                                Description: `خرید محصول ${product.ename}`,
-                                Mobile : user.phone,
-                            }
-
-                            let options = getOptions('https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json', params);
-
-                            // options
-                            //     .then(data => {
-                            //         console.log(data.uri)
-                            //     })
-                            // return;
-
-                            const data = await request(options);
-
-                            if(! data) {
-                                return {
-                                    status : 401,
-                                    message : 'امکان خرید محصول در حال حاضر وجود ندارد بعدا امتحان نمایید!'
-                                }
-                            } 
-
-                            await Payment.create({
-                                user : check.id,
-                                product : product._id,
-                                resnumber : data.Authority,
-                                attribute : args.input.attribute,
-                                discount : args.input.discount,
-                                count : args.input.count,
-                                price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100))
-                            })
-
-                            const link = `https://www.zarinpal.com/pg/StartPay/${data.Authority}`;
-
-                            return {
-                                status : 200,
-                                payLink : link
-                            }
-
-                    } else {
-                        return {
-                            status : 401,
-                            message : 'اطلاعات خریدار ناقص است!!'
-                        }
-                    }
-                    
-                } catch {
-                    const error = new Error('امکان ثبت سفارش وجود ندارد!');
-                    error.code = 401;
-                    throw error;
-                }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
-        },
-
-        receptor : async (param, args, { check }) => {
-            if(check) {
-                try {
-                    const receptor = await Receptor.findOne({ phone : args.input.phone});
-                    if(receptor) {
-                        return {
-                            status : 401,
-                            message : 'این گیرنده قبلا در سیستم درج شده است!'
-                        }
-                    } else {
-                        await Receptor.create({
-                            fname : args.input.fname,
-                            lname : args.input.lname,
-                            code : args.input.code,
-                            number : args.input.number,
-                            phone : args.input.phone,
-                            state : args.input.state,
-                            city : args.input.city,
-                            address : args.input.address,
-                        })
-
-                        return {
-                            status : 200,
-                            message : 'گیرنده مورد نظر درج شد.'
-                        }
-                    }
-                } catch {
-                    const error = new Error('امکان ثبت گیرنده وجود ندارد!');
-                    error.code = 401;
-                    throw error;
-                }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
-        },
-
-        OrderStatus : async (param, args, { check, isAdmin}) => {
+        DeleteSlider : async (param, args, { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
-                    if(args.default) {
-                        const status_def = await OrderStatus.findOne({ default : true});
-                        if(status_def != null) {
+                    if(args.imageId == null) {
+                        const slider = await Slider.findById(args.sliderId);
+                        if(slider == null) {
                             return {
                                 status : 401,
-                                message : 'وضعیت سفارش دیگیری را به عنوان گزینه پیشفرض انتخاب کرده اید!'
+                                message : 'چنین اسلایدری در سیستم ثبت نشده است!'
                             }
                         }
-                    }
-
-                    const status = await OrderStatus.findOne({ name : args.name});
-                    if(status != null) {
+        
+                        slider.remove();
+        
                         return {
-                            status : 401,
-                            message : 'قبل یک وضعیت سفارش با این عنوان ایجاد شده است!'
+                            status : 200,
+                            message : 'اسلایدر مورد نظر حذف شد'
                         }
                     } else {
-
-                        const { createReadStream, filename } = await args.image;
-                        const stream = createReadStream();
-                        const { filePath } = await saveImage({ stream, filename});
-
-                        await OrderStatus.create({
-                            name : args.name,
-                            image : filePath,
-                            default : args.default
+                        let arr = [];
+                        const slider = await Slider.findById(args.sliderId);
+                        const img = slider.image;
+                        img.map(async item => {
+                            if(item != args.imageId) {
+                                arr.push(item)
+                            }
                         })
+
+                        await Slider.findOneAndUpdate(args.sliderId, { image : arr })
 
                         return {
                             status : 200,
-                            message : 'وضعیت سفارش جدید در سیستم ثبت شد.'
-                        }
-
+                            message : 'تصیویر مورد نظز از اسلایدر حذف شد'
+                        };
                     }
                 } catch {
-                    const error = new Error('امکان ثبت وضعیت سفارش جدید وجود ندارد!');
+                    const error = new Error('امکان ویرایش اسلایدر مورد نظر وجود ندارد!');
                     error.code = 401;
                     throw error;
                 }
@@ -1920,7 +2029,9 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+
         }
+
 
     },
 }
