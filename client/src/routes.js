@@ -52,6 +52,7 @@ const SubSpecifications = React.lazy(() => import('./views/Shop/SubSpecification
 const AddProduct  = React.lazy(() => import('./views/Products/AddProduct'));
 const Products  = React.lazy(() => import('./views/Products/Products'));
 const EditProduct  = React.lazy(() => import('./views/Products/EditProduct'));
+const ProductPictures = React.lazy(() => import('./views/Products/ProductPictures'));
 const Seller  = React.lazy(() => import('./views/Products/Seller'));
 const Warranty  = React.lazy(() => import('./views/Products/Warranty'));
 const Comments = React.lazy(() => import('./views/Comments/Comments'));
@@ -99,11 +100,12 @@ const routes = [
   { path: '/buttons/button-groups', name: 'Button Groups', component: ButtonGroups },
   { path: '/buttons/brand-buttons', name: 'Brand Buttons', component: BrandButtons },
   { path: '/products', exact: true, name: 'محصولات', component: AddProduct },
-  { path: '/products/addproduct', exact: true, name: 'محصولات', component: AddProduct },
-  { path: '/products/allproducts', exact: true, name: 'محصولات', component: Products },
+  { path: '/products/addproduct', exact: true, name: 'اضافه کردن محصول', component: AddProduct },
+  { path: '/products/allproducts', exact: true, name: 'تمامی محصولات', component: Products },
   { path: '/products/seller', exact: true, name: 'فروشنده ها', component: Seller },
   { path: '/products/warranty', exact: true, name: 'گارانتی', component: Warranty },
-  { path: '/products/product/:productid', exact: true, name: 'محصولات', component: EditProduct },
+  { path: '/products/product/:productid', exact: true, name: 'محصول', component: EditProduct },
+  { path: '/products/product/picture/:productid', exact: true, name: 'عکس های محصول', component: ProductPictures },
   { path: '/products/coreui-icons', name: 'CoreUI Icons', component: CoreUIIcons },
   { path: '/products/flags', name: 'Flags', component: Flags },
   { path: '/products/font-awesome', name: 'Font Awesome', component: FontAwesome },

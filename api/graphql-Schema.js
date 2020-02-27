@@ -521,6 +521,7 @@ const typeDefs = gql`
     }
 
     type Slider {
+        _id: ID,
         name : String,
         image : [Multimedia],
         default : Boolean

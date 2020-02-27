@@ -87,3 +87,32 @@ input[type="file"] {
     margin-bottom: 20px;
     height: 35px;
 }
+.CarouselItem{
+    width: 410px;
+    height: 210px;
+}
+.CarouselItem img{
+    width: 69% !important;
+    height: 100% !important;
+
+}
+.thumbnail_box{
+    display: flex;
+    flex-flow: row;
+    justify-content: space-evenly;
+    padding: 17px;
+}
+.thumbnail_box div{
+    box-shadow: 1px 1px 1px 1px #ccc;
+    padding: 10px;
+}
+.thumbnail_box div span
+{
+    position: relative;
+    display: flex;
+    justify-content: end;
+}
+.removeIconsPicturesProduct{
+    display: flex;
+    justify-content: flex-end;
+}

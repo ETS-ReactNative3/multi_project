@@ -1543,15 +1543,35 @@ const resolvers = {
         addSlider : async (param, args, {check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
-                    await Slider.create({
-                        name : args.name,
-                        image : args.imageId,
-                        default : args.default
-                    })
+                    if(args.default == true) {
+                        const slider = await Slider.findOne({ default : true});
+                        if(slider != null) {
+                            throw error;
+                        } else {
+                            const saveSlider = await Slider.create({
+                                name : args.name,
+                                image : args.imageId,
+                                default : args.default
+                            })
 
-                    return {
-                        status : 200,
-                        message : 'اسلایدر مورد نظر ایجد شد.'
+                            return {
+                                _id : saveSlider._id,
+                                status : 200,
+                                message : 'اسلایدر ذخیره شد'
+                            }
+                        }
+                    } else {
+                        const saveSlider = await Slider.create({
+                            name : args.name,
+                            image : args.imageId,
+                            default : args.default
+                        })
+
+                        return {
+                            _id : saveSlider._id,
+                            status : 200,
+                            message : 'اسلایدر ذخیره شد'
+                        }
                     }
                 } catch {
                     const error = new Error('امکان ایجاد اسلایدر وجود ندارد!');
@@ -1958,18 +1978,33 @@ const resolvers = {
         },
 
         UpdateSlider : async (param, args , { check, isAdmin}) => {
-            if(check && isAdmin) {
+           if(check && isAdmin) {
                 try {
+                    const slider = await Slider.findById(args.sliderId);
+                    if(slider.default == true) {
+                        await Slider.findByIdAndUpdate(args.sliderId, { $set : {
+                            name : args.name,
+                            image : args.imageId,
+                            default : true
+                        }})
 
-                    await Slider.findByIdAndUpdate(args.sliderId, { $set : {
-                        name : args.name,
-                        image : args.imageId,
-                        default : args.default
-                    }})
+                        return {
+                            status : 401,
+                            message : 'اسلایدر مورد نظر ویرایش شد.'
+                        }
+                        
+                    } else {
+                        await Slider.findOneAndUpdate({ default : true}, { $set : { default : false}});
+                        await Slider.findByIdAndUpdate(args.sliderId, { $set : {
+                            name : args.name,
+                            image : args.imageId,
+                            default : args.default
+                        }})
 
-                    return {
-                        status : 200,
-                        message : 'اسلایدر مورد نظر ویرایش شد.'
+                        return {
+                            status : 200,
+                            message : 'اسلایدر مورد نظر ویرایش شد.'
+                        }
                     }
                 } catch {
                     const error = new Error('امکان ویرایش اسلایدر مورد نظر وجود ندارد!');
@@ -2031,7 +2066,6 @@ const resolvers = {
             }
 
         }
-
 
     },
 }
