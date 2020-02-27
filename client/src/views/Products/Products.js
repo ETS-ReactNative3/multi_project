@@ -63,7 +63,7 @@ const Products =(props)=> {
               suggestion
             },
             rate,          
-            image
+            original
           }
         }     
           `,
@@ -414,7 +414,7 @@ const Products =(props)=> {
                                     <span>{item.ename}</span>
                                   </td>
                                   <td>
-                                    <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image}`)} alt="pic" />
+                                    <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.original}`)} alt="pic" />
                                   </td>
                                   <td>{item.brand.name}</td>
                                   <td>

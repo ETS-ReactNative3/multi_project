@@ -19,6 +19,7 @@ const ProductPictures = (props)=>{
     const [modal,setModal] = useState(false);
     const [searchBarValue,setSearchBarValue] = useState('');
     const [arrayholder,setArrayHolder] = useState('');
+    const [products,setProducts] = useState([]);
   useEffect(()=>{
       dispatch({type:'check',payload:props});
       setLoading(true);
@@ -48,10 +49,50 @@ const ProductPictures = (props)=>{
         }
       setAllmedia(getAllMultimedia);
       setArrayHolder(getAllMultimedia)
-      setLoading(false);
     }).catch((error)=>{
           console.log(error)
     })
+
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        query getProduct($page : Int, $limit : Int, $productId : ID) {
+          getProduct(page : $page, limit : $limit, productId : $productId){
+            _id,
+            fname,         
+            images{
+              _id,
+              dir
+            }
+          }
+        }     
+          `,
+          variables :{
+            "page": 1,
+            "limit": 10,
+            "productId": productid
+          }
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      
+      toast.error('خطا در دریافت اطلاعات  محصولات');
+      dispatch({type:'logout',payload:props});
+    }
+    else{
+      const {getProduct} = result.data.data;
+      setProducts(getProduct);
+      setLoading(false) 
+    }
+             
+  }).catch(error=>{
+    console.log(error)
+  })
+
+
   },[])
   const toggleLarge=()=> {
     setModal(!modal)
@@ -70,18 +111,34 @@ const filterMedia = (event)=>{
     setSearchBarValue(event.target.value)
   }
 
-  const addImage = (id)=>{
+  const addImage = (id,dir)=>{
     const newAllMedia = [...allMedia]
     const newData = newAllMedia.filter((item)=>{
         return item._id ===id
       })
       newData[0].checked = !newData[0].checked;
-      setAllmedia(newAllMedia)
-  }
-  const removeImage = (index)=>{
+      setAllmedia(newAllMedia);
+    const newProduct = [...products];
+    newProduct[0].images.push({
+      "_id":id,
+      "dir":dir
+    });
+    setProducts(newProduct);
 
   }
-  
+  const removeImage = (index)=>{
+    const newProduct = [...products];
+    newProduct[0].images.splice(index,1);
+    setProducts(newProduct);
+  }
+  const onSubmitProductImages = ()=>{
+    console.log(productid);
+    const tempProduct =[];
+    for(let i =0;i<products[0].images.length;i++){
+      tempProduct.push(products[0].images[i]._id)
+    }
+    console.log(tempProduct);
+  }
     return(
         <div className="animated fadeIn">
         <Row>
@@ -91,10 +148,12 @@ const filterMedia = (event)=>{
             </div>
             {
               loading ? <center><Spinner /></center> :
-              <Card>
+              
+                products.map((p)=>
+                <Card key={p._id}>
                   <CardHeader style={{ display: 'flex',justifyContent: 'space-between'}}>
                       <span>
-                      عکس های محصول {productid}
+                      عکس های محصول <span style={{color:'blue'}}>{p.fname}</span>
                       </span>
                       <Button size="sm" color="danger" onClick={selectImage}>
                         انتخاب عکس
@@ -103,9 +162,9 @@ const filterMedia = (event)=>{
                  <CardBody>
                     <div className={classes.mediaSection}>
                     {
-                      allMedia.map((item,index)=>{
+                      p.images.map((item,index)=>{
                         return(
-                        <div className={classes.media}  key={item._id}>
+                        <div className={classes.media}  key={index}>
                             <span className={classes.removeIconsPicturesProduct} onClick={()=>removeImage(index)}> 
                                 <i className="fa fa-remove fa-lg mt-4"></i>
                             </span>
@@ -121,11 +180,12 @@ const filterMedia = (event)=>{
                     
                  </CardBody>
                  <CardFooter>
-                    <Button size="sm" color="danger" block>
+                    <Button size="sm" color="primary" block onClick={onSubmitProductImages}>
                          ثبت
                     </Button>
                  </CardFooter>
              </Card>
+                )
             }
              
           </Col>
@@ -163,11 +223,11 @@ const filterMedia = (event)=>{
                                     return(
                                     <div className={classes.media}  key={item._id}
                                     >
-                                        <Input type="checkbox" onChange={()=>addImage(item._id)} checked={item.checked}/>
+                                        <Input type="checkbox" onChange={()=>addImage(item._id,item.dir)} checked={item.checked}/>
                                         <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.dir}`)} alt={item.dir} />
                                     </div>
                                     )
-                                })
+                                  })
                                 }      
                                 </div>
                                 

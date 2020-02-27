@@ -6,6 +6,7 @@ const Category = Schema({
     name : { type : String, required : true},
     label : { type : String},
     parent : { type : Schema.Types.ObjectId, ref : 'Category'},
+    image : { type : String, required : true}
 }, {
     timestamps : true,
     toJSON : { virtuals : true}

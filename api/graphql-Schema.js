@@ -62,6 +62,7 @@ const typeDefs = gql`
         receptor(input : InputReceptor) : operation,
         OrderStatus(name : String!, image : Upload!, default : Boolean) : operation!,
         favorite(productId : ID!) : operation!
+        Banner(categoryId : ID!, imageId : ID!, default : Boolean = false) : operation!
 
 
         UpdateCategory(input : InputCategory) : operation!
@@ -185,7 +186,8 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [InputDetails!]!,
-        image : Upload!
+        original : Upload!,
+        images : [ID]
     }
 
     input UpdateProduct {
@@ -223,7 +225,7 @@ const typeDefs = gql`
         stock : Int!,
         discount : Int,
         suggestion : Boolean,
-        expireAt : Int = 24
+        expireAt : Int = 1
 
     }
 
@@ -250,6 +252,7 @@ const typeDefs = gql`
         name : String!,
         label : String,
         parent : ID,
+        image : String!
     }
 
     type operation {
@@ -323,7 +326,8 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [Details],
-        image : [String],
+        original : String,
+        images : [Multimedia]
         commentCount : Int,
         soldCount : Int,
         viewCount : Int
@@ -355,6 +359,7 @@ const typeDefs = gql`
         name : String,
         label : String,
         parent : Parent,
+        image : String
     }
 
     type Parent {
@@ -417,7 +422,7 @@ const typeDefs = gql`
     type mainInfo {
         slider : Slider,
         category : [Category],
-        Asuggestion : [product],
+        Psuggestion : [product],
         banerDiscount : [Category],
         Tselling : [product],
         Nproduct : [product]

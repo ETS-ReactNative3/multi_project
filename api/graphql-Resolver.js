@@ -383,7 +383,7 @@ const resolvers = {
                     const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
                     return [product]
                 } else if(args.categoryId != null && args.productId == null) {
-                    const product = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute'}]});
+                    const product = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute'}, { path : 'images'}]});
                     return product.docs
                 }
             } else {
@@ -630,14 +630,6 @@ const resolvers = {
             }
         },
 
-        // MainPageApp : async (param, args, { check }) => {
-        //     const slider = await Slider.find().limit(3).sort({created_at : -1}).exec();
-        //     const category = await Category.find({ parent : null});
-        //     const Asuggestion = await Product.paginate({}, { populate : {path : 'attribute', match : { discount : !null}}});
-        //     const banerDiscount = await Product.paginate({}, { populate : [{path : 'attribute', match : { discount : !null}}, {path : 'category'}]});
-            
-        // }
-
         getAllComment : async (param, args, { check }) => {
             if(check) {
                     let page = args.page || 1;
@@ -736,12 +728,21 @@ const resolvers = {
             }
         },
 
-        // MainPageApp : async (param, args) => {
-        //     const product = await Product.find({}).sort({ soldCount : 1})
-        //     return {
-        //         Tselling : product
-        //     }
-        // }
+        MainPageApp : async (param, args) => {
+            let page = args.page || 1;
+            let limit = args.limit || 10;
+            const Tselling = await Product.find({}).sort({ soldCount : -1});
+            const Nproduct = await Product.find({}).sort({ createdAt : -1});
+            const psuggestion = await Product.paginate({}, { page, limit, populate : ({ path : 'attribute', match : { suggestion : true}})});
+            console.log(psuggestion.docs)
+            return;
+
+            return {
+                Tselling,
+                Nproduct,
+                Psuggestion : psuggestion.attribute.expireAt > 1*24*60*60*1000 ? psuggestion : null
+            }
+        },
 
         getAllOrderStatus : async (param, args, { check , isAdmin }) => {
             if(check && isAdmin) {
@@ -832,7 +833,7 @@ const resolvers = {
         getAllSlider : async (parram, args, { check, isAdmin}) => {
             if(check) {
                 try {
-                    if(args.sliderId == null) {
+                    if(args.sliderId == null && isAdmin) {
                         const sliders = await Slider.find({}).populate('image');
                         if(sliders == null) {
                             return {
@@ -938,18 +939,22 @@ const resolvers = {
         category : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                     try {
+                        const { createReadStream, filename } = await args.input.image;
+                        const stream = createReadStream();
+                        const { filePath } = await saveImage({ stream, filename});
+
                         await Category.create({
                             name : args.input.name,
                             label : args.input.label,
                             parent : args.input.parent,
+                            image : filePath
                         })
 
-                            return {
-                                status : 200,
-                                message : 'دسته بندی مورد نظر ایجاد شد.'
-                            }
+                        return {
+                            status : 200,
+                            message : 'دسته بندی مورد نظر ایجاد شد.'
+                        }
                         
-        
                     } catch {
                         const error = new Error('دسته بندی مورد نظر ذخیره نشد!');
                         error.code = 401;
@@ -1034,7 +1039,6 @@ const resolvers = {
 
         product : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
-
                 try {
                     const details = await saveDetailsValue(args.input.details);
                     const attribute = await saveAttributeProduct(args.input.attribute);
@@ -1058,7 +1062,8 @@ const resolvers = {
                          attribute : attribute,
                          description : args.input.description,
                          details : details,
-                         image : filePath
+                         original : filePath,
+                         images : args.input.images
                     })
 
                         return {
@@ -1585,6 +1590,45 @@ const resolvers = {
             }
         },
 
+        Banner : async (parram, arrgs, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const category = await Category.findById(args.categoryId);
+                    const image = await Multimedia.findById(args.imageId);
+                    if(category == null) {
+                        return {
+                            status : 401,
+                            message : 'دسته بندی مورد نظر قبلا در سیستم ثبت نشده است!'
+                        }
+                    } else if(image == null) {
+                        return {
+                            status : 401,
+                            message : 'چنین تصویری قبلا ثبت نشده است!'
+                        }
+                    } else {
+                        await Banner.create({
+                            category,
+                            image,
+                            default : args.default
+                        })
+
+                        return {
+                            status : 200,
+                            message : 'بنر برای دسته بندی مورد نظر ذخیره شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ذخیره بنر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
         // edit method for all section
 
         UpdateCategory : async (param, args, { check, isAdmin }) => {
@@ -1593,7 +1637,8 @@ const resolvers = {
                     const cat = await Category.findByIdAndUpdate(args.input.id, {$set : {
                         name : args.input.name,
                         label : args.input.label,
-                        parent : args.input.parent
+                        parent : args.input.parent,
+                        image : args.input.image
                     }})
                     if(!cat) {
                         const error = new Error('این دسته بندی در سیستم ثبت نشده است.');
@@ -1792,7 +1837,6 @@ const resolvers = {
                             const pathim = await Product.findById(args.input.id);
                             imagePath = pathim.image[0];
                         } else {
-
                             const { createReadStream, filename } = await args.input.image;
                             const stream = createReadStream();
                             const { filePath } = await updateImageProduct({ stream, filename})
@@ -1811,7 +1855,8 @@ const resolvers = {
                             attribute : args.input.attribute,
                             description : args.input.description,
                             details : details,
-                            image : imagePath
+                            original : imagePath,
+                            images : args.input.images
                         }})
 
                         if(!product) {
@@ -1860,7 +1905,7 @@ const resolvers = {
                                             discount : element.discount,
                                             stock : element.stock,
                                             suggestion : element.suggestion,
-                                            expireAt : Date.now() + (element.expireAt * 60 * 60 * 1000)
+                                            expireAt : Date.now() + (element.expireAt * 24 * 60 * 60 * 1000)
                                         }
                                     })
                     }
@@ -1992,7 +2037,7 @@ const resolvers = {
                             status : 401,
                             message : 'اسلایدر مورد نظر ویرایش شد.'
                         }
-                        
+
                     } else {
                         await Slider.findOneAndUpdate({ default : true}, { $set : { default : false}});
                         await Slider.findByIdAndUpdate(args.sliderId, { $set : {
@@ -2017,7 +2062,6 @@ const resolvers = {
                 throw error;
             }
         },
-
 
         DeleteSlider : async (param, args, { check, isAdmin}) => {
             if(check && isAdmin) {
@@ -2264,35 +2308,6 @@ let getOptions= (url, params) => {
     }
 }
 
-let getLink = () => {
-    
-    let d = {
-        query : `
-        query paymentCallback{
-            paymentCallback {
-              status
-            }
-          }
-        `
-    };
 
-    let formD = new FormData();
-        formD.append('operations' , JSON.stringify(d));
-
-        let optitons = {
-        method : 'GET',
-        // headers : { 
-        //     'token' : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkZGY3NGMwMzZjN2Q1NTZhY2ZjM2IxYyIsImVtYWlsIjoiYWxpQGdtYWlsLmNvbSIsImlhdCI6MTU3NTEwNTcxMywiZXhwIjoxNTc1MTA5MzEzfQ.ujaPfjWBByJaa04-AsR_L_6sK9lEd_RNygCtM-S2EDs'
-        // },
-        body : formD
-        };
-
-        let url = 'http://localhost:4000/graphql';
-
-        fetch(url,optitons)
-        .then(res => res.json())
-        .then(res => console.log(res))
-        .catch(err => console.log(err));
-        }
 
 module.exports = resolvers;
