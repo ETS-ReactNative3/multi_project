@@ -704,7 +704,7 @@ const resolvers = {
             if(check) {
                 try {
                     if(args.orderId) {
-                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);``
                         return [pay]
                     } else if(args.orderId == null && isAdmin) {
                         const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
@@ -731,14 +731,15 @@ const resolvers = {
             let limit = args.limit || 10;
             const Tselling = await Product.find({}).sort({ soldCount : -1});
             const Nproduct = await Product.find({}).sort({ createdAt : -1});
-            const psuggestion = await Product.paginate({}, { page, limit, populate : ({ path : 'attribute', match : { suggestion : true}})});
-            console.log(psuggestion.docs)
-            return;
-
+            const psuggestion = await Product.paginate({}, { page, limit, populate : { path : 'attribute', match : { suggestion : true}}});
+            const category = await Category.find({ parent : null});
+            const slider = await Slider.findOne({ default : true}).populate('image');
             return {
                 Tselling,
                 Nproduct,
-                Psuggestion : psuggestion.attribute.expireAt > 1*24*60*60*1000 ? psuggestion : null
+                Psuggestion : psuggestion.docs,
+                category,
+                slider
             }
         },
 
@@ -1858,8 +1859,7 @@ const resolvers = {
                             attribute : args.input.attribute,
                             description : args.input.description,
                             details : details,
-                            original : imagePath,
-                            images : args.input.images
+                            original : imagePath
                         }})
 
                         if(!product) {
@@ -1885,7 +1885,7 @@ const resolvers = {
             }
         },
 
-        UpdateProducctAttribute : async (param, args, { check, isAdmin }) => {
+        UpdateProductAttribute : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
                     if(args.input.addSeller == true) {
@@ -1920,6 +1920,33 @@ const resolvers = {
 
                 } catch {
                     const error = new Error('امکان ویرایش ویژگی های محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdateProductImages : async (parram, args, {check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    if(args.productId == null || args.images == null) {
+                        throw error;
+                    }
+
+                    await Product.findByIdAndUpdate(args.productId, { $set : {
+                        images : args.images
+                    }})
+
+                    return {
+                        status : 200,
+                        message : 'تصویرهای محصول ویرایش شد.'
+                    }
+                } catch {
+                    const error = new Error('امکان ویرایش تصویرهای محصول وجود ندارد.');
                     error.code = 401;
                     throw error;
                 }
