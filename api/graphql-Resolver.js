@@ -39,6 +39,7 @@ const Payment = require('app/models/payment');
 const Receptor = require('app/models/receptor');
 const OrderStatus = require('app/models/order-status');
 const Favorite = require('app/models/favorite');
+const Banner = require('app/models/banner');
 
 
 
@@ -729,15 +730,24 @@ const resolvers = {
         MainPageApp : async (param, args) => {
             let page = args.page || 1;
             let limit = args.limit || 10;
+            let sugg = [];
             const Tselling = await Product.find({}).sort({ soldCount : -1});
             const Nproduct = await Product.find({}).sort({ createdAt : -1});
-            const psuggestion = await Product.paginate({}, { page, limit, populate : { path : 'attribute', match : { suggestion : true}}});
+            const psuggestion = await Product.paginate({}, { page, limit});
+            psuggestion.docs.map(async item => {
+                const pa = await Productattribute.find({ _id : { $in : item.attribute}, suggestion : true})
+                if(pa.length != 0) {
+                    sugg.push(item)
+                }
+            })
+
+            console.log(sugg)
             const category = await Category.find({ parent : null});
             const slider = await Slider.findOne({ default : true}).populate('image');
             return {
                 Tselling,
                 Nproduct,
-                Psuggestion : psuggestion.docs,
+                Psuggestion : sugg,
                 category,
                 slider
             }
@@ -829,8 +839,8 @@ const resolvers = {
             }
         },
 
-        getAllSlider : async (parram, args, { check, isAdmin}) => {
-            if(check) {
+        getAllSlider : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
                 try {
                     if(args.sliderId == null && isAdmin) {
                         const sliders = await Slider.find({}).populate('image');
@@ -864,7 +874,31 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+        },
+          
+        getBanner : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const banner = await Banner.find({});;
+                    if(banner == null) {
+                        return {
+                            status : 401,
+                            message : 'هیچ بنری برای نمایش وجود ندارد!'
+                        }
+                    } 
+                    return banner;
+                } catch {
+                    const error = new Error('هیچ بنری برای نمایش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         }
+
     },
 
     Mutation : {
@@ -1590,15 +1624,15 @@ const resolvers = {
             }
         },
 
-        Banner : async (parram, arrgs, { check, isAdmin}) => {
+        Banner : async (param, args, { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
                     const category = await Category.findById(args.categoryId);
                     const image = await Multimedia.findById(args.imageId);
-                    if(category == null) {
+                    if(category == null || category.parent == null) {
                         return {
                             status : 401,
-                            message : 'دسته بندی مورد نظر قبلا در سیستم ثبت نشده است!'
+                            message : 'نمی توانید برای این دسته بندی بنر ثبت کنید!'
                         }
                     } else if(image == null) {
                         return {
@@ -2087,6 +2121,40 @@ const resolvers = {
             }
         },
 
+        UpdateBanner : async (param, args, { check, isAmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const banner = await Banner.findById(args.bannerId);
+                    if(banner.default == true) {
+                        await Slider.findByIdAndUpdate(args.bannerId, { $set : {
+                            default : true
+                        }})
+                        return {
+                            status : 401,
+                            message : 'این بنر فعال است. ابتدا یک بنر دیگر را فعال نمایید'
+                        }
+                    } else {
+                        await Banner.findOneAndUpdate({ default : true}, { $set : { default : false}});
+                        await Banner.findByIdAndUpdate(args.bannerId, { $set : {
+                            default : args.default
+                        }})
+                        return {
+                            status : 200,
+                            message : 'بنر مورد نظر ویرایش شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ویرایش بنر مورد نظر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
         DeleteSlider : async (param, args, { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
@@ -2133,10 +2201,46 @@ const resolvers = {
                 throw error;
             }
 
+        },
+
+        DeleteBanner : async(param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const banner = await Banner.findById(args.bannerId);
+                    if(banner == null) {
+                        throw error;
+                    } else if(banner.default == true) {
+                        throw error;
+                    }
+
+                    banner.remove();
+                    return {
+                        status : 200,
+                        message : 'بنر مورد نظر حذف شد'
+                    }
+                } catch {
+                    const error = new Error('امکان حذف بنر مورد نظر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         }
 
 
     },
+  
+    product : {
+       attribute : async (param, args) => await Productattribute.find({ _id : { $in : param.attribute}})
+    },
+
+    Banner : {
+       category : async (param, args) => await Category.findById(param.category),
+       image : async (param, args) => await Multimedia.findById(param.image)
+    }
 }
 
 // other method -----------------------------------
@@ -2331,10 +2435,6 @@ let getOptions= (url, params) => {
     }
 }
 
-
-Prroduct : {
-    attribute : async (param, args) => { await Productattribute.find()}
-}
 
 
 module.exports = resolvers;
