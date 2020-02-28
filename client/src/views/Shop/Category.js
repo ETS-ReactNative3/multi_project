@@ -128,7 +128,7 @@ const Category =(props)=> {
             `,
             variables :{        
                   "page": 1,
-                  "limit": 10
+                  "limit": 100
           }
       }
     }).then((result)=>{
@@ -168,14 +168,16 @@ const Category =(props)=> {
             parent = subTitleValue
         }
         console.log( parent)
+        const tempImage = images[0]._id;
+        console.log(tempImage);
         axios({
             url: '/',
             method: 'post',
             headers:{'token':`${token}`},
             data: {
               query: `
-               mutation addcategory($name : String!, $label : String, $parent : ID) {
-                   category(input : { name : $name, label : $label, parent : $parent}) {
+               mutation addcategory($name : String!, $label : String, $parent : ID, $image: ID!) {
+                   category(input : { name : $name, label : $label, parent : $parent, image:$image}) {
                      status
                    }
                  }     
@@ -183,7 +185,8 @@ const Category =(props)=> {
                 variables : {
                   "name" : title,
                   "label" : lable,
-                  "parent" : parent
+                  "parent" : parent,
+                  "image":tempImage
                 }
           }
         }).then((result) => {
@@ -191,6 +194,7 @@ const Category =(props)=> {
                 console.log(result.data.errors);
                 //setMessage('ثبت اطلاعات با مشکل مواجه شده است');            
             }
+            toast.success('دسته بندی با موفقیت ذخیره شد')
             setIsSubmit(!isSubmit);
             
         }).catch(error=>console.log(error));
@@ -204,7 +208,7 @@ const Category =(props)=> {
         setModal(true);
       }
       
-  }
+   }
   const toggleLarge=()=> {
     setModal(!modal)
   }

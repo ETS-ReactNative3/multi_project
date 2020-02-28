@@ -61,6 +61,7 @@ const AllOrders = React.lazy(()=>import('./views/Orders/Orders'));
 const OrderDetails = React.lazy(()=>import('./views/Orders/Order'));
 const Status = React.lazy(()=>import('./views/Orders/Status'));
 const Slider = React.lazy(()=>import('./views/Slider/Slider'));
+const Banner = React.lazy(()=>import('./views/Banner/Banner'));
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
   
@@ -131,6 +132,7 @@ const routes = [
   { path: '/media/addMedia', exact: true, name: ' افزودن', component: AddMedia },
   { path: '/media/font-awesome', name: 'Font Awesome', component: FontAwesome },
   { path: '/slider', name: 'اسلایدر', component: Slider },
+  { path: '/banner', name: 'بنر', component: Banner },
 ];
 
 export default routes;

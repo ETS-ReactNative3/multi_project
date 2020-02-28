@@ -39,7 +39,7 @@ const Payment = require('app/models/payment');
 const Receptor = require('app/models/receptor');
 const OrderStatus = require('app/models/order-status');
 const Favorite = require('app/models/favorite');
-
+const Banner = require('app/models/banner');
 
 
 const resolvers = {
@@ -940,15 +940,11 @@ const resolvers = {
         category : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                     try {
-                        const { createReadStream, filename } = await args.input.image;
-                        const stream = createReadStream();
-                        const { filePath } = await saveImage({ stream, filename});
-
                         await Category.create({
                             name : args.input.name,
                             label : args.input.label,
                             parent : args.input.parent,
-                            image : filePath
+                            image : args.input.image
                         })
 
                         return {
@@ -1591,7 +1587,7 @@ const resolvers = {
             }
         },
 
-        Banner : async (parram, arrgs, { check, isAdmin}) => {
+        Banner : async (parram, args, { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
                     const category = await Category.findById(args.categoryId);
@@ -2335,6 +2331,10 @@ let getOptions= (url, params) => {
     }
 }
 
+
+Prroduct : {
+    attribute : async (param, args) => { await Productattribute.find()}
+}
 
 
 module.exports = resolvers;

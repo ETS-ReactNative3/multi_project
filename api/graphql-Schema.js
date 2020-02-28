@@ -253,7 +253,7 @@ const typeDefs = gql`
         name : String!,
         label : String,
         parent : ID,
-        image : String!
+        image : ID!
     }
 
     type operation {
@@ -360,7 +360,7 @@ const typeDefs = gql`
         name : String,
         label : String,
         parent : Parent,
-        image : String
+        image : Multimedia
     }
 
     type Parent {
