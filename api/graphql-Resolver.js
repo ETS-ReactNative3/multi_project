@@ -2121,28 +2121,16 @@ const resolvers = {
             }
         },
 
-        UpdateBanner : async (param, args, { check, isAmin}) => {
+        UpdateBanner : async (param, args, { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
-                    const banner = await Banner.findById(args.bannerId);
-                    if(banner.default == true) {
-                        await Slider.findByIdAndUpdate(args.bannerId, { $set : {
-                            default : true
-                        }})
-                        return {
-                            status : 401,
-                            message : 'این بنر فعال است. ابتدا یک بنر دیگر را فعال نمایید'
-                        }
-                    } else {
-                        await Banner.findOneAndUpdate({ default : true}, { $set : { default : false}});
-                        await Banner.findByIdAndUpdate(args.bannerId, { $set : {
+                        await Banner.findByIdAndUpdate(args.bannerID, { $set : {
                             default : args.default
                         }})
                         return {
                             status : 200,
                             message : 'بنر مورد نظر ویرایش شد.'
                         }
-                    }
                 } catch {
                     const error = new Error('امکان ویرایش بنر مورد نظر وجود ندارد!');
                     error.code = 401;
@@ -2219,7 +2207,7 @@ const resolvers = {
                         message : 'بنر مورد نظر حذف شد'
                     }
                 } catch {
-                    const error = new Error('امکان حذف بنر مورد نظر وجود ندارد!');
+                    const error = new Error('امکان حذف بنر مورد نظر وجود ندارد! اگر این بنر فعال است ابتدا یک بنر دیگر را فعال نموده و سپس این بنر را حذف کنید');
                     error.code = 401;
                     throw error;
                 }

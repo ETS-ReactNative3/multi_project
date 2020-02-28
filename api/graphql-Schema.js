@@ -533,6 +533,7 @@ const typeDefs = gql`
     }
 
     type Banner {
+        _id : ID,
         category : Category,
         image : Multimedia,
         default : Boolean
