@@ -78,9 +78,9 @@ const ProductPictures = (props)=>{
     }
   }).then((result) => {
     if(result.data.errors){
-      
+      console.log(result.data.errors[0])
       toast.error('خطا در دریافت اطلاعات  محصولات');
-      dispatch({type:'logout',payload:props});
+      //dispatch({type:'logout',payload:props});
     }
     else{
       const {getProduct} = result.data.data;
@@ -138,6 +138,41 @@ const filterMedia = (event)=>{
       tempProduct.push(products[0].images[i]._id)
     }
     console.log(tempProduct);
+
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        mutation UpdateProductImages($productId : ID!, $images : [String!]!) {
+          UpdateProductImages(productId : $productId, images : $images) {
+            status,
+            message
+          }
+        }    
+          `,
+          variables :{
+            "productId": productid,
+            "images": tempProduct
+          }
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      const {message} = result.data.errors[0];
+      toast.error(message);
+    }
+    else{
+     
+       const {message} = result.data.data.UpdateProductImages;
+        toast.success(message);
+    }
+             
+  }).catch(error=>{
+    console.log(error)
+  })
+
+
   }
     return(
         <div className="animated fadeIn">
