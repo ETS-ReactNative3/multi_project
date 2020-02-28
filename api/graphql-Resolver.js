@@ -379,10 +379,10 @@ const resolvers = {
                     const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
                     return producs.docs
                 } else if(args.productId != null && args.categoryId == null) {
-                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
+                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'images'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
                     return [product]
                 } else if(args.categoryId != null && args.productId == null) {
-                    const product = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute'}, { path : 'images'}]});
+                    const product = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute'}]});
                     return product.docs
                 }
             } else {
@@ -943,15 +943,11 @@ const resolvers = {
         category : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                     try {
-                        const { createReadStream, filename } = await args.input.image;
-                        const stream = createReadStream();
-                        const { filePath } = await saveImage({ stream, filename});
-
                         await Category.create({
                             name : args.input.name,
                             label : args.input.label,
                             parent : args.input.parent,
-                            image : filePath
+                            image : args.input.image
                         })
 
                         return {
@@ -2335,6 +2331,10 @@ let getOptions= (url, params) => {
     }
 }
 
+
+Prroduct : {
+    attribute : async (param, args) => { await Productattribute.find()}
+}
 
 
 module.exports = resolvers;
