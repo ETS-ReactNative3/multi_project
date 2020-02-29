@@ -2374,6 +2374,7 @@ let updateImageProduct = async (id, {stream, filename}) => {
                     .on('error', error => reject(error))
                     .on('finish', () => resolve({filePath}))
             })
+        }
 }
 
 // let deleteImage = async ({filename}) => {
