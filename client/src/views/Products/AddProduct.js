@@ -333,7 +333,8 @@ const AddProduct = (props)=>{
       let data = 
       {
         query: `
-        mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute!]!, $description : String!, $details : [InputDetails!]!, $original : Upload, $images:[String]) {
+
+        mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute!]!, $description : String!, $details : [InputDetails!]!, $original : Upload!, $images:[ID]) {
           product(input : {fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, original : $original, images:$images }) {
             status,
             message

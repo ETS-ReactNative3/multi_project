@@ -204,7 +204,7 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [UpdateDetails!]!,
-        image : Upload!
+        original : Upload
     }
 
     input InputDetails {
@@ -427,7 +427,7 @@ const typeDefs = gql`
         slider : Slider,
         category : [Category],
         Psuggestion : [product],
-        banerDiscount : [Category],
+        banner : [Banner],
         Tselling : [product],
         Nproduct : [product]
     }
