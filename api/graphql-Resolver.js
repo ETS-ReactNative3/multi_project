@@ -734,7 +734,7 @@ const resolvers = {
             let sugg = [];
             const Tselling = await Product.find({}).sort({ soldCount : -1});
             const Nproduct = await Product.find({}).sort({ createdAt : -1});
-            const psuggestion = await Product.paginate({}, { page, limit});
+            const psuggestion = await Product.paginate({}, { page, limit, populate : { path : 'attribute'}});
             const banner = await Banner.find({ default : true}).populate([{ path : 'Category'}, { path : 'Multimedia'}]).limit(7);
             psuggestion.docs.map(async item => {
                 const pa = await Productattribute.find({ _id : { $in : item.attribute}, suggestion : true})
@@ -2220,10 +2220,6 @@ const resolvers = {
 
     },
   
-    // product : {
-    //    attribute : async (param, args) => await Productattribute.find({ _id : { $in : param.attribute}})
-    // },
-
     Banner : {
        category : async (param, args) => await Category.findById(param.category),
        image : async (param, args) => await Multimedia.findById(param.image)
@@ -2378,7 +2374,6 @@ let updateImageProduct = async (id, {stream, filename}) => {
                     .on('error', error => reject(error))
                     .on('finish', () => resolve({filePath}))
             })
-    }
 }
 
 // let deleteImage = async ({filename}) => {
