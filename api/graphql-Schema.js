@@ -204,7 +204,7 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [UpdateDetails!]!,
-        image : Upload!
+        original : Upload
     }
 
     input InputDetails {

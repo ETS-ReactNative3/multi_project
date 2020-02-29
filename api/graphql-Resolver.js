@@ -1071,6 +1071,7 @@ const resolvers = {
         product : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
+
                     const details = await saveDetailsValue(args.input.details);
                     const attribute = await saveAttributeProduct(args.input.attribute);
 
@@ -1081,7 +1082,7 @@ const resolvers = {
                         }
                     }
 
-                    const { createReadStream, filename } = await args.input.image;
+                    const { createReadStream, filename } = await args.input.original;
                     const stream = createReadStream();
                     const { filePath } = await saveImage({ stream, filename});
 
@@ -1094,7 +1095,6 @@ const resolvers = {
                          description : args.input.description,
                          details : details,
                          original : filePath,
-                         images : args.input.images
                     })
 
                         return {
@@ -1860,12 +1860,12 @@ const resolvers = {
         UpdateProduct : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
+
                         const details = await updateDetailsValue(args.input.details);
                         // update image path
 
                         let imagePath = "";
-
-                        if(!args.input.image) {
+                        if(!args.input.original) {
                             const pathim = await Product.findById(args.input.id);
                             imagePath = pathim.original;
                         } else {
@@ -2368,15 +2368,12 @@ let updateImageProduct = async (id, {stream, filename}) => {
         error.code = 401;
         throw error;
     } else {
-        if(filePath === image_product.original) {
             return new Promise((resolve, reject) => {
                 stream
                     .pipe(fs.createWriteStream(path.join(__dirname, `/public/${filePath}`)))
                     .on('error', error => reject(error))
                     .on('finish', () => resolve({filePath}))
             })
-        }
-    }
 }
 
 // let deleteImage = async ({filename}) => {

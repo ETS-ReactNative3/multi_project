@@ -55,7 +55,7 @@ const EditProduct = (props)=>{
               name
             },
             rate,          
-            image,
+            original,
             attribute{
               _id,
               seller {
@@ -112,11 +112,12 @@ const EditProduct = (props)=>{
     }
     else{
       const {getProduct} = result.data.data;
+      console.log(getProduct);
       setName(getProduct[0].fname);
       setEnglishName(getProduct[0].ename);
       setBrandId(getProduct[0].brand._id);
       setBrandName(getProduct[0].brand.name);
-      setImageServer(getProduct[0].image[0]);
+      setImageServer(getProduct[0].original);
       setDescription(getProduct[0].description);
       setInfo(getProduct[0].attribute);
       let specId=null;
@@ -279,8 +280,8 @@ const EditProduct = (props)=>{
       
       let data ={
         query: `
-        mutation updateProduct($id : ID, $fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [ID!]!, $description : String!, $details : [UpdateDetails!]!, $image : Upload!) {
-          UpdateProduct (input : {id : $id, fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, image : $image}) {
+        mutation updateProduct($id : ID, $fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [ID!]!, $description : String!, $details : [UpdateDetails!]!, $original : Upload) {
+          UpdateProduct (input : {id : $id, fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, original : $original}) {
             status,
             message
           }
@@ -295,13 +296,13 @@ const EditProduct = (props)=>{
             "attribute": infoHolder,
             "description": description,
             "details": SpecArray,
-            "image":null
+            "original":null
           }
     }
     let newData ={
       query: `
-      mutation updateProduct($id : ID, $fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [ID!]!, $description : String!, $details : [UpdateDetails!]!, $image : Upload) {
-        UpdateProduct (input : {id : $id, fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, image : $image}) {
+      mutation updateProduct($id : ID, $fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [ID!]!, $description : String!, $details : [UpdateDetails!]!, $original : Upload) {
+        UpdateProduct (input : {id : $id, fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, original : $original}) {
           status,
           message
         }
@@ -319,7 +320,7 @@ const EditProduct = (props)=>{
         }
     }
     let map = {
-      0 : ['variables.image'],
+      0 : ['variables.original'],
     }
     let dataServer=newData;
     if(image){
@@ -343,8 +344,12 @@ const EditProduct = (props)=>{
       toast.error(`خطلا در ویرایش اطلاعات محصول ${name}` )
     }
     else{
-      toast.success(result.data.data.UpdateProduct.message);
-      props.history.replace('/dashboard')
+      const {message} = result.data.data.UpdateProduct
+      toast.success(message);
+      setTimeout(()=>{
+        props.history.replace('/products/allproducts')
+      },1000)
+      
     }
    
   })
