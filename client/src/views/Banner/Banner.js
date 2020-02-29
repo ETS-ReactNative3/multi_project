@@ -19,9 +19,11 @@ const Banner =(props)=> {
     const [modal,setModal] = useState(false);
     const [arrayholder,setArrayHolder] = useState('');
     const [allMedia,setAllmedia] = useState([]);
+    const [allBanner,setAllBanner] = useState([]);
     const [searchBarValue,setSearchBarValue] = useState('');
     const [checked,setChecked] = useState(false);
     const [resultLoading,setResultLoading] = useState(true);
+    const [loadAgain, setLoadAgain] = useState(false)
     const {dispatch} = useContext(AuthContext);
     const token =  GetToken();
     useEffect(()=>{
@@ -98,7 +100,43 @@ const Banner =(props)=> {
       }).catch((error)=>{
             console.log(error)
       })
+
     },[])
+
+    useEffect(()=>{
+      axios({
+        url: '/',
+        method: 'post',
+        headers:{'token':`${token}`},
+        data: {
+          query: `
+          query getBanner {
+            getBanner {
+              _id,
+              category {
+                name
+              }
+              image {
+                dir
+              }
+              default
+            }
+          }
+            `
+      }
+    }).then((result)=>{
+     const {getBanner} = result.data.data
+        
+        for(let i=0;i<getBanner.length;i++){
+            getBanner[i].flag = false;
+        }
+      setAllBanner(getBanner);
+      setResultLoading(false)
+    }).catch((error)=>{
+          console.log(error)
+    })
+
+    },[loadAgain])
 
     const categoryHandler = (event)=>{
         setCatId(event.target.value);
@@ -247,8 +285,110 @@ const Banner =(props)=> {
         }).catch(error=>{
           console.log(error)
         })
+        
 
     }
+
+    const ChangeDefaultStatus = (id)=>{
+      const newBanner =[...allBanner];
+      const newData = newBanner.filter((item)=>{
+          return item._id ===id
+      }) 
+       newData[0].default = !newData[0].default;
+       setAllBanner(newBanner)
+    }
+    const handleEdit= (id)=>{
+      const newBanner =[...allBanner];
+      const newData = newBanner.filter((item)=>{
+          return item._id ===id
+      }) 
+       newData[0].flag = true;
+       setAllBanner(newBanner)
+   
+    }
+
+    const deleteBanner = (id,index)=>{
+      axios({
+          url: '/',
+          method: 'post',
+          headers:{'token':`${token}`},
+          data: {
+            query: `
+            mutation DeleteBanner($bannerId : ID!) {
+              DeleteBanner(bannerId : $bannerId) {
+                status,
+                message
+              }
+            }
+              `,
+              variables :{
+                "bannerId": id
+              }
+        }
+      }).then((result)=>{
+          if(result.data.errors){
+              const {message} = result.data.errors[0];
+              //console.log(result.data)
+             toast.error( message)
+          }
+          else{
+              const {message} = result.data.data.DeleteBanner;
+              toast.success(message);
+              const tempBanner = [...allBanner];
+              tempBanner.splice(index,1);
+              setAllBanner(tempBanner)
+              
+          }
+       
+      }).catch((error)=>{
+            console.log(error)
+      })
+  }
+      
+
+  const submitEdit = (id)=>{
+    const newBanner =[...allBanner];
+    const newData = newBanner.filter((item)=>{
+          return item._id ===id
+    });
+    
+    
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        mutation updateBanner($bannerId : ID!, $default : Boolean) {
+          UpdateBanner(bannerID : $bannerId, default : $default) {
+            status,
+            message
+          }
+        }
+          `,
+          variables :{
+            "bannerId": newData[0]._id,
+            "default": newData[0].default
+          }
+          
+    }
+    }).then((result)=>{
+        if(result.data.errors){
+            const {message} = result.data.errors[0];
+            //console.log(result.data)
+          toast.error( message)
+        }
+        else{
+           const {message} = result.data.data.UpdateBanner;
+           toast.success(message); 
+          setLoadAgain(!loadAgain)
+        }
+    
+    }).catch((error)=>{
+          console.log(error)
+    })
+
+  }
 
     return(
         <div className="animated fadeIn">
@@ -374,6 +514,58 @@ const Banner =(props)=> {
                             
                                 
                                 <tbody>
+                                {
+                            
+                            allBanner.map((item,index)=>{
+                                
+                                return(
+                                    <React.Fragment key={item._id}>
+                                      <tr  style={item.default ?{background:'#f0f3f5'}:null}>
+                                          <td>
+                                            {
+                                            item.category.name
+                                            }
+                                          </td>
+                                          <td>
+                                            <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image.dir}`)} alt={item.image.dir} style={{width:'90px'}} />
+                                          </td>
+                                          <td>
+                                            {
+                                              item.flag 
+                                              ? 
+                                              <Input type="checkbox" 
+                                                checked={item.default}
+                                                onChange={() =>ChangeDefaultStatus(item._id)}
+                                              />
+                                              :
+                                              item.default ? 'فعال' : 'غیرفعال'
+                                            }
+                                          </td>
+                                          <td>
+                                            <Row>
+                                            <Col xs="2">
+                                            {
+                                                item.flag ? 
+                                            <Button type="submit" size="sm" color="primary" onClick={()=>submitEdit(item._id)} > <i className="fa fa-check fa-lg "></i> </Button>
+                                                :
+                                            <Button type="submit" size="sm" color="primary" onClick={()=>handleEdit(item._id)}><strong>ویرایش</strong> </Button>
+                                            }
+                                            
+                                                
+                                        
+                                            </Col>
+                                            <Col xs="2">
+                                                <Button type="submit" size="sm" color="danger" onClick={()=>deleteBanner(item._id,index)}><strong>حذف</strong> </Button>
+                                            </Col>
+                                            </Row>
+                                          </td>
+                                      </tr>
+                                    </React.Fragment>
+                                )
+                                
+                                  })
+                              }
+                   
                                 </tbody>
                             </Table>
                             }

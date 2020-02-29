@@ -19,7 +19,8 @@ const typeDefs = gql`
         getAllPayment(orderId : ID) : [Payment],
         getAllOrderStatus : [OrderStatus],
         getAllMultimedia(page : Int, limit : Int) : [Multimedia],
-        getAllSlider(sliderId : ID) : [Slider]
+        getAllSlider(sliderId : ID) : [Slider],
+        getBanner : [Banner]
 
         sortPoduct(categoryId : ID, viewCount : Boolean, soldCount : Boolean, priceUp : Boolean, priceDown : Boolean, newP : Boolean, suggestion : Boolean) : [product],
 
@@ -77,10 +78,12 @@ const typeDefs = gql`
         UpdateCommentProduct(commentId : ID!) : operation!,
         UpdateOrderStatus(orderstatusId : ID!, name : String!, default : Boolean!) : operation!,
         UpdatePayment(paymentId : ID!, orderstatusId : ID!) : operation!,
-        UpdateSlider(sliderId : ID, name : String, imageId : [ID], default : Boolean) : operation!
+        UpdateSlider(sliderId : ID, name : String, imageId : [ID], default : Boolean) : operation!,
+        UpdateBanner(bannerID : ID!, default : Boolean) : operation!
 
 
-        DeleteSlider(sliderId : ID!, imageId : ID) : operation!
+        DeleteSlider(sliderId : ID!, imageId : ID) : operation!,
+        DeleteBanner(bannerId : ID!) : operation!
 
 
     }
@@ -530,6 +533,13 @@ const typeDefs = gql`
         _id: ID,
         name : String,
         image : [Multimedia],
+        default : Boolean
+    }
+
+    type Banner {
+        _id : ID,
+        category : Category,
+        image : Multimedia,
         default : Boolean
     }
 
