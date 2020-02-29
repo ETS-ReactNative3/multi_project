@@ -393,7 +393,7 @@ const resolvers = {
             }
         },
 
-        getAllCategory : async (param, args, { check }) => {
+        getAllCategory : async (param, args, { check, isAdmin }) => {
             if(check) {
                 if(args.input.mainCategory == true) {
                     let page = args.input.page || 1;
@@ -905,17 +905,17 @@ const resolvers = {
     Mutation : {
         register : async (param, args, { secretID }) => {            
             try {
-                    const digit = args.input.digit;
-                    const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
-                    const codeToken = await VlidationRegister.findOne({ verifyToken : token});
-                    const verify = await jwt.verify(codeToken, secretID);
+                    // const digit = args.input.digit;
+                    // const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
+                    // const codeToken = await VlidationRegister.findOne({ verifyToken : token});
+                    // const verify = await jwt.verify(codeToken, secretID);
 
-                    if(!verify) {
-                        return {
-                            status : 403,
-                            message : 'درخواست شما اعتبار لازم برای ثبت نام را ندارد!'
-                        }
-                    } else {
+                    // if(!verify) {
+                    //     return {
+                    //         status : 403,
+                    //         message : 'درخواست شما اعتبار لازم برای ثبت نام را ندارد!'
+                    //     }
+                    // } else {
                         const salt = await bcrypt.genSaltSync(15);
                         const hash = await bcrypt.hashSync(args.input.password, salt);
                         await User.create({
@@ -931,7 +931,7 @@ const resolvers = {
                             message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
                         };
 
-                    } 
+                    // } 
 
             } catch {
                 const error = new Error('ارنباط با سرور محدود شده است!!');
@@ -2298,6 +2298,7 @@ let saveAttributeProduct = async (args) => {
                             color : element.color,
                             price : element.price,
                             discount : element.discount,
+                            suggestion : false,
                             stock : element.stock
                         })
 
