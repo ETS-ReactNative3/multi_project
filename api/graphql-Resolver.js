@@ -7,6 +7,10 @@ const path = require('path');
 const fs = require('fs');
 const Kavenegar = require('kavenegar');
 const jwt = require('jsonwebtoken');
+const request = require('request-promise');
+const moment = require('moment-jalaali');
+moment.loadPersian({usePersianDigits : true , dialect : 'persian-modern'});
+
 
 // const uniquestring = require('unique-string');
 // const nodemailer = require('nodemailer');
@@ -34,11 +38,294 @@ const VlidationRegister = require('app/models/validation-register');
 const Payment = require('app/models/payment');
 const Receptor = require('app/models/receptor');
 const OrderStatus = require('app/models/order-status');
+const Favorite = require('app/models/favorite');
+const Banner = require('app/models/banner');
 
 
 
 const resolvers = {
     Query : {
+        // main dashboard >>>>>>>>>>>>>>>>>>>>>>>
+
+        userAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const userAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const users = await User.find({});
+                    for (let index = 0; index < users.length; index++) {
+                        const element = users[index];
+                        const month = moment(element.createdAt).format('jMMMM');
+                        userAtmonth.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+
+                    return userAtmonth;
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        paymentProveAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const paymentAtmonthProve = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const paymentsProve = await Payment.find({payment : true});
+                    for (let index = 0; index < paymentsProve.length; index++) {
+                        const element = paymentsProve[index];
+                        const month = moment(element.createdAt).format('jMMMM');
+                        console.log(month);
+                        paymentAtmonthProve.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+
+                    return paymentAtmonthProve;
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        paymentNotProveAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const paymentAtmonthNotProve = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const paymentsNotProve = await Payment.find({payment : false});
+                    for (let index = 0; index < paymentsNotProve.length; index++) {
+                        const element = paymentsNotProve[index];
+                        const month = moment(element.createdAt).format('jMMMM');
+                        paymentAtmonthNotProve.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+
+                    return paymentAtmonthNotProve;
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        sellerAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const sellerAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const sellers = await Seller.find({});
+                    for (let index = 0; index < sellers.length; index++) {
+                        const element = sellers[index];
+                        const month = moment(element.createdAt).format('jMMMM');
+                        sellerAtmonth.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+
+                    return sellerAtmonth;
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        commentAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const commentAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const comment = await Comment.find({});
+                    for (let index = 0; index < comment.length; index++) {
+                        const element = comment[index];
+                        const month = moment(element.createdAt).format('jMMMM');
+                        commentAtmonth.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+
+                    return commentAtmonth;
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        paymentAtDay : async (param, args, { check, isAdmin}) => {
+            const d = new Date();
+            const day = [];
+            const pay = await Payment.find({});
+            let countallPay = 0
+            let allPay = 0;
+            let countPayNow = 0
+
+            for (let index = 10; index >= 0; index--) {
+                const t = pay.filter(item => {  
+                    const data = moment(item.createdAt).jDate();
+                    const q = moment(d - index * 24 * 60 *60 * 1000).jDate();
+                    return data == q ? item : null
+                })
+
+                t.map(item => {
+                    if(item.payment == true) {
+                        allPay += item.price
+                    }
+
+                    if( moment(item.createdAt).jDate() == moment(d).jDate() && item.payment == true) {
+                        countPayNow += item.price
+                    }
+                })
+                
+
+                countallPay += t.length
+
+                day.push({
+                    day : moment(d - index * 24 * 60 *60 * 1000).jDate(),
+                    count : t.length
+                })
+                
+            }
+            return {
+                day,
+                countallPay,
+                allPay,
+                countPayNow
+            };
+        },
+
+        paymenPricetAtDay : async (param, args, { check, isAdmin}) => {
+            const d = new Date();
+            const day = [];
+            const pay = await Payment.find({});
+
+            for (let index = 10; index >= 0; index--) {
+                const t = pay.filter(item => {
+                        const data = moment(item.createdAt).jDate();
+                        const q = moment(d - index * 24 * 60 *60 * 1000).jDate();
+                        return data == q ? item : null
+                })
+
+                let price = 0;
+
+                t.map(item => {
+                    if(moment(item.createdAt).jDate() == moment(d - index * 24 * 60 *60 * 1000).jDate() && item.payment == true) {
+                        price += item.price
+                    }
+                })
+
+                console.log(price)
+
+
+                day.push({
+                    day : moment(d - index * 24 * 60 *60 * 1000).jDate(),
+                    count : price
+                })
+
+                // console.log(t);
+                
+            }
+            return day;
+        },
+
+        allUserCount : async (param, args, { check, isAdmin}) =>{
+            if(check && isAdmin) {
+                try {
+                    const Maleusers = await User.find({gender : 'Male'}).count();
+                    const Femaleusers = await User.find({gender : 'Female'}).count();
+
+                    return {
+                        Male : ( Maleusers * 100 ) / (Maleusers + Femaleusers),
+                        Female : ( Femaleusers * 100 ) / (Maleusers + Femaleusers)
+                    }
+
+                } catch {
+                    const error = new Error('اطلاعات کاربران در دسترس نمی باشد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        allOrderStatus : async (param, args, { check, isAdmin}) => {
+            const orderStatus = await OrderStatus.find({});
+            const payment = await Payment.find({ payment : true}).populate('orderStatus');
+
+            const t = orderStatus.map(item => {
+                return {
+                    order : item.name,
+                    count : 0
+                }
+            })
+
+            for (let index = 0; index < payment.length; index++) {
+                const element = payment[index];
+                t.map(item => {
+                    item.order === element.orderStatus.name ? item.count++ : item.count
+                })
+            }
+
+            return t;
+        },
+
+        productAtmonth : async (param, args, { check , isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const productAtmonth = [{month : 'فروردین' , value : 0},{month : 'اردیبهشت' , value : 0},{month : 'خرداد' , value : 0},{month : 'تیر' , value : 0},{month : 'مرداد' , value : 0},{month : 'شهریور' , value : 0},{month : 'مهر' , value : 0},{month : 'آبان' , value : 0},{month : 'آذر' , value : 0},{month : 'دی' , value : 0},{month : 'بهمن' , value : 0},{month : 'اسفند' , value : 0}];
+                    const product = await Product.find({});
+                    for (let index = 0; index < product.length; index++) {
+                        const element = product[index];
+                        const month = moment(element.createdAt).format('jMMMM');
+                        productAtmonth.map(key => {
+                            key.month === month ? key.value++ : key.value
+                        })
+                    }
+
+                    return productAtmonth;
+                } catch {
+                    const error = new Error('امکان نمایش داده ها وجود ندارد!!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        // end of dashboard <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
         login : async (param, args, { secretID }) => {
             const user = await User.findOne({ phone : args.input.phone});
             if(!user) {
@@ -67,10 +354,17 @@ const resolvers = {
         },
 
         getUsers : async (param, args, { check, isAdmin }) => {
-
             if(check && isAdmin) {
-                const users = await User.find({});
-                return users;
+                let page = args.page || 1;
+                let limit = args.limit || 10;
+                if(args.userId == null) {
+                    const users = await User.paginate({}, {page, limit, sort : { createAt : -1}})
+                    return users.docs;
+                } else {
+                    const user = await User.findById(args.userId).sort({ createAt : -1}).populate([{ path : 'comment', populate : {path : 'product'}}, { path : 'payment', populate : { path : 'product'}}, { path : 'favorite', populate : { path : 'product', populate : { path : 'attribute'}}}])
+                    return [user];
+                }
+
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
                 error.code = 401;
@@ -86,7 +380,7 @@ const resolvers = {
                     const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
                     return producs.docs
                 } else if(args.productId != null && args.categoryId == null) {
-                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
+                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'images'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
                     return [product]
                 } else if(args.categoryId != null && args.productId == null) {
                     const product = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute'}]});
@@ -336,14 +630,6 @@ const resolvers = {
             }
         },
 
-        // MainPageApp : async (param, args, { check }) => {
-        //     const slider = await Slider.find().limit(3).sort({created_at : -1}).exec();
-        //     const category = await Category.find({ parent : null});
-        //     const Asuggestion = await Product.paginate({}, { populate : {path : 'attribute', match : { discount : !null}}});
-        //     const banerDiscount = await Product.paginate({}, { populate : [{path : 'attribute', match : { discount : !null}}, {path : 'category'}]});
-            
-        // }
-
         getAllComment : async (param, args, { check }) => {
             if(check) {
                     let page = args.page || 1;
@@ -419,7 +705,7 @@ const resolvers = {
             if(check) {
                 try {
                     if(args.orderId) {
-                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}, { path : 'orderStatus'}]);
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);``
                         return [pay]
                     } else if(args.orderId == null && isAdmin) {
                         const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
@@ -441,12 +727,31 @@ const resolvers = {
             }
         },
 
-        // MainPageApp : async (param, args) => {
-        //     const product = await Product.find({}).sort({ soldCount : 1})
-        //     return {
-        //         Tselling : product
-        //     }
-        // }
+        MainPageApp : async (param, args) => {
+            let page = args.page || 1;
+            let limit = args.limit || 10;
+            let sugg = [];
+            const Tselling = await Product.find({}).sort({ soldCount : -1});
+            const Nproduct = await Product.find({}).sort({ createdAt : -1});
+            const psuggestion = await Product.paginate({}, { page, limit});
+            psuggestion.docs.map(async item => {
+                const pa = await Productattribute.find({ _id : { $in : item.attribute}, suggestion : true})
+                if(pa.length != 0) {
+                    sugg.push(item)
+                }
+            })
+
+            console.log(sugg)
+            const category = await Category.find({ parent : null});
+            const slider = await Slider.findOne({ default : true}).populate('image');
+            return {
+                Tselling,
+                Nproduct,
+                Psuggestion : sugg,
+                category,
+                slider
+            }
+        },
 
         getAllOrderStatus : async (param, args, { check , isAdmin }) => {
             if(check && isAdmin) {
@@ -469,9 +774,130 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
-        }
+        }, 
 
-        
+        sortPoduct : async (param, args) => {
+            try {
+                switch (args.categoryId != null) {
+                    case args.viewCount == true :
+                        const productsView = await Product.paginate({ category : args.categoryId}, { sort : { viewCount : 1}});
+                        return productsView.docs;
+                    case args.soldCount == true :
+                        const productsSold = await Product.paginate({ category : args.categoryId}, { sort : { soldCount : 1}});
+                        return productsSold.docs;
+                    case args.priceUp == true :
+                        const productsPriceUp = await Product.paginate({category : args.categoryId}, {page, limit, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        return productsPriceUp.docs;
+                    case args.priceDown == true :
+                        const productspriceDown = await Product.paginate({category : args.categoryId}, {page, limit, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        return productspriceDown.docs;
+                    case args.newP == true :
+                        const producsNew = await Product.paginate({category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        return producsNew.docs;
+                    case args.suggestion == true : 
+                        const productsSuggestion = await Product.paginate([{category : args.categoryId }, {suggestion : true}], {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        return productsSuggestion.docs;
+                    default:
+                        break;
+                }
+            } catch {
+                const error = new Error('هیج کالایی برای نمایش وجود ندارد!');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        getAllMultimedia : async (param, args, {check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    let page = args.page || 1;
+                    let limit = args.limit || 10;
+                    const multimedia = await Multimedia.paginate({}, {page, limit, sort : { createdAt : 1}});
+                    let arr = [];
+                    for (let index = 0; index < multimedia.docs.length; index++) {
+                        const element = multimedia.docs[index];
+                        ImageSize(path.join(__dirname, `/public${element.dir}`), async (err, dimensions) =>{
+                            element.dimwidth = await dimensions.width;
+                            element.dimheight = await dimensions.height;
+                          });
+
+                          const type = await FileType.fromFile(path.join(__dirname, `/public${element.dir}`));
+                          element.format = type.ext;
+                    }
+
+                    return multimedia.docs;
+
+                } catch {
+                    const error = new Error('دسترسی شما به محتوای چند رسانه ای مسدود شده است!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        getAllSlider : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    if(args.sliderId == null && isAdmin) {
+                        const sliders = await Slider.find({}).populate('image');
+                        if(sliders == null) {
+                            return {
+                                status : 401,
+                                message : 'هیچ اسلایدری در سیستم ایجاد نشده است!'
+                            }
+                        }
+
+                        return sliders;
+
+                    } else {
+                        const slider = await Slider.findById(args.sliderId).populate('image');
+                        if(slider == null) {
+                            return {
+                                status : 401,
+                                message : 'چنین اسلایدری در سیستم ثبت نشده است!'
+                            }
+                        }
+
+                        return [slider]
+                    }
+                } catch {
+                    const error = new Error('اسلایدری برای نمایش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+          
+        getBanner : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const banner = await Banner.find({});;
+                    if(banner == null) {
+                        return {
+                            status : 401,
+                            message : 'هیچ بنری برای نمایش وجود ندارد!'
+                        }
+                    } 
+                    return banner;
+                } catch {
+                    const error = new Error('هیچ بنری برای نمایش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        }
 
     },
 
@@ -514,31 +940,38 @@ const resolvers = {
         },
 
         multimedia : async (param, args, { check, isAdmin }) => {
-            const { createReadStream, filename } = await args.file;
-            const type = await FileType.fromFile(args.file);
-            const stream = createReadStream();
-            const { filePath } = await Multimedia.SaveFile({ stream, filename});
-            if(!filePath) {
-                const error = new Error('امکان ذخیره فایل در پرونده چند رسانه ای وجود ندارد.');
-                error.code = 401;
-                throw error;
-            }
+            if(check && isAdmin) {
+                try {
+                    for (let index = 0; index < args.length; index++) {
+                        const element = args[index];
+                        const type = await FileType.fromFile(element.image);
+                        const { createReadStream, filename } = await args.image;
+                        const stream = createReadStream();
+                        const { filePath } = await saveImage({ stream, filename});
 
-            const file = await new Multimedia({
-                name : filename,
-                dimwidth : getImageSize(type).dimwidth,
-                dimheight :getImageSize(type).dimheight,
-                dir : filePath
-            })
+                        await Details.create({
+                            name : filename,
+                            dimwidth : getImageSize(type).dimwidth,
+                            dimheight :getImageSize(type).dimheight,
+                            dir : filePath
+                        })
+                    }
 
-            await file.save(err => {
-                if(err) {
-                    const error = new Error('امکان ذخیره فایل در پرونده چند رسانه ای وجود ندارد.');
+                    return {
+                        status : 200,
+                        message : 'تصاویر در رسانه ذخیره شد'
+                    }
+
+                } catch {
+                    const error = new Error('امکان ذخیره تصاویر وجود ندارد!');
                     error.code = 401;
                     throw error;
                 }
-            })
-
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
         },
 
         category : async (param, args, { check, isAdmin }) => {
@@ -548,14 +981,14 @@ const resolvers = {
                             name : args.input.name,
                             label : args.input.label,
                             parent : args.input.parent,
+                            image : args.input.image
                         })
 
-                            return {
-                                status : 200,
-                                message : 'دسته بندی مورد نظر ایجاد شد.'
-                            }
+                        return {
+                            status : 200,
+                            message : 'دسته بندی مورد نظر ایجاد شد.'
+                        }
                         
-        
                     } catch {
                         const error = new Error('دسته بندی مورد نظر ذخیره نشد!');
                         error.code = 401;
@@ -640,7 +1073,6 @@ const resolvers = {
 
         product : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
-
                 try {
                     const details = await saveDetailsValue(args.input.details);
                     const attribute = await saveAttributeProduct(args.input.attribute);
@@ -664,7 +1096,8 @@ const resolvers = {
                          attribute : attribute,
                          description : args.input.description,
                          details : details,
-                         image : filePath
+                         original : filePath,
+                         images : args.input.images
                     })
 
                         return {
@@ -692,7 +1125,7 @@ const resolvers = {
         productSpecs : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
-                    await Productspecs.create({
+                    const ProSpecs = await Productspecs.create({
                         category : args.input.category,
                         specs : args.input.specs,
                         label : args.input.label
@@ -718,7 +1151,7 @@ const resolvers = {
         productSpecsDetails : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
-                    await Productdetails.create({
+                    const ProSpecsDetails = await Productdetails.create({
                         specs : args.input.specs,
                         name : args.input.name,
                         label : args.input.label
@@ -933,6 +1366,303 @@ const resolvers = {
             }
         },
 
+        favorite : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const user = await User.findById(check.id);
+                    if(!user) {
+                        return {
+                            status : 401,
+                            message : 'چنین کاربری در سیستم ثبت نام نکرده است!'
+                        }
+                    }
+                    
+                    const product = await Product.findById(args.productId);
+                    if(!product) {
+                        return {
+                            status : 401,
+                            message : 'چنین محصولی در سیستم ثبت نشده است!'
+                        }
+                    }
+
+                    await Favorite.create({
+                        user : user._id,
+                        product : args.productId
+                    })
+
+                    return {
+                        status : 200,
+                        message : 'محصول مورد نظر به لیست علاقه مندی اضافه شد.'
+                    }
+                } catch {
+                    const error = new Error('امکان درج محصول مورد نظر به لیست علاقه مندی وجود ندار!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error; 
+            }
+        },
+
+        payment : async (param, args, { check, res} ) => {
+            if(check) {
+                try {
+                    const user = await User.findById(check.id);
+                    if(user.fname != null) {
+                        const ostatus = await OrderStatus.findOne({ default : true });
+                        const product = await Product.findById(args.input.product);
+                        const attribute = await Productattribute.findById(args.input.attribute);
+                        if(!product) {
+                            return {
+                                status : 401,
+                                message : 'خرید این محصول مجاز نمی باشد'
+                            }
+                        }
+
+                        if(!attribute) {
+                            return {
+                                status : 401,
+                                message : 'قیمت گذاری این کالا به درستی انجام نشده است!'
+                            }
+                        }
+
+                           // pay process
+
+                            let params = {
+                                MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
+                                Amount: (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
+                                CallbackURL: 'http://localhost:4000/api/product/payment/callbackurl',
+                                Description: `خرید محصول ${product.ename}`,
+                                Mobile : user.phone,
+                            }
+
+                            let options = getOptions('https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json', params);
+
+                            // options
+                            //     .then(data => {
+                            //         console.log(data.uri)
+                            //     })
+                            // return;
+
+                            const data = await request(options);
+
+                            if(! data) {
+                                return {
+                                    status : 401,
+                                    message : 'امکان خرید محصول در حال حاضر وجود ندارد بعدا امتحان نمایید!'
+                                }
+                            } 
+
+                            await Payment.create({
+                                user : check.id,
+                                product : product._id,
+                                resnumber : data.Authority,
+                                attribute : args.input.attribute,
+                                discount : args.input.discount,
+                                count : args.input.count,
+                                price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
+                                orderStatus : ostatus._id
+                            })
+
+                            const link = `https://www.zarinpal.com/pg/StartPay/${data.Authority}`;
+
+                            return {
+                                status : 200,
+                                payLink : link
+                            }
+
+                    } else {
+                        return {
+                            status : 401,
+                            message : 'اطلاعات خریدار ناقص است!!'
+                        }
+                    }
+                    
+                } catch {
+                    const error = new Error('امکان ثبت سفارش وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        receptor : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    const receptor = await Receptor.findOne({ phone : args.input.phone});
+                    if(receptor) {
+                        return {
+                            status : 401,
+                            message : 'این گیرنده قبلا در سیستم درج شده است!'
+                        }
+                    } else {
+                        await Receptor.create({
+                            fname : args.input.fname,
+                            lname : args.input.lname,
+                            code : args.input.code,
+                            number : args.input.number,
+                            phone : args.input.phone,
+                            state : args.input.state,
+                            city : args.input.city,
+                            address : args.input.address,
+                        })
+
+                        return {
+                            status : 200,
+                            message : 'گیرنده مورد نظر درج شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ثبت گیرنده وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        OrderStatus : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    if(args.default) {
+                        const status_def = await OrderStatus.findOne({ default : true});
+                        if(status_def != null) {
+                            return {
+                                status : 401,
+                                message : 'وضعیت سفارش دیگیری را به عنوان گزینه پیشفرض انتخاب کرده اید!'
+                            }
+                        }
+                    }
+
+                    const status = await OrderStatus.findOne({ name : args.name});
+                    if(status != null) {
+                        return {
+                            status : 401,
+                            message : 'قبل یک وضعیت سفارش با این عنوان ایجاد شده است!'
+                        }
+                    } else {
+
+                        const { createReadStream, filename } = await args.image;
+                        const stream = createReadStream();
+                        const { filePath } = await saveImage({ stream, filename});
+
+                        await OrderStatus.create({
+                            name : args.name,
+                            image : filePath,
+                            default : args.default
+                        })
+
+                        return {
+                            status : 200,
+                            message : 'وضعیت سفارش جدید در سیستم ثبت شد.'
+                        }
+
+                    }
+                } catch {
+                    const error = new Error('امکان ثبت وضعیت سفارش جدید وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        addSlider : async (param, args, {check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    if(args.default == true) {
+                        const slider = await Slider.findOne({ default : true});
+                        if(slider != null) {
+                            throw error;
+                        } else {
+                            const saveSlider = await Slider.create({
+                                name : args.name,
+                                image : args.imageId,
+                                default : args.default
+                            })
+
+                            return {
+                                _id : saveSlider._id,
+                                status : 200,
+                                message : 'اسلایدر ذخیره شد'
+                            }
+                        }
+                    } else {
+                        const saveSlider = await Slider.create({
+                            name : args.name,
+                            image : args.imageId,
+                            default : args.default
+                        })
+
+                        return {
+                            _id : saveSlider._id,
+                            status : 200,
+                            message : 'اسلایدر ذخیره شد'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ایجاد اسلایدر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        Banner : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const category = await Category.findById(args.categoryId);
+                    const image = await Multimedia.findById(args.imageId);
+                    if(category == null || category.parent == null) {
+                        return {
+                            status : 401,
+                            message : 'نمی توانید برای این دسته بندی بنر ثبت کنید!'
+                        }
+                    } else if(image == null) {
+                        return {
+                            status : 401,
+                            message : 'چنین تصویری قبلا ثبت نشده است!'
+                        }
+                    } else {
+                        await Banner.create({
+                            category,
+                            image,
+                            default : args.default
+                        })
+
+                        return {
+                            status : 200,
+                            message : 'بنر برای دسته بندی مورد نظر ذخیره شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ذخیره بنر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
         // edit method for all section
 
         UpdateCategory : async (param, args, { check, isAdmin }) => {
@@ -941,7 +1671,8 @@ const resolvers = {
                     const cat = await Category.findByIdAndUpdate(args.input.id, {$set : {
                         name : args.input.name,
                         label : args.input.label,
-                        parent : args.input.parent
+                        parent : args.input.parent,
+                        image : args.input.image
                     }})
                     if(!cat) {
                         const error = new Error('این دسته بندی در سیستم ثبت نشده است.');
@@ -1138,10 +1869,8 @@ const resolvers = {
 
                         if(!args.input.image) {
                             const pathim = await Product.findById(args.input.id);
-                            console.log(pathim.image[0])
                             imagePath = pathim.image[0];
                         } else {
-
                             const { createReadStream, filename } = await args.input.image;
                             const stream = createReadStream();
                             const { filePath } = await updateImageProduct({ stream, filename})
@@ -1160,7 +1889,7 @@ const resolvers = {
                             attribute : args.input.attribute,
                             description : args.input.description,
                             details : details,
-                            image : imagePath
+                            original : imagePath
                         }})
 
                         if(!product) {
@@ -1186,7 +1915,7 @@ const resolvers = {
             }
         },
 
-        UpdateProducctAttribute : async (param, args, { check, isAdmin }) => {
+        UpdateProductAttribute : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
                     if(args.input.addSeller == true) {
@@ -1209,7 +1938,7 @@ const resolvers = {
                                             discount : element.discount,
                                             stock : element.stock,
                                             suggestion : element.suggestion,
-                                            expireAt : Date.now() + (element.expireAt * 60 * 60 * 1000)
+                                            expireAt : Date.now() + (element.expireAt * 24 * 60 * 60 * 1000)
                                         }
                                     })
                     }
@@ -1221,6 +1950,33 @@ const resolvers = {
 
                 } catch {
                     const error = new Error('امکان ویرایش ویژگی های محصول وجود ندارد.');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdateProductImages : async (parram, args, {check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    if(args.productId == null || args.images == null) {
+                        throw error;
+                    }
+
+                    await Product.findByIdAndUpdate(args.productId, { $set : {
+                        images : args.images
+                    }})
+
+                    return {
+                        status : 200,
+                        message : 'تصویرهای محصول ویرایش شد.'
+                    }
+                } catch {
+                    const error = new Error('امکان ویرایش تصویرهای محصول وجود ندارد.');
                     error.code = 401;
                     throw error;
                 }
@@ -1326,157 +2082,132 @@ const resolvers = {
             }
         },
 
-        slider : async (param, args, { check, isAdmin }) => {
+        UpdateSlider : async (param, args , { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
-                    await Slider.create({
-                        image : args.imageId,
-                    })
+                    const slider = await Slider.findById(args.sliderId);
+                    if(slider.default == true) {
+                        await Slider.findByIdAndUpdate(args.sliderId, { $set : {
+                            name : args.name,
+                            image : args.imageId,
+                            default : true
+                        }})
 
+                        return {
+                            status : 401,
+                            message : 'اسلایدر مورد نظر ویرایش شد.'
+                        }
+                    } else {
+                        await Slider.findOneAndUpdate({ default : true}, { $set : { default : false}});
+                        await Slider.findByIdAndUpdate(args.sliderId, { $set : {
+                            name : args.name,
+                            image : args.imageId,
+                            default : args.default
+                        }})
+                        return {
+                            status : 200,
+                            message : 'اسلایدر مورد نظر ویرایش شد.'
+                        }
+                    }
+                } catch {
+                    const error = new Error('امکان ویرایش اسلایدر مورد نظر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        UpdateBanner : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                        await Banner.findByIdAndUpdate(args.bannerID, { $set : {
+                            default : args.default
+                        }})
+                        return {
+                            status : 200,
+                            message : 'بنر مورد نظر ویرایش شد.'
+                        }
+                } catch {
+                    const error = new Error('امکان ویرایش بنر مورد نظر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        DeleteSlider : async (param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    if(args.imageId == null) {
+                        const slider = await Slider.findById(args.sliderId);
+                        if(slider == null) {
+                            return {
+                                status : 401,
+                                message : 'چنین اسلایدری در سیستم ثبت نشده است!'
+                            }
+                        }
+        
+                        slider.remove();
+        
+                        return {
+                            status : 200,
+                            message : 'اسلایدر مورد نظر حذف شد'
+                        }
+                    } else {
+                        let arr = [];
+                        const slider = await Slider.findById(args.sliderId);
+                        const img = slider.image;
+                        img.map(async item => {
+                            if(item != args.imageId) {
+                                arr.push(item)
+                            }
+                        })
+
+                        await Slider.findOneAndUpdate(args.sliderId, { image : arr })
+
+                        return {
+                            status : 200,
+                            message : 'تصیویر مورد نظز از اسلایدر حذف شد'
+                        };
+                    }
+                } catch {
+                    const error = new Error('امکان ویرایش اسلایدر مورد نظر وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+
+        },
+
+        DeleteBanner : async(param, args, { check, isAdmin}) => {
+            if(check && isAdmin) {
+                try {
+                    const banner = await Banner.findById(args.bannerId);
+                    if(banner == null) {
+                        throw error;
+                    } else if(banner.default == true) {
+                        throw error;
+                    }
+
+                    banner.remove();
                     return {
                         status : 200,
-                        message : 'تصویر مورد نظر به عنوان بنر درج شد.'
-                    }
-
-                } catch {
-                    const error = new Error('امکان درج تصویر به عنوان بنر وجود ندارد!');
-                    error.code = 401;
-                    throw error;
-                }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
-        },
-
-        payment : async (param, args, { check }) => {
-            if(check) {
-                try {
-                    const user = await User.findById(check.id);
-                    if(user.fname != null) {
-                        const product = await Product.findById(args.input.product);
-        
-                        if(!product) {
-                            return {
-                                status : 401,
-                                message : 'خرید این محصول مجاز نمی باشد'
-                            }
-                        }
-                        
-                        const payment = await Payment.create({
-                            user : check.id,
-                            product,
-                            payment : args.input.payment,
-                            resnumber : args.input.resnumber,
-                            attribute : args.input.attribute,
-                            discount : args.input.discount,
-                            count : args.input.count,
-                            price : args.input.price,
-                            receptor : args.input.receptor
-                        })
-            
-                        await User.findByIdAndUpdate(check.id, { $push : { payCach : payment._id}});
-                        return {
-                            status : 200,
-                            message : 'سفارش شما ثبت شد.'
-                        }
-                    } else {
-                        return {
-                            status : 401,
-                            message : 'اطلاعات خریدار ناقص است!!'
-                        }
-                    }
-                    
-                } catch {
-                    const error = new Error('امکان ثبت سفارش وجود ندارد!');
-                    error.code = 401;
-                    throw error;
-                }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
-        },
-
-        receptor : async (param, args, { check }) => {
-            if(check) {
-                try {
-                    const receptor = await Receptor.findOne({ phone : args.input.phone});
-                    if(receptor) {
-                        return {
-                            status : 401,
-                            message : 'این گیرنده قبلا در سیستم درج شده است!'
-                        }
-                    } else {
-                        await Receptor.create({
-                            fname : args.input.fname,
-                            lname : args.input.lname,
-                            code : args.input.code,
-                            number : args.input.number,
-                            phone : args.input.phone,
-                            state : args.input.state,
-                            city : args.input.city,
-                            address : args.input.address,
-                        })
-
-                        return {
-                            status : 200,
-                            message : 'گیرنده مورد نظر درج شد.'
-                        }
+                        message : 'بنر مورد نظر حذف شد'
                     }
                 } catch {
-                    const error = new Error('امکان ثبت گیرنده وجود ندارد!');
-                    error.code = 401;
-                    throw error;
-                }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
-        },
-
-        OrderStatus : async (param, args, { check, isAdmin}) => {
-            if(check && isAdmin) {
-                try {
-                    if(args.default) {
-                        const status_def = await OrderStatus.findOne({ default : true});
-                        if(status_def != null) {
-                            return {
-                                status : 401,
-                                message : 'وضعیت سفارش دیگیری را به عنوان گزینه پیشفرض انتخاب کرده اید!'
-                            }
-                        }
-                    }
-
-                    const status = await OrderStatus.findOne({ name : args.name});
-                    if(status != null) {
-                        return {
-                            status : 401,
-                            message : 'قبل یک وضعیت سفارش با این عنوان ایجاد شده است!'
-                        }
-                    } else {
-
-                        const { createReadStream, filename } = await args.image;
-                        const stream = createReadStream();
-                        const { filePath } = await saveImage({ stream, filename});
-
-                        await OrderStatus.create({
-                            name : args.name,
-                            image : filePath,
-                            default : args.default
-                        })
-
-                        return {
-                            status : 200,
-                            message : 'وضعیت سفارش جدید در سیستم ثبت شد.'
-                        }
-
-                    }
-                } catch {
-                    const error = new Error('امکان ثبت وضعیت سفارش جدید وجود ندارد!');
+                    const error = new Error('امکان حذف بنر مورد نظر وجود ندارد! اگر این بنر فعال است ابتدا یک بنر دیگر را فعال نموده و سپس این بنر را حذف کنید');
                     error.code = 401;
                     throw error;
                 }
@@ -1487,7 +2218,17 @@ const resolvers = {
             }
         }
 
+
     },
+  
+    product : {
+       attribute : async (param, args) => await Productattribute.find({ _id : { $in : param.attribute}})
+    },
+
+    Banner : {
+       category : async (param, args) => await Category.findById(param.category),
+       image : async (param, args) => await Multimedia.findById(param.image)
+    }
 }
 
 // other method -----------------------------------
@@ -1669,5 +2410,20 @@ let saveSurveyValue = async (args) => {
     }
     
 }
+
+let getOptions= (url, params) => {
+    return {
+        method: 'POST',
+        url: url,
+        header: {
+            'cache-control': 'no-cache',
+            'content-type': 'application/json'
+        },
+        body: params,
+        json : true
+    }
+}
+
+
 
 module.exports = resolvers;

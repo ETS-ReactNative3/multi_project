@@ -11,7 +11,8 @@ const Product = Schema({
     description : { type : String, required : true},
     rate : { type : Number, defualt : null},
     details : [{ type : Schema.Types.ObjectId, ref : 'Details', required : true}],
-    image : [{ type : String, required : true}],
+    original : { type : String, required : true},
+    images : [{ type : Schema.Types.ObjectId, ref : 'Multimedia'}],
     commentCount : { type : Number, default : 0},
     soldCount : { type : Number , default : 0},
     viewCount : { type : Number, default : 0}

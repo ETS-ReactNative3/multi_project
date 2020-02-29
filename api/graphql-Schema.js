@@ -3,7 +3,7 @@ const { gql } = require('apollo-server-express');
 const typeDefs = gql`
     type Query {
         login(input : LRInput) : Token!,
-        getUsers : [User]!,
+        getUsers(userId : ID) : [User!]!,
         getProduct(page : Int, limit : Int, productId : ID, categoryId : ID) : [product!]!,
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
@@ -14,20 +14,36 @@ const typeDefs = gql`
         getAllSeller(categoryId : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
-        getAllComment(page : Int, limit : Int, productId : ID, commentId : ID) : [Comment]
-        
-        MainPageApp : mainInfo
-
+        getAllComment(page : Int, limit : Int, productId : ID, commentId : ID) : [Comment],
         verifyRegister : operation,
-        getAllPayment(orderId : ID) : [Payment]
+        getAllPayment(orderId : ID) : [Payment],
+        getAllOrderStatus : [OrderStatus],
+        getAllMultimedia(page : Int, limit : Int) : [Multimedia],
+        getAllSlider(sliderId : ID) : [Slider],
+        getBanner : [Banner]
 
-        getAllOrderStatus : [OrderStatus]
+        sortPoduct(categoryId : ID, viewCount : Boolean, soldCount : Boolean, priceUp : Boolean, priceDown : Boolean, newP : Boolean, suggestion : Boolean) : [product],
+
+        userAtmonth : [AtMonth],
+        productAtmonth : [AtMonth],
+        paymentProveAtmonth : [AtMonth],
+        paymentNotProveAtmonth : [AtMonth],
+        sellerAtmonth : [AtMonth],
+        commentAtmonth : [AtMonth],
+        paymentAtDay : pay,
+        paymenPricetAtDay : [atDay],
+        allUserCount : AtUser,
+        allOrderStatus : [AtOrder],
+
+
+        
+        MainPageApp : mainInfo,
 
     }
 
     type Mutation {
         register(input : LRInput) : operation!,
-        multimedia(file : Upload!) : UploadFile!,
+        multimedia(image : Upload!) : operation!,
         category(input : InputCategory) : operation!,
         survey(input : InputSurvey) : operation!,
         brand(input : InputBrand) : operation!,
@@ -42,10 +58,12 @@ const typeDefs = gql`
         warranty(name : String!, label : String) : operation!,
         comment(input : InputComment) : operation!,
         addSurveyValue(input : InputSurveyValue) : operation!
-        slider(imageId : ID) : operation!,
+        addSlider(name : String!, imageId : [ID!]!, default : Boolean = false) : operation!,
         payment( input : Inputpayment) : operation!,
         receptor(input : InputReceptor) : operation,
         OrderStatus(name : String!, image : Upload!, default : Boolean) : operation!,
+        favorite(productId : ID!) : operation!
+        Banner(categoryId : ID!, imageId : ID!, default : Boolean = false) : operation!
 
 
         UpdateCategory(input : InputCategory) : operation!
@@ -55,10 +73,17 @@ const typeDefs = gql`
         UpdateSeller(id : ID!, name : String!, label : String) : operation!,
         UpdateWarranty(name : String!, label : String) : operation!,
         UpdateProduct(input : UpdateProduct) : operation!,
-        UpdateProducctAttribute(input : InputProductAttribute) : operation!,
+        UpdateProductAttribute(input : InputProductAttribute) : operation!,
+        UpdateProductImages(productId : ID!, images : [String!]!) : operation!,
         UpdateCommentProduct(commentId : ID!) : operation!,
         UpdateOrderStatus(orderstatusId : ID!, name : String!, default : Boolean!) : operation!,
-        UpdatePayment(paymentId : ID!, orderstatusId : ID!) : operation!
+        UpdatePayment(paymentId : ID!, orderstatusId : ID!) : operation!,
+        UpdateSlider(sliderId : ID, name : String, imageId : [ID], default : Boolean) : operation!,
+        UpdateBanner(bannerID : ID!, default : Boolean) : operation!
+
+
+        DeleteSlider(sliderId : ID!, imageId : ID) : operation!,
+        DeleteBanner(bannerId : ID!) : operation!
 
 
     }
@@ -76,13 +101,10 @@ const typeDefs = gql`
 
     input Inputpayment {
         product : ID!,
-        payment : Boolean!,
-        resnumber : String,
-        attribute : ID,
-        discount : Int,
-        count : Int,
-        price : Int,
+        attribute : ID!,
         receptor : ID,
+        count : Int = 1,
+        discount : Int = 0
     }
 
     input InputSurveyValue {
@@ -168,7 +190,8 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [InputDetails!]!,
-        image : Upload!
+        original : Upload!,
+        images : [ID]
     }
 
     input UpdateProduct {
@@ -206,7 +229,7 @@ const typeDefs = gql`
         stock : Int!,
         discount : Int,
         suggestion : Boolean,
-        expireAt : Int = 24
+        expireAt : Int = 1
 
     }
 
@@ -233,12 +256,14 @@ const typeDefs = gql`
         name : String!,
         label : String,
         parent : ID,
+        image : ID!
     }
 
     type operation {
         _id : ID,
         status : Int,
-        message : String
+        message : String,
+        payLink : String
     }
 
     type ProductOperation {
@@ -271,15 +296,20 @@ const typeDefs = gql`
     }
 
     type User {
+        _id : ID,
         fname : String,
         lname : String,
         code : Int,
         number : String,
         birthday : String,
         gender : Gender,
-        phone : String!,
+        phone : String,
         email : String,
-        password : String!,
+        password : String,
+        verify : Boolean,
+        payment : [Payment],
+        comment : [Comment],
+        favorite : [Favorite]
     }
 
     type UploadFile {
@@ -332,6 +362,7 @@ const typeDefs = gql`
         name : String,
         label : String,
         parent : Parent,
+        image : Multimedia
     }
 
     type Parent {
@@ -394,18 +425,11 @@ const typeDefs = gql`
     type mainInfo {
         slider : Slider,
         category : [Category],
-        Asuggestion : [product],
+        Psuggestion : [product],
         banerDiscount : [Category],
         Tselling : [product],
         Nproduct : [product]
     }
-
-    type Slider {
-        image : String,
-        attr : String,
-        label : String
-    }
-
     
     type Comment {
         _id : ID,
@@ -444,7 +468,7 @@ const typeDefs = gql`
         product : product,
         payment : Boolean!,
         resnumber : String,
-        attribute : Attribute,
+        attribute : [Attribute],
         discount : Int,
         count : Int,
         price : Int,
@@ -460,6 +484,60 @@ const typeDefs = gql`
         _id : ID,
     }
 
+    type Multimedia {
+        name : String,
+        dir : String!,
+        format : String,
+        dimwidth : String,
+        dimheight : String,
+        createdAt : Date
+    }
+
+    type Favorite {
+        user : User,
+        product : product
+    }
+
+    type AtMonth {
+        month : String,
+        value : Int
+    }
+
+    type pay {
+        day : [atDay],
+        countallPay : Int,
+        allPay : Int,
+        todayPay : Int,
+        countPayNow : Int
+    }
+
+    type atDay {
+        day : Int,
+        count : Int
+    }
+
+    type AtUser {
+        Male : Int,
+        Female : Int
+    }
+
+    type AtOrder {
+        order : String,
+        count : Int
+    }
+
+    type Slider {
+        name : String,
+        image : [Multimedia],
+        default : Boolean
+    }
+
+    type Banner {
+        _id : ID,
+        category : Category,
+        image : Multimedia,
+        default : Boolean
+    }
 
 `;
 

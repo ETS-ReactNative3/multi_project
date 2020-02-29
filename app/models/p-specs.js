@@ -3,7 +3,7 @@ const mongoosePaginate = require('mongoose-paginate');
 const Schema = mongoose.Schema;
 
 const ProductSpecs = Schema({
-    category : { type : mongoose.Types.ObjectId, ref : 'Category', required : true},
+    category : { type : mongoose.Types.ObjectId, ref : 'Category'},
     specs : { type : String, required : true},
     label : { type : String }
 }, {
