@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import {  Card, CardBody, CardHeader, Col, Row, FormGroup,Input,Label,Form,Progress  } from 'reactstrap';
-import classes from './Media.module.css'
+import classes from './Media.module.css';
+import {checkFileSize, checkMimeType, maxSelectFile} from './Funcs';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
 const AddMedia =()=> {
 
 const [loadedFiles,setLoadedFiles] = useState([]);
- 
+const[loaded,setLoaded] = useState(25)
 const DragOver=(event)=>{
   event.preventDefault();
   event.stopPropagation();
@@ -12,47 +16,78 @@ const DragOver=(event)=>{
 }
 
 const onFileLoad=(event)=>{
-  const file = event.currentTarget.files[0];
-  let fileReader = new FileReader();
-  fileReader.onload = ()=>{
-   console.log('image loaded:', fileReader.result);
-   const fileProperty={
-     name: file.name,
-     size: file.size,
-     type: file.type,
-     data: fileReader.result 
-   }
-   addLoadedFile(fileProperty)
+  if(maxSelectFile(event) && checkMimeType(event) && checkFileSize(event))
+  { 
+    const files = event.target.files;
+    const newLoadedFiles =[...loadedFiles]
+    for(var x = 0; x<files.length; x++) {
+      newLoadedFiles.push({
+        file:files[x],
+        preview: URL.createObjectURL(files[x])
+      })
+    }
+    setLoadedFiles(newLoadedFiles);
+
+    const data = new FormData()
+    for(var x = 0; x<files.length; x++) {
+        data.append('file', files[x])
+    }
+  
+    axios.post("http://localhost:8000/upload", data, {
+        onUploadProgress: ProgressEvent => {
+          setLoaded(ProgressEvent.loaded / ProgressEvent.total*100)
+      },
+    })
   }
-  fileReader.onabort = ()=>{
-    alert('Reading Aborted')
-  }
-  fileReader.onerror = ()=>{
-    alert('Reading Error')
-  }
-  fileReader.readAsDataURL(file)
+  
 }
-const addLoadedFile = (fileProperty)=>{
-  setLoadedFiles([...loadedFiles,fileProperty])
-}
+
 const removeLoadedFile = (fileProperty)=>{
   const newFile  = loadedFiles.filter(idFile=>idFile!==fileProperty);
   setLoadedFiles(newFile);
 }
-const removeAllLoadedFiles = ()=>{
-  setLoadedFiles([])
+const onDragOverHandler = (e) =>{
+  e.preventDefault();
+  //console.log('dsfs')
+}
+const onDropHandler = (e) =>{
+  e.preventDefault();
+  const files = e.dataTransfer.files;
+  const newLoadedFiles =[...loadedFiles]
+    for(var x = 0; x<files.length; x++) {
+      newLoadedFiles.push({
+        file:files[x],
+        preview: URL.createObjectURL(files[x])
+      })
+    }
+    setLoadedFiles(newLoadedFiles);
 }
 
     return (
       <div className="animated fadeIn">
         <Row>
           <Col xl={12}>
+            <div className="form-group">
+                <ToastContainer />
+              </div>
              <Card>
                 <CardHeader>
                     <h6>بارگذاری رسانه جدید</h6>
                 </CardHeader>
                 <CardBody >
-                    <div className={classes.addMediaSection} draggable onDragOver={DragOver}>
+                {
+                  loadedFiles.length!==0 ?
+                    <Progress className={classes.progressBar} max="100" color="success" value={loaded} >
+                      {Math.round(loaded,2) }%
+                    </Progress>
+                  :null
+                }
+
+                    <div className={classes.addMediaSection}
+                     onDragOver={onDragOverHandler}
+                     onDrop={onDropHandler}
+                     
+                     >
                       <div className={classes.filePreview}>
                                   {
                                     loadedFiles.map((file,id)=>{
@@ -60,11 +95,7 @@ const removeAllLoadedFiles = ()=>{
                                         <span className={classes.removeIcons} onClick={()=>removeLoadedFile(file)}> 
                                           <i className="fa fa-remove fa-lg mt-4"></i>
                                         </span>
-                                        <img src={file.data} alt={file.name} />
-                                        <div className={classes.progressBar}>
-                                        { file.isUploading && <Progress value="25" className="mb-3">25%</Progress>}
-                                        
-                                        </div>
+                                        <img src={file.preview} alt={file.name} />
                                       </div>
                                     })
                                   }
@@ -72,16 +103,13 @@ const removeAllLoadedFiles = ()=>{
                         <div className={classes.dragdropSection}>
                             <h3>پرونده ها را اینجا بکشید </h3>
                             <span>یا</span>
-                            <Form action="" method="post" encType="multipart/form-data" className="form-horizontal">
+                            <Form action="" method="post"  className="form-horizontal">
                             <FormGroup row>
                                 <Label htmlFor="file-multiple-input">
                                 <div className={classes.fileSelection}> گزینش پرونده</div>
                                 </Label>
                                 <Input type="file" id="file-multiple-input" name="file-multiple-input" 
                                  multiple
-                                 onDragOver={DragOver}
-                                 
-                                 onDrop={onFileLoad}
                                  onChange={onFileLoad}
                                  />
                                  

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import {  Card, CardBody, CardHeader, Col, Row, Table,Button  } from 'reactstrap';
 import './Order.css';
 import Artboard from '../../assets/img/status/0eab59b0.svg';
@@ -68,27 +67,27 @@ class Order extends Component {
                 <CardBody>
                     <Row>
                         <Col>
-                            <img src={Artboard} className="status" />  
+                            <img src={Artboard} className="status" alt="pic" />  
                             <span>در صف بررسی</span>  
                         </Col>
                         <Col>
-                            <img src={OrderConfirmation} className="status is-active" />
+                            <img src={OrderConfirmation} className="status is-active"   alt="pic"/>
                             <span className="is-active">تایید سفارش</span>
                         </Col>
                         <Col>
-                            <img src={OrderPreparation} className="status" />
+                            <img src={OrderPreparation} className="status"  alt="pic" />
                             <span>آماده‌سازی سفارش</span>
                         </Col>
                         <Col>
-                            <img src={Eccentricity} className="status" />
+                            <img src={Eccentricity} className="status"  alt="pic" />
                             <span>خروج از مرکز پردازش</span>
                         </Col>
                         <Col>
-                            <img src={GetInTheCenter} className="status" />
+                            <img src={GetInTheCenter} className="status"   alt="pic"/>
                             <span>دریافت در مرکز توزیع </span>
                         </Col>
                         <Col>
-                            <img src={Delivery} className="status" />
+                            <img src={Delivery} className="status"  alt="pic" />
                             <span>تحویل به مامور ارسال</span>
                         </Col>
                     </Row>
@@ -142,7 +141,7 @@ class Order extends Component {
                     <tbody>
                     <tr>
                         <td>1</td>
-                        <td><img src="https://dkstatics-public.digikala.com/digikala-products/179110.jpg?x-oss-process=image/resize,m_lfit,h_150,w_150/quality,q_80" /></td>
+                        <td><img src="https://dkstatics-public.digikala.com/digikala-products/179110.jpg?x-oss-process=image/resize,m_lfit,h_150,w_150/quality,q_80" alt="pic" /></td>
                         <td>کیف لپ تاپ فراسو FNC470
                         سرویس ویژه دیجی کالا: 7 روز تضمین بازگشت کالا
                         فروشنده : دیجی‌کالا

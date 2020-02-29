@@ -68,10 +68,18 @@ input[type="file"] {
 }
 .filePreview img{
     width:110px;
-    height: 110px;
+    height: 170px;
 }
 .removeIcons{
     position: absolute;
     left: -5px;
     top: -29px;
+}
+.modalImage{
+    width:600px;
+    height: 600px;
+}
+.progressBar{
+    margin-bottom: 20px;
+    height: 35px;
 }

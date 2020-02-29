@@ -20,6 +20,11 @@ export default {
       icon: 'icon-pencil',
     },
     {
+      name: 'نظرات',
+      url: '/comments',
+      icon: 'icon-puzzle',
+    },
+    {
       name: 'رسانه',
       url: '/media',
       icon: 'icon-puzzle',
@@ -33,6 +38,15 @@ export default {
           name: 'افزودن',
           url: '/media/addMedia',
           icon: 'icon-puzzle',
+        },
+        {
+          name: 'Font Awesome',
+          url: '/media/font-awesome',
+          icon: 'icon-star',
+          badge: {
+            variant: 'secondary',
+            text: '4.7',
+          },
         },
       ],
     },
@@ -55,6 +69,16 @@ export default {
         {
           name: 'نحوه امتیاز دهی',
           url: '/shop/scoring',
+          icon: 'icon-puzzle',
+        },
+        {
+          name: 'مشخصات',
+          url: '/shop/specifications',
+          icon: 'icon-puzzle',
+        },
+        {
+          name: ' ریز مشخصات',
+          url: '/shop/subSpecifications',
           icon: 'icon-puzzle',
         },
         {
@@ -183,57 +207,60 @@ export default {
     },
     {
       name: 'محصولات',
-      url: '/icons',
+      url: '/products',
       icon: 'icon-star',
       children: [
         {
-          name: 'CoreUI Icons',
-          url: '/icons/coreui-icons',
-          icon: 'icon-star',
-          badge: {
-            variant: 'info',
-            text: 'NEW',
-          },
-        },
-        {
-          name: 'Flags',
-          url: '/icons/flags',
+          name: 'همه محصولات',
+          url: '/products/allproducts',
           icon: 'icon-star',
         },
         {
-          name: 'Font Awesome',
-          url: '/icons/font-awesome',
+          name: 'اضافه کردن محصول',
+          url: '/products/addproduct',
           icon: 'icon-star',
-          badge: {
-            variant: 'secondary',
-            text: '4.7',
-          },
         },
         {
-          name: 'Simple Line Icons',
-          url: '/icons/simple-line-icons',
+          name: 'فروشنده ها',
+          url: '/products/seller',
           icon: 'icon-star',
         },
+        {
+          name: 'گارانتی',
+          url: '/products/warranty',
+          icon: 'icon-star',
+        },
+        
       ],
     },
     {
       name: 'مالی و فروش',
-      url: '/notifications',
+      url: '/orders',
       icon: 'icon-bell',
       children: [
         {
+          name: 'سفارشات',
+          url: '/orders/allorders',
+          icon: 'icon-bell',
+        },
+        {
+          name: 'وضعیت سفارشات',
+          url: '/orders/status',
+          icon: 'icon-bell',
+        },
+        {
           name: 'Alerts',
-          url: '/notifications/alerts',
+          url: '/orders/alerts',
           icon: 'icon-bell',
         },
         {
           name: 'Badges',
-          url: '/notifications/badges',
+          url: '/orders/badges',
           icon: 'icon-bell',
         },
         {
           name: 'Modals',
-          url: '/notifications/modals',
+          url: '/orders/modals',
           icon: 'icon-bell',
         },
       ],

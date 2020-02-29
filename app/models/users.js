@@ -34,7 +34,11 @@ User.statics.CheckToken = async (req, secretID) => {
     if(token) {
         try {
             return await jwt.verify(token, secretID);
-        } catch (e) {}
+        } catch {
+            const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+            error.code = 403;
+            throw error;
+        }
     } else {
         return null;
     }

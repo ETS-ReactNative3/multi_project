@@ -6,7 +6,7 @@ import ordersData from './OrdersData'
 
 function UserRow(props) {
   const user = props.user
-  const orderLinlk = `/orders/${user.id}/order/${user.orderNumber}`
+  const orderLinlk = `/users/orders/${user.id}/order/${user.orderNumber}`
  const geyBadgeDelivery = (deliveryTime) =>{
   return deliveryTime === 'تحویل شده' ? 'success' :
       deliveryTime === 'در حال پردازش' ? 'warning' :

@@ -36,6 +36,7 @@ const Receptor = require('app/models/receptor');
 const OrderStatus = require('app/models/order-status');
 
 
+
 const resolvers = {
     Query : {
         login : async (param, args, { secretID }) => {
@@ -78,15 +79,18 @@ const resolvers = {
         },
 
         getProduct : async (param, args, { check, isAdmin }) => {
-            if(check && isAdmin) {
-                if(args.productId == null) {
-                    let page = args.page || 1;
-                    let limit = args.limit || 10;
+            if(check) {
+                let page = args.page || 1;
+                let limit = args.limit || 10;
+                if(args.productId == null && args.categoryId == null) {
                     const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
                     return producs.docs
-                } else {
+                } else if(args.productId != null && args.categoryId == null) {
                     const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
                     return [product]
+                } else if(args.categoryId != null && args.productId == null) {
+                    const product = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute'}]});
+                    return product.docs
                 }
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
@@ -107,7 +111,7 @@ const resolvers = {
                         let limit = args.input.limit || 10;
                         const categorys = await Category.find({ parent : args.input.catId }).skip((page - 1) * limit).limit(limit).populate('parent').exec();
                         return categorys
-                } else {
+                } else if(args.input.parentCategory == false && args.input.mainCategory == false){
                     let page = args.input.page || 1;
                     let limit = args.input.limit || 10;
                     const categorys = await Category.find({}).skip((page - 1) * limit).limit(limit).populate('parent').exec();
@@ -415,10 +419,10 @@ const resolvers = {
             if(check) {
                 try {
                     if(args.orderId) {
-                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}]);
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute'}, { path : 'receptor'}, { path : 'orderStatus'}]);
                         return [pay]
-                    } else if(args.userId == null && isAdmin) {
-                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}]);
+                    } else if(args.orderId == null && isAdmin) {
+                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
                         return pay
                     } else {
                         const error = new Error('سفارشی برای نمایش وجود ندارد!');
@@ -1260,26 +1264,27 @@ const resolvers = {
         UpdateOrderStatus : async (param, args, { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
-                    if(args.default == true) {
-                        await OrderStatus.findOneAndUpdate({ default : true}, { $set : { default : !args.default}});
+                    const order = await OrderStatus.findById(args.orderstatusId);
+                    if(order.default == true) {
                         await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : {
                             name : args.name,
-                            deault : args.default,
+                            default : true,
                         }}) 
                             return {
-                                status : 401,
+                                status : 200,
                                 message : 'وضعیت سفارش مورد نظر ویرایش شد.'
                             }
                     } else {
+                        await OrderStatus.findOneAndUpdate({ default : true}, { $set : { default : false}});
                         await OrderStatus.findByIdAndUpdate(args.orderstatusId, { $set : {
                             name : args.name,
-                            deault : args.default,
+                            default : args.default,
                         }}) 
                             return {
-                                status : 401,
+                                status : 200,
                                 message : 'وضعیت سفارش مورد نظر ویرایش شد.'
                             }
-                    }
+                    } 
                     
                 } catch {
                     const error = new Error('امکان ویرایش وضعیت سفارش مورد نظر وجود ندارد.');
@@ -1551,6 +1556,7 @@ let saveAttributeProduct = async (args) => {
                             color : element.color,
                             price : element.price,
                             discount : element.discount,
+                            suggestion : false,
                             stock : element.stock
                         })
 

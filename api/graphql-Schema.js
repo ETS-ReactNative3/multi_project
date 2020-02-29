@@ -4,7 +4,7 @@ const typeDefs = gql`
     type Query {
         login(input : LRInput) : Token!,
         getUsers : [User]!,
-        getProduct(page : Int, limit : Int, productId : ID) : [product!]!,
+        getProduct(page : Int, limit : Int, productId : ID, categoryId : ID) : [product!]!,
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
         getAllBrand(input : InputGetBrand) : [Brand!]!
@@ -20,6 +20,7 @@ const typeDefs = gql`
 
         verifyRegister : operation,
         getAllPayment(orderId : ID) : [Payment]
+
         getAllOrderStatus : [OrderStatus]
 
     }
@@ -56,7 +57,7 @@ const typeDefs = gql`
         UpdateProduct(input : UpdateProduct) : operation!,
         UpdateProducctAttribute(input : InputProductAttribute) : operation!,
         UpdateCommentProduct(commentId : ID!) : operation!,
-        UpdateOrderStatus(orderstatusId : ID!, name : String!, deafult : Boolean!) : operation!,
+        UpdateOrderStatus(orderstatusId : ID!, name : String!, default : Boolean!) : operation!,
         UpdatePayment(paymentId : ID!, orderstatusId : ID!) : operation!
 
 
@@ -81,7 +82,7 @@ const typeDefs = gql`
         discount : Int,
         count : Int,
         price : Int,
-        receptor : ID
+        receptor : ID,
     }
 
     input InputSurveyValue {
@@ -438,6 +439,7 @@ const typeDefs = gql`
     }
 
     type Payment {
+        _id :ID,
         user : User,
         product : product,
         payment : Boolean!,
@@ -446,12 +448,16 @@ const typeDefs = gql`
         discount : Int,
         count : Int,
         price : Int,
-        receptor : Receptor
+        receptor : Receptor,
+        orderStatus : OrderStatus,
+        createdAt: Date
     }
 
     type OrderStatus {
         name : String,
-        image : String
+        image : String,
+        default : Boolean,
+        _id : ID,
     }
 
 
