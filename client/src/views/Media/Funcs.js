@@ -5,7 +5,7 @@ export const checkMimeType=(event)=>{
     //define message container
     let err = ''
     // list allow mime type
-   const types = ['image/png', 'image/jpeg']
+   const types = ['image/png', 'image/jpeg','image/jpg' ]
     // loop access array
     for(var x = 0; x<files.length; x++) {
      // compare file type find doesn't matach
@@ -25,7 +25,7 @@ export const checkMimeType=(event)=>{
   }
  export  const checkFileSize=(event)=>{
     let files = event.target.files
-    let size = 100000 
+    let size = 3000000 
     let err = ""; 
     for(var x = 0; x<files.length; x++) {
     if (files[x].size > size) {

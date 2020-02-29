@@ -4,7 +4,8 @@ import './Order.css';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
 import axios from 'axios';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const OrderDetails =(props)=>{
     const {orderNumber} = props.match.params;
     if(!orderNumber){
@@ -32,6 +33,7 @@ const OrderDetails =(props)=>{
               product {
                 fname,
                 ename,
+                image
               }
               payment,
               resnumber,
@@ -41,7 +43,10 @@ const OrderDetails =(props)=>{
                 },
                 warranty {
                   name
-                }
+                },
+                discount,
+                color,
+                price
               },
               discount,
               count,
@@ -68,16 +73,15 @@ const OrderDetails =(props)=>{
     }).then((result) => {
       if(result.data.errors){
         //dispatch({type:'logout',payload:props});
-        console.log(result.data.errors)
+        toast.error(result.data.errors)
       }
       else{
         const {getAllPayment} =result.data.data;
-        console.log(getAllPayment);
         setOrder(getAllPayment[0])
       }
      
     }).catch(error=>{
-      console.log(error)
+       toast.error(error)
     });
 
 
@@ -99,11 +103,10 @@ const OrderDetails =(props)=>{
   }).then((result) => {
     if(result.data.errors){
       
-      console.log(result.data.errors)
+      toast.error(result.data.errors)
     }
     else{
      const{getAllOrderStatus} = result.data.data;
-     console.log(getAllOrderStatus);
       setStatus(getAllOrderStatus); 
     }
    
@@ -119,6 +122,9 @@ const OrderDetails =(props)=>{
           order?
           <Row>
           <Col xl={12}>
+            <div className="form-group">
+                <ToastContainer />
+            </div>
               <Card>
                 <CardHeader>
                     <h3>سفارش {order._id}</h3>
@@ -234,21 +240,31 @@ const OrderDetails =(props)=>{
                     <tbody>
                     <tr>
                         <td>1</td>
-                        <td><img src="https://dkstatics-public.digikala.com/digikala-products/179110.jpg?x-oss-process=image/resize,m_lfit,h_150,w_150/quality,q_80" alt="pic" /></td>
-                        <td>کیف لپ تاپ فراسو FNC470
-                        سرویس ویژه دیجی کالا: 7 روز تضمین بازگشت کالا
-                        فروشنده : دیجی‌کالا
-                        رنگ : مشکی
-                        </td>
-                        <td>1</td>
                         <td>
-                        ۱۱۱,۵۰۰ تومان
+                          <img 
+                          src={require(`${process.env.REACT_APP_PUBLIC_URL}${order.product.image[0]}`)} 
+                          alt={order.product.image[0]}
+                          className="Preview"
+                            />
+                        </td>
+                        <td className="sp-span">
+                        
+                          <span>{order.product.fname}</span>
+                          <span>فروشنده : {order.attribute[0].seller.name}</span>
+                          <span className="box-shape">
+                            رنگ : {' '} 
+                            <span style={{background:order.attribute[0].color}} className="shape"></span>
+                             </span>
+                        </td>
+                        <td>{order.count}</td>
+                        <td>
+                        {order.attribute[0].price} تومان
                         </td>
                         <td>
-                        ۱۱۱,۵۰۰ تومان
+                        {order.attribute[0].price * order.count} تومان
                         </td>
-                        <td>0</td>
-                        <td>۱۱۱,۵۰۰ تومان</td>
+                        <td>{((order.attribute[0].price * order.count)-order.price)/100} %</td>
+                        <td>{order.price} تومان</td>
                         <td>   <Button block color="primary">مشاهده نظرات</Button></td>
                     </tr>
                     </tbody>

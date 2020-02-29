@@ -5,7 +5,11 @@ import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
 import axios from 'axios';
 
-const Comments =(props)=> {
+const UserComments =(props)=> {
+  const {userid} =props.match.params;
+ if(!userid){
+   props.history.replace('/dashboard')
+ }
   const {dispatch} = useContext(AuthContext);
   const [comments,setComments] = useState([]);
   const [loading,setLoading] = useState(false);
@@ -21,29 +25,27 @@ const Comments =(props)=> {
         headers:{'token':`${token}`},
         data: {
           query: `
-          query getAllComment($page : Int, $limit : Int, $productId : ID,$commentId : ID) {
-            getAllComment(page : $page, limit : $limit, productId : $productId,commentId : $commentId) {
+          query getAllUsers($userId : ID) {
+            getUsers(userId : $userId) {
               _id
-              user {
-                fname,
-                lname
-              },
-              product {
-                fname
-              },           
-              title,
-              like,
-              dislike,
-              createdAt,
-              check  
+              fname,
+              lname,
+              comment {
+                product {
+                  fname
+                },
+                _id,
+                title,
+                like,
+                dislike,
+                createdAt,
+                check  
+              }
             }
-          }    
+          }   
             `,
             variables :{
-              "page": 1,
-              "limit": 10,
-              "productId": null,
-              "commentId": null
+              "userId":userid  
             }
       }
     }).then((result) => {
@@ -51,13 +53,9 @@ const Comments =(props)=> {
         dispatch({type:'logout',payload:props});
       }
       else{
-        const {getAllComment} = result.data.data;
-        if(getAllComment)
-        {
-          setComments(getAllComment);
-        }
-        
-       console.log( getAllComment)
+        const {getUsers} = result.data.data;
+        console.log(getUsers);
+        setComments(getUsers);
         setLoading(false);
       }
      
@@ -120,6 +118,7 @@ const Comments =(props)=> {
             <Card>
               <CardHeader>
                 <i className="fa fa-align-justify"></i>نظرات <small className="text-muted">کاربران</small>
+                
               </CardHeader>
               <CardBody>
                 <Table responsive hover>
@@ -139,35 +138,41 @@ const Comments =(props)=> {
                     {
                       comments.map((item)=>
                       {
-                        let commentLink = `comments/comment/${item._id}`;
-                        let date = new Date(item.createdAt)
-                        date = date.toLocaleDateString('fa-IR');
-                        return(
-                        <tr key={item._id}>
-                          <td>{item.product.fname}</td>
-                          <td>{item.user.fname} {item.user.lname}</td>
-                          <td >{date}</td>
-                          <td>{item.title}</td>
-                          <td>{item.like}</td>
-                          <td >{item.dislike}</td>
-                          <td>
-                            <Badge color={getBadge(item.check)} onClick={()=>toggleLarge(item._id)}>
-                              {item.check ?'تایید شده': 'تایید نشده'}
-                            </Badge>
-                            </td>
-                          <td>
-                            <Row>
-                                <Col xs="3">
-                                  <NavLink to={commentLink}><Button type="submit" size="sm" color="primary"><i className="fa fa-info-circle"></i> </Button></NavLink>
-                                </Col>
-                                <Col xs="3">
-                                  <Button type="submit" size="sm" color="danger"><i className="fa fa-trash fa-lg"></i></Button>
-                                </Col>
-                            </Row>
-                            
-                            </td>
-                        </tr>
-                        )
+                          return(
+                            item.comment.map((comment)=>{
+                              let commentLink = `commentDetails/${comment._id}`;
+                              let date = new Date(comment.createdAt)
+                              date = date.toLocaleDateString('fa-IR');
+                             
+                              return(
+                                <tr key={comment._id}>
+                                  <td>{comment.product.fname}</td>
+                                  <td>{item.fname} {item.lname}</td>
+                                  <td >{date}</td>
+                                  <td>{comment.title}</td>
+                                  <td>{comment.like}</td>
+                                  <td >{comment.dislike}</td>
+                                  <td>
+                                    <Badge color={getBadge(comment.check)} onClick={()=>toggleLarge(comment._id)}>
+                                      {comment.check ?'تایید شده': 'تایید نشده'}
+                                    </Badge>
+                                    </td>
+                                  <td>
+                                    <Row>
+                                        <Col xs="3">
+                                          <NavLink to={commentLink}><Button type="submit" size="sm" color="primary"><i className="fa fa-info-circle"></i> </Button></NavLink>
+                                        </Col>
+                                        <Col xs="3">
+                                          <Button type="submit" size="sm" color="danger"><i className="fa fa-trash fa-lg"></i></Button>
+                                        </Col>
+                                    </Row>
+                                    
+                                    </td>
+                                </tr>
+                                )
+                            })
+                          )
+                         
                           })
                     }
                     
@@ -195,4 +200,4 @@ const Comments =(props)=> {
   
 }
 
-export default Comments;
+export default UserComments;

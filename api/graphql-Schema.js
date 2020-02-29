@@ -330,7 +330,8 @@ const typeDefs = gql`
         description : String!,
         rate : Int,
         details : [Details],
-        image : [String],
+        original : String,
+        images : [Multimedia]
         commentCount : Int,
         soldCount : Int,
         viewCount : Int
@@ -485,6 +486,7 @@ const typeDefs = gql`
     }
 
     type Multimedia {
+        _id: ID,
         name : String,
         dir : String!,
         format : String,
@@ -494,6 +496,7 @@ const typeDefs = gql`
     }
 
     type Favorite {
+        _id:ID,
         user : User,
         product : product
     }
@@ -527,6 +530,7 @@ const typeDefs = gql`
     }
 
     type Slider {
+        _id: ID,
         name : String,
         image : [Multimedia],
         default : Boolean

@@ -1,7 +1,7 @@
 const User = require('app/models/users');
 const bcrypt = require('bcryptjs');
 const ImageSize = require('image-size');
-const FileType = require('file-type');
+const FileType = require('file-type')
 const mkdirp = require('mkdirp');
 const path = require('path');
 const fs = require('fs');
@@ -42,7 +42,6 @@ const Favorite = require('app/models/favorite');
 const Banner = require('app/models/banner');
 
 
-
 const resolvers = {
     Query : {
         // main dashboard >>>>>>>>>>>>>>>>>>>>>>>
@@ -81,7 +80,7 @@ const resolvers = {
                     for (let index = 0; index < paymentsProve.length; index++) {
                         const element = paymentsProve[index];
                         const month = moment(element.createdAt).format('jMMMM');
-                        console.log(month);
+
                         paymentAtmonthProve.map(key => {
                             key.month === month ? key.value++ : key.value
                         })
@@ -361,8 +360,9 @@ const resolvers = {
                     const users = await User.paginate({}, {page, limit, sort : { createAt : -1}})
                     return users.docs;
                 } else {
-                    const user = await User.findById(args.userId).sort({ createAt : -1}).populate([{ path : 'comment', populate : {path : 'product'}}, { path : 'payment', populate : { path : 'product'}}, { path : 'favorite', populate : { path : 'product', populate : { path : 'attribute'}}}])
-                    return [user];
+
+                const user = await User.findById(args.userId).sort({ createAt : -1}).populate([{ path : 'comment', populate : {path : 'product'}}, { path : 'payment', populate : { path : 'product'}}, { path : 'favorite', populate : { path : 'product', populate : { path : 'attribute'}}}])
+                return [user];
                 }
 
             } else {
@@ -380,7 +380,7 @@ const resolvers = {
                     const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
                     return producs.docs
                 } else if(args.productId != null && args.categoryId == null) {
-                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, { path : 'images'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
+                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, {path : 'images'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
                     return [product]
                 } else if(args.categoryId != null && args.productId == null) {
                     const product = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute'}]});
@@ -704,6 +704,7 @@ const resolvers = {
         getAllPayment : async (param, args, { check, isAdmin }) => {
             if(check) {
                 try {
+                    console.log(args.orderId)
                     if(args.orderId) {
                         const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);``
                         return [pay]
@@ -942,26 +943,21 @@ const resolvers = {
 
         multimedia : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
-                try {
-                    for (let index = 0; index < args.length; index++) {
-                        const element = args[index];
-                        const type = await FileType.fromFile(element.image);
+                try {         
                         const { createReadStream, filename } = await args.image;
                         const stream = createReadStream();
                         const { filePath } = await saveImage({ stream, filename});
 
-                        await Details.create({
+                        await Multimedia.create({
                             name : filename,
-                            dimwidth : getImageSize(type).dimwidth,
-                            dimheight :getImageSize(type).dimheight,
                             dir : filePath
                         })
-                    }
 
-                    return {
-                        status : 200,
-                        message : 'تصاویر در رسانه ذخیره شد'
-                    }
+
+                        return {
+                            status : 200,
+                            message : 'تصاویر در رسانه ذخیره شد'
+                        }
 
                 } catch {
                     const error = new Error('امکان ذخیره تصاویر وجود ندارد!');
@@ -1625,6 +1621,7 @@ const resolvers = {
             }
         },
 
+
         Banner : async (param, args, { check, isAdmin}) => {
             if(check && isAdmin) {
                 try {
@@ -2084,7 +2081,7 @@ const resolvers = {
         },
 
         UpdateSlider : async (param, args , { check, isAdmin}) => {
-            if(check && isAdmin) {
+           if(check && isAdmin) {
                 try {
                     const slider = await Slider.findById(args.sliderId);
                     if(slider.default == true) {
@@ -2098,6 +2095,7 @@ const resolvers = {
                             status : 401,
                             message : 'اسلایدر مورد نظر ویرایش شد.'
                         }
+
                     } else {
                         await Slider.findOneAndUpdate({ default : true}, { $set : { default : false}});
                         await Slider.findByIdAndUpdate(args.sliderId, { $set : {
@@ -2105,6 +2103,7 @@ const resolvers = {
                             image : args.imageId,
                             default : args.default
                         }})
+
                         return {
                             status : 200,
                             message : 'اسلایدر مورد نظر ویرایش شد.'
@@ -2219,7 +2218,6 @@ const resolvers = {
             }
         }
 
-
     },
   
     Banner : {
@@ -2319,6 +2317,8 @@ let deleteAttributeProduct = async (args) => {
 }
 
 let getImageSize = (type) => {
+    console.log(type);
+    return;
     if(type.ext === ('png' || 'jpg' || 'jpeg')) {
         ImageSize(args.file, (err, dimension) => {
             if(err) {

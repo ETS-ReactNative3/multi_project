@@ -1,48 +1,157 @@
-import React, { Component } from 'react';
+import React, { useEffect,useState,useContext } from 'react';
 import {  Card, CardBody, CardHeader, Col, Row, Table,Button  } from 'reactstrap';
-import './Order.css';
-import Artboard from '../../assets/img/status/0eab59b0.svg';
-import OrderConfirmation from '../../assets/img/status/d5d5e1d2.svg';
-import OrderPreparation from '../../assets/img/status/3db3cdeb.svg';
-import Eccentricity from '../../assets/img/status/332b9ff1.svg';
-import GetInTheCenter from '../../assets/img/status/d599fbb2.svg';
-import Delivery from '../../assets/img/status/d599fbb2.svg';
-class Order extends Component {
+import '../Orders/Order.css';
+import {AuthContext} from '../../context/Auth/AuthContext';
+import GetToken from '../../context/Auth/GetToken';
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+const OrderDetails =(props)=>{
+    const {orderNumber} = props.match.params;
+    if(!orderNumber){
+        props.history.replace('/')
+    }
+    const {dispatch} = useContext(AuthContext);
+    const token =  GetToken();
+    const [order,setOrder] = useState(null);
+    const [status,setStatus] = useState(null);
+    useEffect(()=>{
+      dispatch({type:'check',payload:props});
+      axios({
+        url: '/',
+        method: 'post',
+        headers:{'token':`${token}`},
+        data: {
+          query: `
+          query getallpayment($orderId : ID) {
+            getAllPayment(orderId : $orderId) {
+                _id,
+              user {
+                fname,
+                lname
+              }
+              product {
+                fname,
+                ename,
+                image
+              }
+              payment,
+              resnumber,
+              attribute {
+                seller {
+                  name
+                },
+                warranty {
+                  name
+                },
+                discount,
+                color,
+                price
+              },
+              discount,
+              count,
+              price,
+              ,
+              orderStatus{
+                name,
+                _id
+              },
+              receptor {
+                fname,
+                lname,
+                address,
+                phone
+              },
+              createdAt
+            }
+          }  
+            `,
+            variables :{
+                "orderId": orderNumber      
+            }
+      }
+    }).then((result) => {
+      if(result.data.errors){
+        //dispatch({type:'logout',payload:props});
+        toast.error(result.data.errors)
+      }
+      else{
+        const {getAllPayment} =result.data.data;
+        if(getAllPayment)
+        {
+            setOrder(getAllPayment[0])
+        }
+        
+      }
+     
+    }).catch(error=>{
+       toast.error(error)
+    });
 
-  render() {
 
-    
+    axios({
+      url: '/',
+      method: 'post',
+      headers:{'token':`${token}`},
+      data: {
+        query: `
+        query getAllOrderStatus {
+          getAllOrderStatus {
+            _id,
+            name,
+            image,
+          }
+        } 
+          `
+    }
+  }).then((result) => {
+    if(result.data.errors){
+      
+      toast.error(result.data.errors)
+    }
+    else{
+     const{getAllOrderStatus} = result.data.data;
+      setStatus(getAllOrderStatus); 
+    }
+   
+  }).catch(error=>{
+    console.log(error)
+  });
 
+    },[])
     return (
       <div className="animated fadeIn">
-        <Row>
+      {
+          order?
+          <Row>
           <Col xl={12}>
+            <div className="form-group">
+                <ToastContainer />
+            </div>
               <Card>
                 <CardHeader>
-                    <h3>سفارش DKC-1721762</h3>
-                    <h6>ثبت شده در تاریخ 12 شهریور 1393</h6>
+                    <h3>سفارش {order._id}</h3>
+                    <h6>ثبت شده در تاریخ {new Date(order.createdAt).toLocaleDateString('fa-IR')}</h6>
                 </CardHeader>
                 <CardBody className="CardBody" >
                     <Row>
                         <Col>
-                            تحویل گیرنده:
-                            mahdi hasanzadeh
+                            تحویل گیرنده : {order.receptor.fname} {order.receptor.lname} 
+                            
                         </Col>
                         <Col>
-                            شماره تماس تحویل گیرنده:
-                            ۰۹۱۵۶۶۷۶۱۹۸ 
+                            شماره تماس تحویل گیرنده : {order.receptor.phone}
+                            
                         </Col>
                     </Row> 
                 </CardBody>
                 <CardBody className="CardBody">
                     <Row>
                         <Col>
-                        آدرس تحویل گیرنده:
-                        3خراسان جنوبی، فردوس، ایران-خراسان جنوبی-فردوس-خیابان مطهری-مطهری                      
+                        آدرس تحویل گیرنده: {order.receptor.address}                  
                         </Col>
                         <Col>
-                        تعداد مرسوله:
-                        ۱ مرسوله
+                        تعداد محصولات مرسوله : {order.count}
                         </Col>
                     </Row>
                 </CardBody>
@@ -54,7 +163,7 @@ class Order extends Component {
                         </Col>
                         <Col>
                         مبلغ کل:
-                        ۱۱۱,۵۰۰ تومان   
+                        {order.price} تومان   
                         </Col>
                     </Row>
                 </CardBody>
@@ -66,36 +175,29 @@ class Order extends Component {
                 </CardHeader>
                 <CardBody>
                     <Row>
-                        <Col>
-                            <img src={Artboard} className="status" alt="pic" />  
-                            <span>در صف بررسی</span>  
+                      {
+                        status.map((item)=>{
+                          
+                          return(
+                        <Col key={item._id} className="status-order">
+                            <img 
+                             src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image}`)}
+                             className={`status-img ${order.orderStatus._id===item._id? 'is-active':null}`}
+                             alt="pic"
+                              />  
+                            <span style={order.orderStatus._id===item._id?{color:'#000'}:null}>{item.name}</span>  
                         </Col>
-                        <Col>
-                            <img src={OrderConfirmation} className="status is-active"   alt="pic"/>
-                            <span className="is-active">تایید سفارش</span>
-                        </Col>
-                        <Col>
-                            <img src={OrderPreparation} className="status"  alt="pic" />
-                            <span>آماده‌سازی سفارش</span>
-                        </Col>
-                        <Col>
-                            <img src={Eccentricity} className="status"  alt="pic" />
-                            <span>خروج از مرکز پردازش</span>
-                        </Col>
-                        <Col>
-                            <img src={GetInTheCenter} className="status"   alt="pic"/>
-                            <span>دریافت در مرکز توزیع </span>
-                        </Col>
-                        <Col>
-                            <img src={Delivery} className="status"  alt="pic" />
-                            <span>تحویل به مامور ارسال</span>
-                        </Col>
+                          )
+                        })
+                      }
+                        
+                       
                     </Row>
                 </CardBody>
                 <CardBody className="CardBody">
                     <Row>
                         <Col>
-                        کد مرسوله: 1161002                        
+                        کد مرسوله: {order._id.substr(18,24)}                        
                         </Col>
                         <Col>
                         زمان تحویل: -  
@@ -115,7 +217,7 @@ class Order extends Component {
                 <CardBody className="CardBody">
                     <Row>
                         <Col style={{textAlign:'center'}}>
-                        مبلغ این مرسوله: ۱۱۱,۵۰۰ تومان
+                        مبلغ این مرسوله: {order.price} تومان
                         </Col>
                         
                     </Row>
@@ -141,21 +243,31 @@ class Order extends Component {
                     <tbody>
                     <tr>
                         <td>1</td>
-                        <td><img src="https://dkstatics-public.digikala.com/digikala-products/179110.jpg?x-oss-process=image/resize,m_lfit,h_150,w_150/quality,q_80" alt="pic" /></td>
-                        <td>کیف لپ تاپ فراسو FNC470
-                        سرویس ویژه دیجی کالا: 7 روز تضمین بازگشت کالا
-                        فروشنده : دیجی‌کالا
-                        رنگ : مشکی
-                        </td>
-                        <td>1</td>
                         <td>
-                        ۱۱۱,۵۰۰ تومان
+                          <img 
+                          src={require(`${process.env.REACT_APP_PUBLIC_URL}${order.product.image[0]}`)} 
+                          alt={order.product.image[0]}
+                          className="Preview"
+                            />
+                        </td>
+                        <td className="sp-span">
+                        
+                          <span>{order.product.fname}</span>
+                          <span>فروشنده : {order.attribute[0].seller.name}</span>
+                          <span className="box-shape">
+                            رنگ : {' '} 
+                            <span style={{background:order.attribute[0].color}} className="shape"></span>
+                             </span>
+                        </td>
+                        <td>{order.count}</td>
+                        <td>
+                        {order.attribute[0].price} تومان
                         </td>
                         <td>
-                        ۱۱۱,۵۰۰ تومان
+                        {order.attribute[0].price * order.count} تومان
                         </td>
-                        <td>0</td>
-                        <td>۱۱۱,۵۰۰ تومان</td>
+                        <td>{((order.attribute[0].price * order.count)-order.price)/100} %</td>
+                        <td>{order.price} تومان</td>
                         <td>   <Button block color="primary">مشاهده نظرات</Button></td>
                     </tr>
                     </tbody>
@@ -164,9 +276,12 @@ class Order extends Component {
               </Card>
           </Col>
         </Row>
+        :null
+      }
+        
       </div>
     )
-  }
+  
 }
 
-export default Order;
+export default OrderDetails;
