@@ -46,7 +46,7 @@ const SubSpecifications=(props)=> {
     }).then((result) => {
         const {getAllCategory} = result.data.data;
         if(result.data.errors){
-            setMessage('خطا در دریافت اطلاعات')
+           console.log(result.data.errors)
           }
        else if(mainCategory){
             setAllCategory(getAllCategory);
@@ -86,7 +86,7 @@ const SubSpecifications=(props)=> {
       }
       }).then((result) => {
         if(result.data.errors){
-          setMessage('خطا در دریافت اطلاعات')
+          console.log(result.data.errors)
         }
         setAllProductSpecs(result.data.data.getAllProductSpecs);
         setLoadnig(false);
@@ -155,7 +155,7 @@ const SubSpecifications=(props)=> {
     }
     }).then((result) => {
       if(result.data.errors){
-        setMessage('خطا در دریافت اطلاعات')
+        console.log(result.data.errors[0].message)
       }
       else{
         setMessage(result.data.data.productSpecsDetails.message);

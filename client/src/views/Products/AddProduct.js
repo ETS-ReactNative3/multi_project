@@ -333,8 +333,8 @@ const AddProduct = (props)=>{
       let data = 
       {
         query: `
-        mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute!]!, $description : String!, $details : [InputDetails!]!, $image : Upload!) {
-          product(input : {fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, image : $image }) {
+        mutation addProduct($fname : String!, $ename : String!, $category : ID!, $brand : ID!, $attribute : [InputAttribute!]!, $description : String!, $details : [InputDetails!]!, $original : Upload, $images:[String]) {
+          product(input : {fname : $fname, ename : $ename, category : $category, brand : $brand, attribute : $attribute, description : $description, details : $details, original : $original, images:$images }) {
             status,
             message
           }
@@ -348,11 +348,12 @@ const AddProduct = (props)=>{
             "attribute": info,
             "description": description,
             "details": SpecArray,
-            "image":null
+            "original":null,
+            "images":null
           }
     }
     let map = {
-      0 : ['variables.image'],
+      0 : ['variables.original'],
     }
 
     

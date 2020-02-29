@@ -18,6 +18,10 @@
     width:126px;
     height:126px;
 }
+.media input[type="checkbox"]{
+    width:19px;
+    height:30px;
+}
 .addMediaSection{
     display: flex;
     flex-flow: column wrap;
@@ -58,7 +62,7 @@ input[type="file"] {
     margin:auto;
 }
 .file{
-    width:17.5%;
+    width:22.5%;
     margin: 5px ;
     border: 1px solid #eee;
     box-shadow: 0 2px 3px #ccc;
@@ -67,7 +71,7 @@ input[type="file"] {
     position: relative;
 }
 .filePreview img{
-    width:110px;
+    width:100%;
     height: 170px;
 }
 .removeIcons{
@@ -82,4 +86,33 @@ input[type="file"] {
 .progressBar{
     margin-bottom: 20px;
     height: 35px;
+}
+.CarouselItem{
+    width: 410px;
+    height: 210px;
+}
+.CarouselItem img{
+    width: 69% !important;
+    height: 100% !important;
+
+}
+.thumbnail_box{
+    display: flex;
+    flex-flow: row;
+    justify-content: space-evenly;
+    padding: 17px;
+}
+.thumbnail_box div{
+    box-shadow: 1px 1px 1px 1px #ccc;
+    padding: 10px;
+}
+.thumbnail_box div span
+{
+    position: relative;
+    display: flex;
+    justify-content: end;
+}
+.removeIconsPicturesProduct{
+    display: flex;
+    justify-content: flex-end;
 }

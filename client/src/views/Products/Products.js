@@ -63,7 +63,7 @@ const Products =(props)=> {
               suggestion
             },
             rate,          
-            image
+            original
           }
         }     
           `,
@@ -405,7 +405,8 @@ const Products =(props)=> {
                       {
                           products.map((item)=>
                           {
-                           let link =`/products/product/${item._id}`
+                           let link =`/products/product/${item._id}`;
+                           let pictureLink = `/products/product/picture/${item._id}`;
                               return(
                                 <tr className={classes.productDetails} key={item._id}>
                                   <td className={classes.bothname}>
@@ -413,7 +414,7 @@ const Products =(props)=> {
                                     <span>{item.ename}</span>
                                   </td>
                                   <td>
-                                    <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image}`)} alt="pic" />
+                                    <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.original}`)} alt="pic" />
                                   </td>
                                   <td>{item.brand.name}</td>
                                   <td>
@@ -429,6 +430,11 @@ const Products =(props)=> {
                                     <Button size="sm" color="primary"> 
                                       <NavLink to={link}> <i className="fa fa-edit fa-lg "></i></NavLink>
                                     </Button>
+                                    <NavLink to={pictureLink}>
+                                      <Button size="sm" color="warning">
+                                      <i className="fa fa-file-image-o fa-lg"></i>
+                                      </Button>
+                                    </NavLink>
                                     <Button type="submit" size="sm" color="danger">
                                       <i className="fa fa-trash fa-lg "></i>
                                     </Button>

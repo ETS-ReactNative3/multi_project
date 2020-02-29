@@ -184,6 +184,7 @@ const EditProduct = (props)=>{
           }
           
           setSpecs(specs); 
+          console.log(specs)
         }
       
       }).catch(error=>{

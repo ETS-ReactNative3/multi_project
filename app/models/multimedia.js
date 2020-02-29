@@ -1,17 +1,13 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate');
-const fs = require('fs');
-const path = require('path');
-const mkdirp = require('mkdirp');
 
 const Schema = mongoose.Schema;
 
 const Multimedia = Schema({
     name : { type : String, required : true},
-    attribute : { type : String, required : true, default : 'localhost'},
-    dimwidth : { type : String, required : true, default : "0"},
-    dimheight : { type : String, required : true, default : "0"},
-    format : { type : String, required : true, default : "png"},
+    dimwidth : { type : String },
+    dimheight : { type : String },
+    format : { type : String },
     dir : { type : String, required : true}
 }, {
     timestamps : true
