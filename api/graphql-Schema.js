@@ -427,7 +427,7 @@ const typeDefs = gql`
         slider : Slider,
         category : [Category],
         Psuggestion : [product],
-        banerDiscount : [Category],
+        banner : [Banner],
         Tselling : [product],
         Nproduct : [product]
     }

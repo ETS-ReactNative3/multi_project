@@ -393,7 +393,7 @@ const resolvers = {
             }
         },
 
-        getAllCategory : async (param, args, { check }) => {
+        getAllCategory : async (param, args, { check, isAdmin }) => {
             if(check) {
                 if(args.input.mainCategory == true) {
                     let page = args.input.page || 1;
@@ -735,6 +735,7 @@ const resolvers = {
             const Tselling = await Product.find({}).sort({ soldCount : -1});
             const Nproduct = await Product.find({}).sort({ createdAt : -1});
             const psuggestion = await Product.paginate({}, { page, limit});
+            const banner = await Banner.find({ default : true}).populate([{ path : 'Category'}, { path : 'Multimedia'}]).limit(7);
             psuggestion.docs.map(async item => {
                 const pa = await Productattribute.find({ _id : { $in : item.attribute}, suggestion : true})
                 if(pa.length != 0) {
@@ -742,12 +743,12 @@ const resolvers = {
                 }
             })
 
-            console.log(sugg)
             const category = await Category.find({ parent : null});
             const slider = await Slider.findOne({ default : true}).populate('image');
             return {
                 Tselling,
                 Nproduct,
+                banner,
                 Psuggestion : sugg,
                 category,
                 slider
@@ -2206,7 +2207,7 @@ const resolvers = {
                         message : 'بنر مورد نظر حذف شد'
                     }
                 } catch {
-                    const error = new Error('امکان حذف بنر مورد نظر وجود ندارد!');
+                    const error = new Error('امکان حذف بنر مورد نظر وجود ندارد! اگر این بنر فعال است ابتدا یک بنر دیگر را فعال نموده و سپس این بنر را حذف کنید');
                     error.code = 401;
                     throw error;
                 }
@@ -2295,6 +2296,7 @@ let saveAttributeProduct = async (args) => {
                             color : element.color,
                             price : element.price,
                             discount : element.discount,
+                            suggestion : false,
                             stock : element.stock
                         })
 
