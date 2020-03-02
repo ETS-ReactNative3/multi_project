@@ -1,8 +1,21 @@
-import React from 'react'
+import React,{useContext,useEffect} from 'react'
 import {View,Text,Image,StyleSheet,Picker,Alert} from 'react-native'
+import AsyncStorage from '@react-native-community/async-storage';
+
+import {AuthContext} from '../../context/Auth/authContext'
 import {cart} from '../../data/dataArray'
 
 const Shop_box =() => {
+
+    const { authenticated } = useContext(AuthContext);
+    
+
+    useEffect(()=>{
+        async function fetchData() {
+            await AsyncStorage.getItem('shopCartData')
+            alert(JSON.stringify(await AsyncStorage.getItem('shopCartData')))
+        }
+    })
 
     _alert=()=>{
         alert(

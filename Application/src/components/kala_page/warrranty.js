@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from 'react'
+import React,{useState,useEffect,useContext} from 'react'
 import {StyleSheet,View,Text,Dimensions,TouchableOpacity} from 'react-native'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
@@ -7,9 +7,12 @@ import {useNavigation} from 'react-navigation-hooks'
 import AsyncStorage from '@react-native-community/async-storage';
 import axios from 'axios'
 
+import {AuthContext} from '../../context/Auth/authContext'
 const w = Dimensions.get('window').width;
 
 const Warranty = (props) => {
+
+    const {dispatch} = useContext(AuthContext);
 
     const { navigate } = useNavigation();
     const [border_color,set_border_color]=useState();
@@ -99,6 +102,11 @@ const Warranty = (props) => {
         }
     }
 
+    const _add_to_shop_cart=()=>{
+        dispatch({type:'addShopCart',payload:data});
+        navigate('Shop_cart');
+    }
+
     return(
        <View style={styles.container}>
             <View style={styles.sec1}>
@@ -170,7 +178,7 @@ const Warranty = (props) => {
                             </Text>
                     }
                 </View>
-                <Ripple style={styles.sec3_btn} onPress={()=>navigate('Shop_cart')}>
+                <Ripple style={styles.sec3_btn} onPress={()=>_add_to_shop_cart()}>
                     <Text style={styles.sec3_btn_text}>
                         افزودن به سبد خرید
                     </Text>

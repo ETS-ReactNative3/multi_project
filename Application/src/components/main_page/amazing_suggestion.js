@@ -1,13 +1,53 @@
-import React from 'react'
+import React,{useEffect,useState} from 'react'
 import {View,Text,StyleSheet,FlatList,Image,Dimensions} from 'react-native'
 import {kala} from '../../data/dataArray'
 import Ripple from 'react-native-material-ripple'
 import CountDown from 'react-native-countdown-component';
 import {useNavigation} from 'react-navigation-hooks'
+import axios from 'axios'
 
 const w = Dimensions.get('window').width;
 
 const Amazing_Auggestion = () => {
+
+    const [data,SETdata]=useState([])
+
+    useEffect(()=>{
+        axios({
+            url: '/',
+            method: 'post',
+            data: {
+                query: `
+                    query MainPageApp {
+                        MainPageApp {
+                        Psuggestion {
+                            _id,
+                            attribute {
+                                suggestion
+                            }
+                        },
+                        }
+                    }
+                `
+            }
+            })
+            .then(function (response) {
+                if(response.data.errors){
+                    alert('error' + response.data.errors[0].message)
+                }
+                else{
+                    //--------save token in context-----------
+                    SETdata(response.data.data)
+                    // alert(JSON.stringify(response.data.data.MainPageApp.category))
+                }
+            })
+            .catch(function (error) {
+            // alert('مشکل در ارتبا با سرور');
+            alert(JSON.stringify('catch error' + error))
+        });
+    },[])
+
+
     const { navigate } = useNavigation();
     return(
         <View style={{marginTop:10}}>

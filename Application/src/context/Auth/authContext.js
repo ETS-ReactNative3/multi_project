@@ -19,13 +19,10 @@ const authReducer = async (state,action)=>{
     switch (action.type) {
         case 'login':{
             setStorage(action.payload)
-            
             return {authenticated:action.payload}
-
             break;
         }
-        case 'logout':
-        {
+        case 'logout':{
             _storeData = async () => {
                 try {
                   await AsyncStorage.removeItem('token');
@@ -39,13 +36,17 @@ const authReducer = async (state,action)=>{
             return {authenticated:action.payload}
             break;
         }
+        case 'addShopCart':{
+            setStorage(action.payload)
+            return {authenticated:action.payload}
+            break;
+        }
         default:
             return state;  
     }
 }
 const AuthContextProvider=(props)=>{
-    const[authenticated,dispatch] = useReducer(authReducer,'');
-    
+    const[authenticated,dispatch] = useReducer(authReducer,''); 
     return(
         <AuthContext.Provider value={{authenticated,dispatch}}>
             {props.children}
