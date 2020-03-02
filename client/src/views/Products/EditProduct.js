@@ -324,6 +324,7 @@ const EditProduct = (props)=>{
     }
     let dataServer=newData;
     if(image){
+      console.log(data);
       let formD = new FormData();
       formD.append('operations' , JSON.stringify(data));
        formD.append('map', JSON.stringify(map));

@@ -732,8 +732,8 @@ const resolvers = {
             let page = args.page || 1;
             let limit = args.limit || 10;
             let sugg = [];
-            const Tselling = await Product.find({}).sort({ soldCount : -1});
-            const Nproduct = await Product.find({}).sort({ createdAt : -1});
+            const Tselling = await Product.find({}).sort({ soldCount : -1}).populate('attribute');
+            const Nproduct = await Product.find({}).sort({ createdAt : -1}).populate('attribute');
             const psuggestion = await Product.paginate({}, { page, limit, populate : { path : 'attribute'}});
             const banner = await Banner.find({ default : true}).populate([{ path : 'Category'}, { path : 'Multimedia'}]).limit(7);
             psuggestion.docs.map(async item => {
@@ -1878,7 +1878,7 @@ const resolvers = {
                         }
 
 
-
+                        
                         const product = await Product.findByIdAndUpdate(args.input.id, { $set : {
                             fname : args.input.fname,
                             ename : args.input.ename,
@@ -2339,7 +2339,7 @@ let getImageSize = (type) => {
 let saveImage = ({stream, filename}) => {
     let date = new Date();
     const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
-    mkdirp.sync(path.join(__dirname, `/public/${dir}`));
+    mkdirp.sync(path.join(__dirname, `./public/${dir}`));
 
     let filePath = `${dir}/${filename}`;
 

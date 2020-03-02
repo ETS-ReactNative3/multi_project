@@ -130,6 +130,7 @@ const Banner =(props)=> {
         for(let i=0;i<getBanner.length;i++){
             getBanner[i].flag = false;
         }
+        console.log(getBanner);
       setAllBanner(getBanner);
       setResultLoading(false)
     }).catch((error)=>{
