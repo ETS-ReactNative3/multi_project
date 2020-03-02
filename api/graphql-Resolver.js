@@ -2339,7 +2339,7 @@ let getImageSize = (type) => {
 let saveImage = ({stream, filename}) => {
     let date = new Date();
     const dir = `/uploads/${date.getFullYear()}/${date.getMonth() + 1}`;
-    mkdirp.sync(path.join(__dirname, `./public/${dir}`));
+    mkdirp.sync(path.join(__dirname, `/public/${dir}`));
 
     let filePath = `${dir}/${filename}`;
 

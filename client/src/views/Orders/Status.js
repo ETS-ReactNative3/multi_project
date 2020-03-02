@@ -296,7 +296,7 @@ return(
                                         />
                                       :item.name
                                       }</td>
-                                    <td><img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image}`)} alt={item.image}  className={classes.Preview}/></td>
+                                    <td><img src={`${process.env.REACT_APP_PUBLIC_URL}${item.image}`} alt={item.image}  className={classes.Preview}/></td>
                                     <td>
                                         {item.flag 
                                           ? 

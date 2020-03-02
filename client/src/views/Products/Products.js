@@ -162,7 +162,7 @@ const Products =(props)=> {
       data: {
         query: `
         mutation updateProductAttribute($addSeller : Boolean, $attribute : [InputAttribute!]!) {
-          UpdateProducctAttribute (input : {addSeller : $addSeller, attribute : $attribute}) {
+          UpdateProductAttribute (input : {addSeller : $addSeller, attribute : $attribute}) {
             status,
             message
           }
@@ -414,7 +414,7 @@ const Products =(props)=> {
                                     <span>{item.ename}</span>
                                   </td>
                                   <td>
-                                    <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.original}`)} alt="pic" />
+                                    <img src={`${process.env.REACT_APP_PUBLIC_URL}${item.original}`} alt="pic" />
                                   </td>
                                   <td>{item.brand.name}</td>
                                   <td>

@@ -178,7 +178,7 @@ const OrderDetails =(props)=>{
                           return(
                         <Col key={item._id} className="status-order">
                             <img 
-                             src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image}`)}
+                             src={`${process.env.REACT_APP_PUBLIC_URL}${item.image}`}
                              className={`status-img ${order.orderStatus._id===item._id? 'is-active':null}`}
                              alt="pic"
                               />  
@@ -242,7 +242,7 @@ const OrderDetails =(props)=>{
                         <td>1</td>
                         <td>
                           <img 
-                          src={require(`${process.env.REACT_APP_PUBLIC_URL}${order.product.image[0]}`)} 
+                          src={`${process.env.REACT_APP_PUBLIC_URL}${order.product.image[0]}`} 
                           alt={order.product.image[0]}
                           className="Preview"
                             />

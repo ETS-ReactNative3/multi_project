@@ -95,7 +95,7 @@ const filterMedia = (event)=>{
                         <div className={classes.media}  key={item._id}
                         onClick={()=>{setChange(item);}}
                         >
-                            <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.dir}`)} alt={item.dir} />
+                            <img src={`${process.env.REACT_APP_PUBLIC_URL}${item.dir}`} alt={item.dir} />
                         </div>
                         )
                       })
@@ -112,7 +112,7 @@ const filterMedia = (event)=>{
                           <Row>
                               <Col xl={8}>
                               <img 
-                              src={require(`${process.env.REACT_APP_PUBLIC_URL}${selectedItem.dir}`)} 
+                              src={`${process.env.REACT_APP_PUBLIC_URL}${selectedItem.dir}`} 
                               alt={selectedItem.dir}
                               style={{width:'100%'}}
                                />
