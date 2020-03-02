@@ -734,7 +734,7 @@ const resolvers = {
             let sugg = [];
             const Tselling = await Product.find({}).sort({ soldCount : -1});
             const Nproduct = await Product.find({}).sort({ createdAt : -1});
-            const psuggestion = await Product.paginate({}, { page, limit});
+            const psuggestion = await Product.paginate({}, { page, limit, populate : { path : 'attribute'}});
             const banner = await Banner.find({ default : true}).populate([{ path : 'Category'}, { path : 'Multimedia'}]).limit(7);
             psuggestion.docs.map(async item => {
                 const pa = await Productattribute.find({ _id : { $in : item.attribute}, suggestion : true})
@@ -1071,6 +1071,7 @@ const resolvers = {
         product : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
+
                     const details = await saveDetailsValue(args.input.details);
                     const attribute = await saveAttributeProduct(args.input.attribute);
 
@@ -1081,7 +1082,7 @@ const resolvers = {
                         }
                     }
 
-                    const { createReadStream, filename } = await args.input.image;
+                    const { createReadStream, filename } = await args.input.original;
                     const stream = createReadStream();
                     const { filePath } = await saveImage({ stream, filename});
 
@@ -1094,7 +1095,6 @@ const resolvers = {
                          description : args.input.description,
                          details : details,
                          original : filePath,
-                         images : args.input.images
                     })
 
                         return {
@@ -1860,21 +1860,21 @@ const resolvers = {
         UpdateProduct : async (param, args, { check, isAdmin }) => {
             if(check && isAdmin) {
                 try {
+
                         const details = await updateDetailsValue(args.input.details);
                         // update image path
 
                         let imagePath = "";
-
-                        if(!args.input.image) {
+                        if(!args.input.original) {
                             const pathim = await Product.findById(args.input.id);
-                            imagePath = pathim.image[0];
+                            imagePath = pathim.original;
                         } else {
-                            const { createReadStream, filename } = await args.input.image;
+                            const { createReadStream, filename } = await args.input.original;
                             const stream = createReadStream();
-                            const { filePath } = await updateImageProduct({ stream, filename})
+                            const { filePath } = await updateImageProduct(args.input.id, { stream, filename})
                             const pathim = await Product.findById(args.input.id);
                             imagePath = filePath;
-                            fs.unlinkSync(path.join(__dirname ,`/public${pathim.image[0]}`));
+                            fs.unlinkSync(path.join(__dirname ,`/public${pathim.original}`));
                         }
 
 
@@ -2220,10 +2220,6 @@ const resolvers = {
 
     },
   
-    product : {
-       attribute : async (param, args) => await Productattribute.find({ _id : { $in : param.attribute}})
-    },
-
     Banner : {
        category : async (param, args) => await Category.findById(param.category),
        image : async (param, args) => await Multimedia.findById(param.image)
@@ -2366,13 +2362,12 @@ let updateImageProduct = async (id, {stream, filename}) => {
     mkdirp.sync(path.join(__dirname, `./public/${dir}`));
     const filePath = `${dir}/${filename}`;
 
-    const image_product = await Product.find({_id : id})
+    const image_product = await Product.findById(id)
     if(!image_product) {
         const error = new Error('محصولی با این مشخصات در سیستم ثبت نشده است.');
         error.code = 401;
         throw error;
     } else {
-        if(filePath === image_product.image[0]) {
             return new Promise((resolve, reject) => {
                 stream
                     .pipe(fs.createWriteStream(path.join(__dirname, `/public/${filePath}`)))
@@ -2380,7 +2375,6 @@ let updateImageProduct = async (id, {stream, filename}) => {
                     .on('finish', () => resolve({filePath}))
             })
         }
-    }
 }
 
 // let deleteImage = async ({filename}) => {
