@@ -35,7 +35,7 @@ class paymentController {
             .then(async data =>{
                 if(data.Status == 100){
                     payment.set({ payment : true});
-                    payment.product.map(item => {
+                    payment.product.map(async item => {
                         await User.findByIdAndUpdate(payment.user , { $push : { payCash : item._id }})
                     })
                     await payment.save();
