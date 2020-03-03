@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const Payment = Schema({
     user : { type : Schema.Types.ObjectId, ref : 'User'},
-    product : { type : Schema.Types.ObjectId, ref : 'Product'},
+    product : [{ type : Schema.Types.ObjectId, ref : 'Product'}],
     payment : { type : Boolean, default : false},
     resnumber : { type : String, required : true},
     attribute : [{ type : Schema.Types.ObjectId, ref : 'ProductAttribute'}],

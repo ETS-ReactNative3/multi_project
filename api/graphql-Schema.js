@@ -100,8 +100,8 @@ const typeDefs = gql`
     }
 
     input Inputpayment {
-        product : ID!,
-        attribute : ID!,
+        product : [ID!]!,
+        attribute : [ID]!,
         receptor : ID,
         count : Int = 1,
         discount : Int = 0
