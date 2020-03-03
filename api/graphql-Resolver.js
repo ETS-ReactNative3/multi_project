@@ -1384,7 +1384,7 @@ const resolvers = {
                     if(user.fname != null) {
                         const ostatus = await OrderStatus.findOne({ default : true });
                         const products = []
-                        args.input.producs.map(item => {
+                        args.input.products.map(item => {
                             const product = await Product.findById(item);
                             if(product == null) {
                                 throw error
@@ -1394,7 +1394,7 @@ const resolvers = {
                         })
                         const attributes = []
                         args.input.attributes.map(item => {
-                            const attribute = await Productattribute.findById(args.input.attributes);
+                            const attribute = await Productattribute.findById(item);
                             if(attribute == null) {
                                 throw error
                             }
