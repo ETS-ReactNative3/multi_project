@@ -10,7 +10,7 @@ class paymentController {
         AutoBind(this)
     }
     async pay(req, res, next) {
-        const payment = await Payment.findOne({ resnumber: req.query.Authority }).populate('product');
+        const payment = await Payment.findOne({ resnumber: req.query.Authority }).populate('products');
         if (!payment.product) {
             // res.status(401).send('هیچ محصولی برای خرید انتخاب نشده است و لینک پرداخت فاقد اعتبار می باشد.')
             return {
@@ -35,7 +35,7 @@ class paymentController {
             .then(async data =>{
                 if(data.Status == 100){
                     payment.set({ payment : true});
-                    payment.product.map(async item => {
+                    payment.products.map(async item => {
                         await User.findByIdAndUpdate(payment.user , { $push : { payCash : item._id }})
                     })
                     await payment.save();
