@@ -10,7 +10,7 @@ class paymentController {
         AutoBind(this)
     }
     async pay(req, res, next) {
-        const payment = await Payment.findOne({ resnumber: req.query.Authority }).populate('product').exec();
+        const payment = await Payment.findOne({ resnumber: req.query.Authority }).populate('product');
         if (!payment.product) {
             res.status(401).send('هیچ محصولی برای خرید انتخاب نشده است و لینک پرداخت فاقد اعتبار می باشد.')
         }

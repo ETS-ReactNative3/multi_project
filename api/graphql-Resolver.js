@@ -372,8 +372,7 @@ const resolvers = {
             }
         },
 
-        getProduct : async (param, args, { check, isAdmin }) => {
-            if(check) {
+        getProduct : async (param, args) => {
                 let page = args.page || 1;
                 let limit = args.limit || 10;
                 if(args.productId == null && args.categoryId == null) {
@@ -386,15 +385,9 @@ const resolvers = {
                     const product = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute'}]});
                     return product.docs
                 }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
         },
 
-        getAllCategory : async (param, args, { check, isAdmin }) => {
-            if(check) {
+        getAllCategory : async (param, args) => {
                 if(args.input.mainCategory == true) {
                     let page = args.input.page || 1;
                     let limit = args.input.limit || 10;
@@ -411,11 +404,6 @@ const resolvers = {
                     const categorys = await Category.find({}).skip((page - 1) * limit).limit(limit).populate('parent').exec();
                     return categorys
                 }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
         },
 
 
@@ -509,7 +497,6 @@ const resolvers = {
         },
 
         getAllSurvey : async (param, args, { check, isAdmin }) => {
-            if(check) {
                 const list = await Survey.find({ category : args.categoryId});
                 if(list) {
                     return list
@@ -518,11 +505,6 @@ const resolvers = {
                     error.code = 401;
                     throw error;
                 }
-            } else {
-                const error = new Error('این شماره تلفن قبلا در سیستم ثبت شده است!');
-                error.code = 401;
-                throw error;
-            }
         },
 
         getAllProductSpecs : async (param, args, { check, isAdmin }) => {
@@ -593,7 +575,6 @@ const resolvers = {
         getAddProductInfo : async (parm, args, { check, isAdmin }) => {
 
             if(check && isAdmin) {
-
                 if(args.getSubCategory == true && args.subCategoryId != null) {
                     const subcats = await Category.find({parent : args.subCategoryId});
                     const brands = await Brand.find({category : args.subCategoryId});
@@ -631,7 +612,6 @@ const resolvers = {
         },
 
         getAllComment : async (param, args, { check }) => {
-            if(check) {
                     let page = args.page || 1;
                     let limit = args.limit || 10;
                     if(! args.productId ) {
@@ -669,11 +649,6 @@ const resolvers = {
                         return comments.docs;
                     }
 
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
         },
 
         verifyRegister : async (param, args, { secretID }) => {
@@ -704,7 +679,6 @@ const resolvers = {
         getAllPayment : async (param, args, { check, isAdmin }) => {
             if(check) {
                 try {
-                    console.log(args.orderId)
                     if(args.orderId) {
                         const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);``
                         return [pay]
@@ -1430,7 +1404,7 @@ const resolvers = {
                             let params = {
                                 MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
                                 Amount: (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
-                                CallbackURL: 'http://localhost:4000/api/product/payment/callbackurl',
+                                CallbackURL: 'http://digikala.liara.run/api/product/payment/callbackurl',
                                 Description: `خرید محصول ${product.ename}`,
                                 Mobile : user.phone,
                             }
