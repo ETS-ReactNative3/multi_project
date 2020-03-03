@@ -1383,16 +1383,32 @@ const resolvers = {
                     const user = await User.findById(check.id);
                     if(user.fname != null) {
                         const ostatus = await OrderStatus.findOne({ default : true });
-                        const product = await Product.findById(args.input.product);
-                        const attribute = await Productattribute.findById(args.input.attribute);
-                        if(!product) {
+                        const products = []
+                        args.input.producs.map(item => {
+                            const product = await Product.findById(item);
+                            if(product == null) {
+                                throw error
+                            }
+                            products.push(item)
+
+                        })
+                        const attributes = []
+                        args.input.attributes.map(item => {
+                            const attribute = await Productattribute.findById(args.input.attributes);
+                            if(attribute == null) {
+                                throw error
+                            }
+                            attributes.push(item)
+                        })
+
+                        if(!products) {
                             return {
                                 status : 401,
                                 message : 'خرید این محصول مجاز نمی باشد'
                             }
                         }
 
-                        if(!attribute) {
+                        if(!attributes) {
                             return {
                                 status : 401,
                                 message : 'قیمت گذاری این کالا به درستی انجام نشده است!'
@@ -1428,9 +1444,9 @@ const resolvers = {
 
                             await Payment.create({
                                 user : check.id,
-                                product : product._id,
+                                products : products,
                                 resnumber : data.Authority,
-                                attribute : args.input.attribute,
+                                attributes : attributes,
                                 discount : args.input.discount,
                                 count : args.input.count,
                                 price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),

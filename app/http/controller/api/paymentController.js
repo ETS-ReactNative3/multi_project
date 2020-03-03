@@ -35,7 +35,9 @@ class paymentController {
             .then(async data =>{
                 if(data.Status == 100){
                     payment.set({ payment : true});
-                    await User.findByIdAndUpdate(payment.user , { $push : { payCash : payment.product._id }})
+                    payment.product.map(item => {
+                        await User.findByIdAndUpdate(payment.user , { $push : { payCash : item._id }})
+                    })
                     await payment.save();
 
                     // res.status(200).send("خرید شما با موفقیت ثبت شد می توانید فرآیند آماده سازی و ارسال سفارش خود را از داخل پنل کاربری خود بررسی نمایید");
