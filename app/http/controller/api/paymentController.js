@@ -12,7 +12,11 @@ class paymentController {
     async pay(req, res, next) {
         const payment = await Payment.findOne({ resnumber: req.query.Authority }).populate('product');
         if (!payment.product) {
-            res.status(401).send('هیچ محصولی برای خرید انتخاب نشده است و لینک پرداخت فاقد اعتبار می باشد.')
+            // res.status(401).send('هیچ محصولی برای خرید انتخاب نشده است و لینک پرداخت فاقد اعتبار می باشد.')
+            return {
+                status : 401,
+                message : 'هیچ محصولی برای خرید انتخاب نشده است و لینک پرداخت فاقد اعتبار می باشد.'
+            }
         }
 
         if (req.query.Status && req.query.Status != 'OK') {
@@ -34,9 +38,17 @@ class paymentController {
                     await User.findByIdAndUpdate(payment.user , { $push : { payCash : payment.product._id }})
                     await payment.save();
 
-                    res.status(200).send("خرید شما با موفقیت ثبت شد می توانید فرآیند آماده سازی و ارسال سفارش خود را از داخل پنل کاربری خود بررسی نمایید");
+                    // res.status(200).send("خرید شما با موفقیت ثبت شد می توانید فرآیند آماده سازی و ارسال سفارش خود را از داخل پنل کاربری خود بررسی نمایید");
+                    return {
+                        status : 200,
+                        message : 'خرید شما با موفقیت ثبت شد می توانید فرآیند آماده سازی و ارسال سفارش خود را از داخل پنل کاربری خود بررسی نمایید'
+                    }
                 }else {
-                    res.status(401).send('متاسفانه در فرآیند خرید محصول مورد نظر مشکلی به وجود آمده است لطفا مجددا انتحان نمایید!')
+                    // res.status(401).send('متاسفانه در فرآیند خرید محصول مورد نظر مشکلی به وجود آمده است لطفا مجددا انتحان نمایید!')
+                    return {
+                        status : 401,
+                        message : 'متاسفانه در فرآیند خرید محصول مورد نظر مشکلی به وجود آمده است لطفا مجددا انتحان نمایید!'
+                    }
                 }
             })
             .catch(err => res.json(err.message))
