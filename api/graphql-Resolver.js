@@ -576,8 +576,6 @@ const resolvers = {
         },
 
         getAddProductInfo : async (parm, args, { check, isAdmin }) => {
-
-            if(check && isAdmin) {
                 if(args.getSubCategory == true && args.subCategoryId != null) {
                     const subcats = await Category.find({parent : args.subCategoryId});
                     const brands = await Brand.find({category : args.subCategoryId});
@@ -606,12 +604,6 @@ const resolvers = {
                     error.code = 401;
                     throw error;
                 }
-
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
         },
 
         getAllComment : async (param, args, { check }) => {
