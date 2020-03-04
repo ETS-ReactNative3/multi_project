@@ -11,12 +11,12 @@ class paymentController {
     }
     async pay(req, res, next) {
         const payment = await Payment.findOne({ resnumber: req.query.Authority }).populate('products');
-        if (!payment.product) {
-            // res.status(401).send('هیچ محصولی برای خرید انتخاب نشده است و لینک پرداخت فاقد اعتبار می باشد.')
-            return {
-                status : 401,
-                message : 'هیچ محصولی برای خرید انتخاب نشده است و لینک پرداخت فاقد اعتبار می باشد.'
-            }
+        if (payment.products.length == 0) {
+            res.status(401).send('هیچ محصولی برای خرید انتخاب نشده است و لینک پرداخت فاقد اعتبار می باشد.')
+            // return {
+            //     status : 401,
+            //     message : 'هیچ محصولی برای خرید انتخاب نشده است و لینک پرداخت فاقد اعتبار می باشد.'
+            // }
         }
 
         if (req.query.Status && req.query.Status != 'OK') {

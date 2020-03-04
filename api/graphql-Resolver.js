@@ -1408,7 +1408,7 @@ const resolvers = {
                             let params = {
                                 MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
                                 Amount: (price - ((price * args.input.discount)/100)),
-                                CallbackURL: 'http://digikala.liara.run/api/product/payment/callbackurl',
+                                CallbackURL: 'https://digikala.liara.run/api/product/payment/callbackurl',
                                 Description: `خرید محصول`,
                                 Mobile : user.phone,
                             }
