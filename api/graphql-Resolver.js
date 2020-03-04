@@ -1381,47 +1381,38 @@ const resolvers = {
             if(check) {
                 try {
                     const user = await User.findById(check.id);
+                    let products = []
+                    let attributes = []
+                    let price = 0;
+
                     if(user.fname != null) {
                         const ostatus = await OrderStatus.findOne({ default : true });
-                        const products = []
-                        args.input.products.map(async item => {
-                            const product = await Product.findById(item);
+                        for (let index = 0; index < args.input.products.length; index++) {
+                            const element = args.input.products[index]
+                            const product = await Product.findById(element);
                             if(product == null) {
                                 throw error
                             }
-                            products.push(item)
+                            products[index] = product._id
+                        }
 
-                        })
-                        const attributes = []
-                        args.input.attributes.map(async item => {
-                            const attribute = await Productattribute.findById(item);
+                        for (let index = 0; index < args.input.attributes.length; index++) {
+                            const element = args.input.attributes[index];
+                            const attribute = await Productattribute.findById(element);
                             if(attribute == null) {
                                 throw error
                             }
-                            attributes.push(item)
-                        })
-
-                        if(!products) {
-                            return {
-                                status : 401,
-                                message : 'خرید این محصول مجاز نمی باشد'
-                            }
-                        }
-
-                        if(!attributes) {
-                            return {
-                                status : 401,
-                                message : 'قیمت گذاری این کالا به درستی انجام نشده است!'
-                            }
+                            price += (((attribute.price) - ((attribute.price *attribute.discount)/100)))
+                            attributes[index] = attribute._id
                         }
 
                            // pay process
 
                             let params = {
                                 MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
-                                Amount: (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
+                                Amount: (price - ((price * args.input.discount)/100)),
                                 CallbackURL: 'http://digikala.liara.run/api/product/payment/callbackurl',
-                                Description: `خرید محصول ${product.ename}`,
+                                Description: `خرید محصول`,
                                 Mobile : user.phone,
                             }
 
@@ -1449,7 +1440,7 @@ const resolvers = {
                                 attributes : attributes,
                                 discount : args.input.discount,
                                 count : args.input.count,
-                                price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
+                                price : (price - ((price * args.input. discount)/100)),
                                 orderStatus : ostatus._id
                             })
 
