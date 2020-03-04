@@ -8,7 +8,7 @@ const typeDefs = gql`
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
         getAllBrand(input : InputGetBrand) : [Brand!]!
-        getAllSurvey(categoryId : ID!) : Survey!
+        getAllSurvey(categoryId : ID!) : [Survey!]!
         getAllProductSpecs(categoryId : ID!) : [Specs!]!
         getAllProductSpecsDetails(specsId : ID!) : [SpecsDetails!]!
         getAllSeller(categoryId : ID!) : [Seller!]!
@@ -22,7 +22,7 @@ const typeDefs = gql`
         getAllSlider(sliderId : ID) : [Slider],
         getBanner : [Banner]
 
-        sortPoduct(categoryId : ID, viewCount : Boolean, soldCount : Boolean, priceUp : Boolean, priceDown : Boolean, newP : Boolean, suggestion : Boolean) : [product],
+        sortProduct(categoryId : ID, viewCount : Boolean, soldCount : Boolean, priceUp : Boolean, priceDown : Boolean, newP : Boolean, suggestion : Boolean) : [product],
 
         userAtmonth : [AtMonth],
         productAtmonth : [AtMonth],
@@ -113,7 +113,6 @@ const typeDefs = gql`
     }
 
     input InputComment {
-        user : ID!,
         product : ID!,
         survey : [InputSurveyValue!]!
         title : String!,

@@ -496,15 +496,18 @@ const resolvers = {
             }
         },
 
-        getAllSurvey : async (param, args, { check, isAdmin }) => {
+        getAllSurvey : async (param, args) => {
+            try {
                 const list = await Survey.find({ category : args.categoryId});
-                if(list) {
-                    return list
-                } else {
-                    const error = new Error('هیچ فیلد نظر سنجی برای این دسته بندی وجود ندارد!');
-                    error.code = 401;
-                    throw error;
+                if(list.length == 0) {
+                    throw error
                 }
+                return list
+            } catch {
+                const error = new Error('هیچ فیلد نظر سنجی برای این دسته بندی وجود ندارد!');
+                error.code = 401;
+                throw error;
+            }
         },
 
         getAllProductSpecs : async (param, args, { check, isAdmin }) => {
@@ -752,26 +755,28 @@ const resolvers = {
             }
         }, 
 
-        sortPoduct : async (param, args) => {
+        sortProduct : async (param, args) => {
             try {
+                let page = args.page || 1;
+                let limit = args.limit || 10;
                 switch (args.categoryId != null) {
                     case args.viewCount == true :
-                        const productsView = await Product.paginate({ category : args.categoryId}, { sort : { viewCount : 1}});
+                        const productsView = await Product.paginate({ category : args.categoryId}, {page, limit, populate : { path : 'attribute' }, sort : { viewCount : 1}});
                         return productsView.docs;
                     case args.soldCount == true :
-                        const productsSold = await Product.paginate({ category : args.categoryId}, { sort : { soldCount : 1}});
+                        const productsSold = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { soldCount : 1}, populate : { path : 'attribute' }});
                         return productsSold.docs;
                     case args.priceUp == true :
-                        const productsPriceUp = await Product.paginate({category : args.categoryId}, {page, limit, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        const productsPriceUp = await Product.paginate({category : args.categoryId}, {page, limit, sort : {}, populate : { path : 'attribute', options: { sort: { price : -1 } } }});
                         return productsPriceUp.docs;
                     case args.priceDown == true :
-                        const productspriceDown = await Product.paginate({category : args.categoryId}, {page, limit, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        const productspriceDown = await Product.paginate({category : args.categoryId}, {page, limit, populate : { path : 'attribute' , sort : { price : 1} }});
                         return productspriceDown.docs;
                     case args.newP == true :
-                        const producsNew = await Product.paginate({category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        const producsNew = await Product.paginate({category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : { path : 'attribute' }});
                         return producsNew.docs;
                     case args.suggestion == true : 
-                        const productsSuggestion = await Product.paginate([{category : args.categoryId }, {suggestion : true}], {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        const productsSuggestion = await Product.paginate({category : args.categoryId }, {page, limit, sort : { createdAt : 1}, populate : { path : 'attribute', match : {suggestion : true}}});
                         return productsSuggestion.docs;
                     default:
                         break;
@@ -1311,7 +1316,7 @@ const resolvers = {
                     const surveyValue = await saveSurveyValue(args.input.survey);
                     
                     await Comment.create({
-                        user : args.input.user,
+                        user : check.id,
                         product : args.input.product,
                         survey : surveyValue,
                         title : args.input.title,
