@@ -32,8 +32,12 @@ const Comments =(props)=> {
                 fname
               },           
               title,
-              like,
-              dislike,
+              like {
+                _id
+              },
+              dislike {
+                _id
+              },
               createdAt,
               check  
             }
@@ -48,7 +52,8 @@ const Comments =(props)=> {
       }
     }).then((result) => {
       if(result.data.errors){
-        dispatch({type:'logout',payload:props});
+       // dispatch({type:'logout',payload:props});
+       console.log(result.data.errors)
       }
       else{
         const {getAllComment} = result.data.data;
@@ -57,7 +62,7 @@ const Comments =(props)=> {
           setComments(getAllComment);
         }
         
-       console.log( getAllComment)
+      
         setLoading(false);
       }
      
@@ -102,7 +107,8 @@ const Comments =(props)=> {
       })
        
        newData[0].check = !newData[0].check;
-      setComments(newData);
+      
+      setComments(newComments);
       setModal(false);
     }
    
@@ -148,8 +154,8 @@ const Comments =(props)=> {
                           <td>{item.user.fname} {item.user.lname}</td>
                           <td >{date}</td>
                           <td>{item.title}</td>
-                          <td>{item.like}</td>
-                          <td >{item.dislike}</td>
+                          <td>{item.like.length}</td>
+                          <td >{item.dislike.length}</td>
                           <td>
                             <Badge color={getBadge(item.check)} onClick={()=>toggleLarge(item._id)}>
                               {item.check ?'تایید شده': 'تایید نشده'}

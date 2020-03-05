@@ -154,7 +154,7 @@ const Products =(props)=> {
         suggestion:item.suggestion
       })
     })
-    console.log(attributeHolder);
+    
     axios({
       url: '/',
       method: 'post',
@@ -180,7 +180,8 @@ const Products =(props)=> {
       
     }
     else{
-      toast.success(result.data.data.UpdateProducctAttribute.message);
+      
+      toast.success(result.data.data.UpdateProductAttribute.message);
       setLoadAgain(!loadAgain);
       setModal(false);
     }
