@@ -42,8 +42,12 @@ const CommentInfo =(props)=> {
                   description,
                   negative,
                   positive,
-                  like,
-                  dislike,
+                  like {
+                      _id
+                  },
+                  dislike {
+                      _id
+                  },
                   createdAt,
                   check  
                 }
@@ -141,15 +145,15 @@ const CommentInfo =(props)=> {
                         <div className={classes.comments_likes}>
                             موافقین و مخالفین نظر: 
                             <div className={classes.btn_like}>
-                                <i className="fa fa-thumbs-o-up fa-lg "></i> {comment.like}
+                                <i className="fa fa-thumbs-o-up fa-lg "></i> {comment.like.length}
                             </div>
                             <div className={classes.btn_like}>
-                                <i className="fa fa-thumbs-o-down fa-lg "></i> {comment.dislike}
+                                <i className="fa fa-thumbs-o-down fa-lg "></i> {comment.dislike.length}
                             </div>
                         </div>
 
-                         <div class={classes.c_comments_evaluation}>
-                            <div class={classes.c_comments_evaluation_positive}>
+                         <div className={classes.c_comments_evaluation}>
+                            <div className={classes.c_comments_evaluation_positive}>
                                 <span style={{color: '#00bfd6'}}>نقاط قوت</span>
                                 <ul>
                                     {
@@ -160,8 +164,8 @@ const CommentInfo =(props)=> {
                                 </ul>
                             </div> 
                          </div>
-                         <div class={classes.c_comments_evaluation}>
-                            <div class={classes.c_comments_evaluation_positive}>
+                         <div className={classes.c_comments_evaluation}>
+                            <div className={classes.c_comments_evaluation_positive}>
                                 <span style={{color: '#ff637d'}}>نقاط ضعف</span>
                                 <ul>
                                     {
