@@ -121,8 +121,6 @@ const typeDefs = gql`
         survey : [InputSurveyValue!]!
         title : String!,
         description : String!,
-        like : Int = 0,
-        dislike : Int = 0,
         negative : [String],
         positive : [String],
         check : Boolean = false
@@ -444,8 +442,8 @@ const typeDefs = gql`
         survey : [SurveyValue],
         title : String,
         description : String,
-        like : Int,
-        dislike : Int,
+        like : [User],
+        dislike : [User],
         negative : [String],
         positive : [String],
         createdAt : Date,
@@ -454,7 +452,7 @@ const typeDefs = gql`
 
     type SurveyValue {
         survey : Survey,
-        value : Int
+        value : String
     }
 
     type Receptor {

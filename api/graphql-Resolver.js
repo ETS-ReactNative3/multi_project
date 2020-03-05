@@ -621,6 +621,7 @@ const resolvers = {
         getAllComment : async (param, args) => {
                     let page = args.page || 1;
                     let limit = args.limit || 10;
+                    let arr = [];
                     if(args.productId == null && args.commentId == null) {
                         const comments = await Comment.paginate({}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
                         if(!comments) {
@@ -633,15 +634,20 @@ const resolvers = {
 
                     } else if(args.productId) {
                         const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
-
                         if(!comments) {
                             return {
                                 status : 401,
                                 message : 'کامنتی برای این محصول ثبت نشده است!'
                             }
                         }
-    
-                        return comments.docs;
+                        for (let index = 0; index < comments.docs.length; index++) {
+                            const element = comments.docs[index];
+                            if(element.check == true) {
+                                arr[index] = element
+                            }
+                        }
+
+                        return arr;
 
                     } else if(args.commentId != null && args.productId == null) {
                         const comments = await Comment.paginate({_id : args.commentId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
@@ -1311,7 +1317,6 @@ const resolvers = {
         comment : async (param, args, { check, isAdmin}) => {
             if(check) {
                 try {
-                    console.log(args.input)
                     const product = await Product.findById(args.input.product);
                     if(!product) {
                         const error = new Error('این محصول در سیستم ثبت نشده است. نمی توانید کامنت ثبت کنید!');
@@ -2213,30 +2218,67 @@ const resolvers = {
         addLike : async (param, args, { check }) => {
             if(check) {
                 try {
-                    let has = false;
-                    const comment = await Comment.findById(args.commentId);
-                    if(comment.like.length == 0) {
-                        comment.like.push(check.id);
-                        await comment.save()
-                    } else {
 
-                        comment.like.map(item => {
+                    let hasLike = false;
+                    let hasDisLike = false;
+                    let comment = await Comment.findById(args.commentId);
+                    if(comment.dislike.length != 0) {
+                        comment.dislike.map(item => {
                             if(item == check.id) {
-                                has = true
+                                hasDisLike = true
                             }
                         })
                     }
 
-                    if(has == true) {
+                    if(hasDisLike == true) {
+                        const index = comment.dislike.indexOf(check.id);
+                        if(index > -1) {
+                            comment.dislike.splice(index, 1)
+                        }
+                    }
+
+                    comment.like.map(item => {
+                        if(item == check.id) {
+                            hasLike = true
+                        }
+                    })
+     
+
+                    if(hasLike == true) {
                         throw error
                     }
-                    
+
                     comment.like.push(check.id);
                     await comment.save()
 
                     return {
                         status : 200
                     }
+
+                    // let has = false;
+                    // const comment = await Comment.findById(args.commentId);
+                    // if(comment.like.length == 0) {
+                    //     comment.like.push(check.id);
+                    //     await comment.save()
+                    // } else {
+
+                    //     comment.like.map(item => {
+                    //         if(item == check.id) {
+                    //             has = true
+                    //         }
+                    //     })
+                    // }
+
+                    // if(has == true) {
+                    //     throw error
+                    // }
+                    
+                    // comment.like.push(check.id);
+                    // await comment.save()
+
+                    // return {
+                    //     status : 200
+                    // }
 
 
                 } catch {
@@ -2257,28 +2299,27 @@ const resolvers = {
                 try {
                     let hasLike = false;
                     let hasDisLike = false;
-                    const comment = await Comment.findById(args.commentId);
+                    let comment = await Comment.findById(args.commentId);
                     if(comment.like.length != 0) {
                         comment.like.map(item => {
                             if(item == check.id) {
                                 hasLike = true
                             }
                         })
-
-                    } else {
-                            comment.dislike.map(item => {
-                                if(item == check.id) {
-                                    hasDisLike = true
-                                }
-                            })
-                    } 
+                    }
 
                     if(hasLike == true) {
-                        comment.like.map( async item => {
-                            comment.like.splice(item)
-                            await comment.save()
-                        })
+                        const index = comment.like.indexOf(check.id);
+                        if(index > -1) {
+                            comment.like.splice(index, 1)
+                        }
                     }
+
+                    comment.dislike.map(item => {
+                        if(item == check.id) {
+                            hasDisLike = true
+                        }
+                    })
      
 
                     if(hasDisLike == true) {
@@ -2287,7 +2328,6 @@ const resolvers = {
 
                     comment.dislike.push(check.id);
                     await comment.save()
-
 
                     return {
                         status : 200
