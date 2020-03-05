@@ -447,8 +447,8 @@ const typeDefs = gql`
     }
 
     type SurveyValue {
-        survey : [Survey],
-        value : String
+        survey : Survey,
+        value : Int
     }
 
     type Receptor {

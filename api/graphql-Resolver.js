@@ -498,11 +498,24 @@ const resolvers = {
 
         getAllSurvey : async (param, args) => {
             try {
-                const list = await Survey.find({ category : args.categoryId});
-                if(list.length == 0) {
-                    throw error
+                const maincategory = await Category.findById(args.categoryId).populate('parent');
+                console.log(maincategory.parent)
+                if(maincategory.parent == null) {
+                    throw error;
+                } else if(maincategory.parent.parent == null){
+                    const list = await Survey.find({ category : args.categoryId});
+                    if(list.length == 0) {
+                        throw error
+                    }
+                    return list
+                } else {
+                    const categoryId = await Category.findById(maincategory.parent);
+                    const list = await Survey.find({ category : categoryId._id});
+                    if(list.length == 0) {
+                        throw error
+                    }
+                    return list
                 }
-                return list
             } catch {
                 const error = new Error('هیچ فیلد نظر سنجی برای این دسته بندی وجود ندارد!');
                 error.code = 401;
@@ -606,10 +619,10 @@ const resolvers = {
                 }
         },
 
-        getAllComment : async (param, args, { check }) => {
+        getAllComment : async (param, args) => {
                     let page = args.page || 1;
                     let limit = args.limit || 10;
-                    if(! args.productId ) {
+                    if(args.productId == null && args.commentId == null) {
                         const comments = await Comment.paginate({}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
                         if(!comments) {
                             return {
@@ -1408,7 +1421,7 @@ const resolvers = {
                             let params = {
                                 MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
                                 Amount: (price - ((price * args.input.discount)/100)),
-                                CallbackURL: 'https://digikala.liara.run/api/product/payment/callbackurl',
+                                CallbackURL: 'http://digikala.liara.run/api/product/payment/callbackurl',
                                 Description: `خرید محصول`,
                                 Mobile : user.phone,
                             }
