@@ -65,6 +65,9 @@ const typeDefs = gql`
         favorite(productId : ID!) : operation!
         Banner(categoryId : ID!, imageId : ID!, default : Boolean = false) : operation!
 
+        addLike(commentId : ID!) : operation!,
+        addDisLike(commentId : ID!) : operation!
+
 
         UpdateCategory(input : InputCategory) : operation!
         UpdateBrand(input : InputBrand) : operation!,
@@ -84,6 +87,7 @@ const typeDefs = gql`
 
         DeleteSlider(sliderId : ID!, imageId : ID) : operation!,
         DeleteBanner(bannerId : ID!) : operation!
+
 
 
     }
@@ -262,7 +266,9 @@ const typeDefs = gql`
         _id : ID,
         status : Int,
         message : String,
-        payLink : String
+        payLink : String,
+        like : Int,
+        dislike : Int
     }
 
     type ProductOperation {

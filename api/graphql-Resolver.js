@@ -499,7 +499,6 @@ const resolvers = {
         getAllSurvey : async (param, args) => {
             try {
                 const maincategory = await Category.findById(args.categoryId).populate('parent');
-                console.log(maincategory.parent)
                 if(maincategory.parent == null) {
                     throw error;
                 } else if(maincategory.parent.parent == null){
@@ -1312,6 +1311,7 @@ const resolvers = {
         comment : async (param, args, { check, isAdmin}) => {
             if(check) {
                 try {
+                    console.log(args.input)
                     const product = await Product.findById(args.input.product);
                     if(!product) {
                         const error = new Error('این محصول در سیستم ثبت نشده است. نمی توانید کامنت ثبت کنید!');
@@ -1319,6 +1319,7 @@ const resolvers = {
                         throw error;
                     }
                     const surveyValue = await saveSurveyValue(args.input.survey);
+                    console.log(surveyValue)
                     
                     await Comment.create({
                         user : check.id,
@@ -2207,7 +2208,102 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
-        }
+        },
+
+        addLike : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    let has = false;
+                    const comment = await Comment.findById(args.commentId);
+                    if(comment.like.length == 0) {
+                        comment.like.push(check.id);
+                        await comment.save()
+                    } else {
+
+                        comment.like.map(item => {
+                            if(item == check.id) {
+                                has = true
+                            }
+                        })
+                    }
+
+                    if(has == true) {
+                        throw error
+                    }
+                    
+                    comment.like.push(check.id);
+                    await comment.save()
+
+                    return {
+                        status : 200
+                    }
+
+
+                } catch {
+                    const error = new Error('امکان درج like وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        addDisLike : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    let hasLike = false;
+                    let hasDisLike = false;
+                    const comment = await Comment.findById(args.commentId);
+                    if(comment.like.length != 0) {
+                        comment.like.map(item => {
+                            if(item == check.id) {
+                                hasLike = true
+                            }
+                        })
+
+                    } else {
+                            comment.dislike.map(item => {
+                                if(item == check.id) {
+                                    hasDisLike = true
+                                }
+                            })
+                    } 
+
+                    if(hasLike == true) {
+                        comment.like.map( async item => {
+                            comment.like.splice(item)
+                            await comment.save()
+                        })
+                    }
+     
+
+                    if(hasDisLike == true) {
+                        throw error
+                    }
+
+                    comment.dislike.push(check.id);
+                    await comment.save()
+
+
+                    return {
+                        status : 200
+                    }
+    
+                } catch {
+                    const error = new Error('امکان درج dislike وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error; 
+            }
+        },
 
     },
   
@@ -2386,7 +2482,6 @@ let saveSurveyValue = async (args) => {
                         })
 
                         arr[index] = vs._id
-    
         }
         return arr;
     } catch {
