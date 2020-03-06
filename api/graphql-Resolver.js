@@ -2218,7 +2218,6 @@ const resolvers = {
         addLike : async (param, args, { check }) => {
             if(check) {
                 try {
-
                     let hasLike = false;
                     let hasDisLike = false;
                     let comment = await Comment.findById(args.commentId);
@@ -2254,32 +2253,6 @@ const resolvers = {
                     return {
                         status : 200
                     }
-
-                    // let has = false;
-                    // const comment = await Comment.findById(args.commentId);
-                    // if(comment.like.length == 0) {
-                    //     comment.like.push(check.id);
-                    //     await comment.save()
-                    // } else {
-
-                    //     comment.like.map(item => {
-                    //         if(item == check.id) {
-                    //             has = true
-                    //         }
-                    //     })
-                    // }
-
-                    // if(has == true) {
-                    //     throw error
-                    // }
-                    
-                    // comment.like.push(check.id);
-                    // await comment.save()
-
-                    // return {
-                    //     status : 200
-                    // }
-
 
                 } catch {
                     const error = new Error('امکان درج like وجود ندارد!');
