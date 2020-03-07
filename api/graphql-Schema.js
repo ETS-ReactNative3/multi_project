@@ -2,7 +2,7 @@ const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
     type Query {
-        login(input : LRInput) : Token!,
+        login(input : loginInput) : Token!,
         getUsers(userId : ID) : [User!]!,
         getSelfInfo : User,
         getProduct(page : Int, limit : Int, productId : ID, categoryId : ID) : [product!]!,
@@ -289,6 +289,11 @@ const typeDefs = gql`
         password : String!,
         level : Boolean,
         digit : String!
+    }
+
+    input loginInput {
+        phone : String!,
+        password : String!
     }
 
     input updateSelfInfo {
