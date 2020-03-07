@@ -16,7 +16,7 @@ const typeDefs = gql`
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
         getAllComment(page : Int, limit : Int, productId : ID, commentId : ID) : [Comment],
-        verifyRegister : operation,
+        verifyRegister(Phone : String!) : operation,
         getAllPayment(orderId : ID) : [Payment],
         getAllOrderStatus : [OrderStatus],
         getAllMultimedia(page : Int, limit : Int) : [Multimedia],
@@ -288,7 +288,7 @@ const typeDefs = gql`
         email : String,
         password : String!,
         level : Boolean,
-        digit : Int
+        digit : String!
     }
 
     input updateSelfInfo {

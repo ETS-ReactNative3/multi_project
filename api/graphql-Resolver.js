@@ -678,14 +678,12 @@ const resolvers = {
         verifyRegister : async (param, args, { secretID }) => {
             try {
                 const digit = Math.floor(Math.random() * (9999 - 1000)) + 1000;
-                console.log('digit :' + digit)
-                const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
                 await VlidationRegister.create({
-                    verifyToken : token
+                    verifyToken : digit
                 })
 
                 const api = Kavenegar.KavenegarApi({apikey: '2F647571766C745A7030745A61585273523734365946544D783648744343767768636F6B374779587255553D'});
-                api.Send({ message: `کد تایید حساب کاربری شما : ${digit}` , sender: "1000596446" , receptor: "09154968751" });
+                api.Send({ message: `کد تایید حساب کاربری شما : ${digit}` , sender: "1000596446" , receptor: `${args.Phone}` });
 
                 return {
                     status : 200,
@@ -968,17 +966,15 @@ const resolvers = {
 
         register : async (param, args, { secretID }) => {            
             try {
-                    // const digit = args.input.digit;
-                    // const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
-                    // const codeToken = await VlidationRegister.findOne({ verifyToken : token});
-                    // const verify = await jwt.verify(codeToken, secretID);
 
-                    // if(!verify) {
-                    //     return {
-                    //         status : 403,
-                    //         message : 'درخواست شما اعتبار لازم برای ثبت نام را ندارد!'
-                    //     }
-                    // } else {
+                    const codeToken = await VlidationRegister.findOne({ verifyToken : args.input.digit});
+
+                    if(!codeToken) {
+                        return {
+                            status : 403,
+                            message : 'درخواست شما اعتبار لازم برای ثبت نام را ندارد!'
+                        }
+                    } else {
                         const salt = await bcrypt.genSaltSync(15);
                         const hash = await bcrypt.hashSync(args.input.password, salt);
                         await User.create({
@@ -994,7 +990,7 @@ const resolvers = {
                             message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
                         };
 
-                    // } 
+                    } 
 
             } catch {
                 const error = new Error('ارنباط با سرور محدود شده است!!');
@@ -1468,89 +1464,96 @@ const resolvers = {
 
         payment : async (param, args, { check, res} ) => {
             if(check) {
-                try {
-                    const user = await User.findById(check.id);
-                    let products = []
-                    let attributes = []
-                    let price = 0;
-
-                    if(user.fname != null) {
-                        const ostatus = await OrderStatus.findOne({ default : true });
-                        for (let index = 0; index < args.input.products.length; index++) {
-                            const element = args.input.products[index]
-                            const product = await Product.findById(element);
-                            if(product == null) {
-                                throw error
-                            }
-                            products[index] = product._id
-                        }
-
-                        for (let index = 0; index < args.input.attributes.length; index++) {
-                            const element = args.input.attributes[index];
-                            const attribute = await Productattribute.findById(element);
-                            if(attribute == null) {
-                                throw error
-                            }
-                            price += (((attribute.price) - ((attribute.price *attribute.discount)/100)))
-                            attributes[index] = attribute._id
-                        }
-
-                           // pay process
-
-                            let params = {
-                                MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
-                                Amount: (price - ((price * args.input.discount)/100)),
-                                CallbackURL: 'http://digikala.liara.run/api/product/payment/callbackurl',
-                                Description: `خرید محصول`,
-                                Mobile : user.phone,
-                            }
-
-                            let options = getOptions('https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json', params);
-
-                            // options
-                            //     .then(data => {
-                            //         console.log(data.uri)
-                            //     })
-                            // return;
-
-                            const data = await request(options);
-
-                            if(! data) {
-                                return {
-                                    status : 401,
-                                    message : 'امکان خرید محصول در حال حاضر وجود ندارد بعدا امتحان نمایید!'
+                if(info.length == 0) {
+                    try {
+                        const user = await User.findById(check.id);
+                        let products = []
+                        let attributes = []
+                        let price = 0;
+    
+                        if(user.fname != null) {
+                            const ostatus = await OrderStatus.findOne({ default : true });
+                            for (let index = 0; index < args.input.products.length; index++) {
+                                const element = args.input.products[index]
+                                const product = await Product.findById(element);
+                                if(product == null) {
+                                    throw error
                                 }
-                            } 
-
-                            await Payment.create({
-                                user : check.id,
-                                products : products,
-                                resnumber : data.Authority,
-                                attributes : attributes,
-                                discount : args.input.discount,
-                                count : args.input.count,
-                                price : (price - ((price * args.input. discount)/100)),
-                                orderStatus : ostatus._id
-                            })
-
-                            const link = `https://www.zarinpal.com/pg/StartPay/${data.Authority}`;
-
-                            return {
-                                status : 200,
-                                payLink : link
+                                products[index] = product._id
                             }
-
-                    } else {
-                        return {
-                            status : 401,
-                            message : 'اطلاعات خریدار ناقص است!!'
+    
+                            for (let index = 0; index < args.input.attributes.length; index++) {
+                                const element = args.input.attributes[index];
+                                const attribute = await Productattribute.findById(element);
+                                if(attribute == null) {
+                                    throw error
+                                }
+                                price += (((attribute.price) - ((attribute.price *attribute.discount)/100)))
+                                attributes[index] = attribute._id
+                            }
+    
+                               // pay process
+    
+                                let params = {
+                                    MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
+                                    Amount: (price - ((price * args.input.discount)/100)),
+                                    CallbackURL: 'http://digikala.liara.run/api/product/payment/callbackurl',
+                                    Description: `خرید محصول`,
+                                    Mobile : user.phone,
+                                }
+    
+                                let options = getOptions('https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json', params);
+    
+                                // options
+                                //     .then(data => {
+                                //         console.log(data.uri)
+                                //     })
+                                // return;
+    
+                                const data = await request(options);
+    
+                                if(! data) {
+                                    return {
+                                        status : 401,
+                                        message : 'امکان خرید محصول در حال حاضر وجود ندارد بعدا امتحان نمایید!'
+                                    }
+                                } 
+    
+                                await Payment.create({
+                                    user : check.id,
+                                    products : products,
+                                    resnumber : data.Authority,
+                                    attributes : attributes,
+                                    discount : args.input.discount,
+                                    count : args.input.count,
+                                    price : (price - ((price * args.input. discount)/100)),
+                                    orderStatus : ostatus._id
+                                })
+    
+                                const link = `https://www.zarinpal.com/pg/StartPay/${data.Authority}`;
+    
+                                return {
+                                    status : 200,
+                                    payLink : link
+                                }
+    
+                        } else {
+                            return {
+                                status : 401,
+                                message : 'اطلاعات خریدار ناقص است!!'
+                            }
                         }
+                        
+                    } catch {
+                        const error = new Error('امکان ثبت سفارش وجود ندارد!');
+                        error.code = 401;
+                        throw error;
                     }
-                    
-                } catch {
-                    const error = new Error('امکان ثبت سفارش وجود ندارد!');
-                    error.code = 401;
-                    throw error;
+                } else {
+                    return {
+                        status : 401,
+                        message : 'اطلاعات حساب کاربری شما تکمیل نشده است!'
+                    }
                 }
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
@@ -2590,12 +2593,6 @@ let getOptions= (url, params) => {
         json : true
     }
 }
-
-let unique = function() {
-    return this.filter(function (value, index, self) {
-      return self.indexOf(value) === index;
-    });
-  };
 
 
 
