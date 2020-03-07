@@ -372,6 +372,17 @@ const resolvers = {
             }
         },
 
+        getSelfInfo : async (param, args, { check }) => {
+            if(check) {
+                const info = await User.findById(check.id).populate([ {path : 'payment' }, { path : 'comment'}, {path : 'favorite'}])
+                return info
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
         getProduct : async (param, args) => {
                 let page = args.page || 1;
                 let limit = args.limit || 10;
@@ -777,7 +788,23 @@ const resolvers = {
                         const productsSold = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { soldCount : 1}, populate : { path : 'attribute' }});
                         return productsSold.docs;
                     case args.priceUp == true :
-                        const productsPriceUp = await Product.paginate({category : args.categoryId}, {page, limit, sort : {}, populate : { path : 'attribute', options: { sort: { price : -1 } } }});
+                        let arr = [];
+                        const attribute = await Productattribute.find({}).sort({ price : 1});
+                        for (let index = 0; index < attribute.length; index++) {
+                            const element = attribute[index];
+                            const product = await Product.find({category : args.categoryId, attribute : { $in : element._id}})
+                            for (let index = 0; index < product.length; index++) {
+                                const element = product[index];
+                                if(element != null) {
+                                    if(!arr.indexOf(element._id) === -1) {
+                                        arr.push(element._id)
+                                    }
+                            }
+                            }
+
+                        }
+
+                        const productsPriceUp = await Product.paginate({category : args.categoryId}, {page, limit, populate : { path : 'attribute' , sort: {'attribute' : -1 }}});
                         return productsPriceUp.docs;
                     case args.priceDown == true :
                         const productspriceDown = await Product.paginate({category : args.categoryId}, {page, limit, populate : { path : 'attribute' , sort : { price : 1} }});
@@ -888,11 +915,57 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+        },
+
+        productRate : async(param, args) => {
+            const rate = await Comment.find({ product : args.productId}).populate('survey');
+            const commentcount = rate.length;
+            let surveyCount = 0;
+            let value = 0;
+            for (let index = 0; index < rate.length; index++) {
+                const element = rate[index];
+                surveyCount = element.survey.length
+                for (let index = 0; index < element.survey.length; index++) {
+                    const ele = element.survey[index];
+                    value += ele.value
+                }
+            }
+            
+            return {
+                count : commentcount,
+                value : ((value)/(commentcount*surveyCount)).toFixed(1)
+            }
         }
 
     },
 
     Mutation : {
+        UpdateSelfInfo : async (param, args, { check }) => {
+            if(check) {
+                await User.findByIdAndUpdate(check.id, { $set : {
+                    fname : args.input.fname,
+                    lname : args.input.lname,
+                    code : args.input.code,
+                    number : args.input.number,
+                    email : args.input.email,
+                    state : args.input.state,
+                    city : args.input.city,
+                    address : args.input.address,
+                    gender : args.input.gender,
+                    birthday : args.input.birthday
+                }})
+
+                return {
+                    status : 200,
+                    message : 'اطلاعات کاربری ویرایش شد'
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
         register : async (param, args, { secretID }) => {            
             try {
                     // const digit = args.input.digit;
@@ -2517,6 +2590,12 @@ let getOptions= (url, params) => {
         json : true
     }
 }
+
+let unique = function() {
+    return this.filter(function (value, index, self) {
+      return self.indexOf(value) === index;
+    });
+  };
 
 
 

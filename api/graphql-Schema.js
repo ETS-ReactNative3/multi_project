@@ -4,6 +4,7 @@ const typeDefs = gql`
     type Query {
         login(input : LRInput) : Token!,
         getUsers(userId : ID) : [User!]!,
+        getSelfInfo : User,
         getProduct(page : Int, limit : Int, productId : ID, categoryId : ID) : [product!]!,
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
@@ -22,8 +23,6 @@ const typeDefs = gql`
         getAllSlider(sliderId : ID) : [Slider],
         getBanner : [Banner]
 
-        sortProduct(categoryId : ID, viewCount : Boolean, soldCount : Boolean, priceUp : Boolean, priceDown : Boolean, newP : Boolean, suggestion : Boolean) : [product],
-
         userAtmonth : [AtMonth],
         productAtmonth : [AtMonth],
         paymentProveAtmonth : [AtMonth],
@@ -38,10 +37,13 @@ const typeDefs = gql`
 
         
         MainPageApp : mainInfo,
+        sortProduct(categoryId : ID, viewCount : Boolean, soldCount : Boolean, priceUp : Boolean, priceDown : Boolean, newP : Boolean, suggestion : Boolean) : [product],
+        productRate(productId : ID!) : Rate
 
     }
 
     type Mutation {
+        UpdateSelfInfo(input : updateSelfInfo) : operation!,
         register(input : LRInput) : operation!,
         multimedia(image : Upload!) : operation!,
         category(input : InputCategory) : operation!,
@@ -113,7 +115,7 @@ const typeDefs = gql`
 
     input InputSurveyValue {
         survey : ID!,
-        value : Int = 3
+        value : Float = 3
     }
 
     input InputComment {
@@ -287,6 +289,19 @@ const typeDefs = gql`
         password : String!,
         level : Boolean,
         digit : Int
+    }
+
+    input updateSelfInfo {
+        fname : String,
+        lname : String,
+        code : String,
+        number : String,
+        birthday : String,
+        gender : Gender,
+        email : String,
+        city : String,
+        state : String,
+        address : String
     }
 
     enum Gender {
@@ -544,6 +559,11 @@ const typeDefs = gql`
         category : Category,
         image : Multimedia,
         default : Boolean
+    }
+
+    type Rate {
+        count : Int,
+        value : Float
     }
 
 `;
