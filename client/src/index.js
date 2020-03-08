@@ -8,7 +8,7 @@ import './index.css';
 import App from './App';
 import axios from 'axios';
 import * as serviceWorker from './serviceWorker';
-axios.defaults.baseURL = 'http://192.168.0.106:4000/graphql'
+axios.defaults.baseURL = 'https://digikala.liara.run/graphql'
 //axios.defaults.headers.post['Contetnt-Type'] = 'application/json';
 axios.defaults.headers.post['Accept'] = 'applicaion/json';
 

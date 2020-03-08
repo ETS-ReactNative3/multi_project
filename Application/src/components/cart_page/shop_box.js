@@ -1,98 +1,112 @@
-import React,{useContext,useEffect} from 'react'
-import {View,Text,Image,StyleSheet,Picker,Alert} from 'react-native'
+import React,{useContext,useEffect,useState} from 'react'
+import {View,Text,Image,StyleSheet,Picker,Alert,TextInput} from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
 
-import {AuthContext} from '../../context/Auth/authContext'
-import {cart} from '../../data/dataArray'
+import {BascketContext} from '../../context/Basc/bascketContext'
+// import {cart} from '../../data/dataArray'
 
-const Shop_box =() => {
+const Shop_box =(props) => {
 
-    const { authenticated } = useContext(AuthContext);
-    
+    const { bascket,removeBascket } = useContext(BascketContext);
 
-    useEffect(()=>{
-        async function fetchData() {
-            await AsyncStorage.getItem('shopCartData')
-            alert(JSON.stringify(await AsyncStorage.getItem('shopCartData')))
-        }
-    })
-
-    _alert=()=>{
-        alert(
-            'آیا مایل به حذف این محصول از سبد خرید هستید؟',
-            [
-              {
-                text: 'خیر',
-                onPress: () => console.log('Cancel Pressed'),
-                style: 'cancel',
-              },
-              {text: 'بله', onPress: () => console.log('OK Pressed')},
-            ],
-          );
+    _alert=(key)=>{
+        removeBascket(key)
     }
+
+    let sum = 0;
 
     return(
         <View style={styles.container}>
             {
-                cart.map((item,key)=>(
-                    <View style={styles.content} key={key}>
-                        <View style={styles.sec1}>
-                            <View style={styles.sec1_left}>
-                                <Text style={[styles.h3,styles.text_right]}>
-                                    {item.e_name}
-                                </Text>
-                                <Text style={[styles.h4_lightGray,styles.text_right]}>
-                                    {item.p_name}
-                                </Text>
-                                <View style={styles.flex_di_row}>
-                                    <View style={[styles.border_color,{backgroundColor:item.color_rgb}]}/>
-                                    <Text style={[styles.h4_lightGray,styles.text_right]}>{item.color_text}</Text>
-                                    <Text style={[styles.h4_darkGray,styles.text_right]}>رنگ:</Text>                            
-                                </View>
-                                <View style={styles.flex_di_row}>
-                                    <Text style={[styles.h4_lightGray,styles.text_right]}>گرانتی {item.warranty} </Text>
-                                    <Text style={[styles.h4_darkGray,styles.text_right]}>گارانتی:</Text>
-                                </View>
-                                <View style={styles.flex_di_row}>
-                                    <Text style={[styles.h4_lightGray,styles.text_right]}>{item.seler}</Text>
-                                    <Text style={[styles.h4_darkGray,styles.text_right]}>فروشنده:</Text>
-                                </View>
-                                <View style={styles.flex_di_row}>
-                                    <Picker style={{height: 15, width: 30}} mode='dropdown' >
-                                        <Picker.Item label={item.number} value={item.number} />
-                                    </Picker>
-                                    <Text style={[styles.h4_darkGray,styles.text_right]}>تعداد:</Text>
-                                </View>
-                            </View>
-                            <View style={styles.sec1_right}>
-                                <Image 
-                                    style={styles.sec1_right_img}
-                                    source={{uri:item.img}}
+                bascket.length>0?
+                    (
+                        <>
+                            {
+                                bascket.map((item,key)=>{
+                                    const itemPrice = item.price*item.count-(item.price*item.count*(item.discount/100));
+                                    sum+=itemPrice;
+
+                                    const arr_p_id = [];
+                                    arr_p_id.push([item.productId]);
+                                    props._set_product_id(arr_p_id)
+                                    return(
+                                        <View style={styles.content} key={item.productId}>
+                                            <View style={styles.sec1}>
+                                                <View style={styles.sec1_left}>
+                                                    <Text style={[styles.h3,styles.text_right]}>
+                                                        {item.productName}
+                                                    </Text>
+                                                    <Text style={[styles.h4_lightGray,styles.text_right]}>
+                                                        {item.productEName}
+                                                    </Text>
+                                                    <View style={styles.flex_di_row}>
+                                                        <View style={[styles.border_color,{backgroundColor:item.color}]}/>
+                                                        <Text style={[styles.h4_lightGray,styles.text_right]}>{item.color}</Text>
+                                                        <Text style={[styles.h4_darkGray,styles.text_right]}>رنگ:</Text>                            
+                                                    </View>
+                                                    <View style={styles.flex_di_row}>
+                                                        <Text style={[styles.h4_lightGray,styles.text_right]}>گرانتی {item.warrantyName} </Text>
+                                                        <Text style={[styles.h4_darkGray,styles.text_right]}>گارانتی:</Text>
+                                                    </View>
+                                                    <View style={styles.flex_di_row}>
+                                                        <Text style={[styles.h4_lightGray,styles.text_right]}>{item.sellerName}</Text>
+                                                        <Text style={[styles.h4_darkGray,styles.text_right]}>فروشنده:</Text>
+                                                    </View>
+                                                    <View style={styles.flex_di_row}>
+                                                        <TextInput 
+                                                            keyboardType={"numeric"}
+                                                            defaultValue={"1"}
+                                                            value={item.count}
+                                                            style={{borderColor:'#ccc',borderWidth:1,borderRadius:5,width:40,height:40,textAlign:'center'}}
+                                                        />
+                                                        <Text style={[styles.h4_darkGray,styles.text_right]}>تعداد :</Text>
+                                                    </View>
+                                                </View>
+                                                <View style={styles.sec1_right}>
+                                                    <Image 
+                                                        style={styles.sec1_right_img}
+                                                        source={{uri:'https://digikala.liara.run'+item.productImage}}
+                                                    />
+                                                </View> 
+                                            </View>
+
+                                            <View style={[styles.sec2,styles.border_top]}>
+                                                <Text style={styles.h4_lightGrayPrice}>
+                                                    {itemPrice} تومان
+                                                </Text>
+                                                <Text style={styles.h4_lightGrayPrice}>قیمت کل</Text>
+                                            </View>
+
+                                            <View style={[styles.sec4,styles.border_top]}>
+                                                <Text style={styles.delete} onPress={()=>_alert(key)}>
+                                                    حذف
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    )
+                                })
+                            }
+                            <View style={[styles.sec3]}>
+                                <Text style={styles.text}>اعمال کد تخفیف</Text>
+                                <TextInput 
+                                    style={styles.textIn}
+                                    // onChangeText={(e)=>props.usernegetiveHandler(e)}
+                                    // value={props.negetive}
                                 />
                             </View>
-                        </View>
-
-                        <View style={[styles.sec2,styles.border_top]}>
-                            <Text style={styles.h4_lightGrayPrice}>
-                                {item.price} تومان
-                            </Text>
-                            <Text style={styles.h4_lightGrayPrice}>قیمت کل</Text>
-                        </View>
-
-                        <View style={[styles.sec3,styles.border_top]}>
-                            <Text style={styles.h3_green}>
-                                {item.end_price} تومان
-                            </Text>
-                            <Text style={styles.h3_green}>قیمت نهایی</Text>
-                        </View>
-
-                        <View style={[styles.sec4,styles.border_top]}>
-                            <Text style={styles.delete} onPress={()=>_alert()}>
-                                حذف
-                            </Text>
-                        </View>
-                    </View>
-                ))
+                            <View style={[styles.sec3]}>
+                                <Text style={styles.h3_green}>
+                                    {sum} تومان
+                                </Text>
+                                <Text style={styles.h3_green}>قیمت نهایی</Text>
+                            </View>
+                        </>
+                    )
+                :
+                    <Text>
+                        سبد خرید شماخالی است
+                    </Text>
+                
             }
         </View>
     )
@@ -104,13 +118,13 @@ const styles=StyleSheet.create({
     },
     content:{
         width:null,
-        height:450,
+        height:400,
         backgroundColor:'#fff',
         elevation:2,
         marginBottom:10
     },
     sec1:{
-        height:'70%',
+        height:'80%',
         flexDirection:'row',
     },
     sec1_left:{
@@ -142,14 +156,17 @@ const styles=StyleSheet.create({
         paddingTop:5
     },
     sec3:{
-        height:'10%',
+        height:50,
         width:'100%',
         flexDirection:'row',
         justifyContent:'space-between',
-        backgroundColor:'#f9f9f9',
+        alignItems: 'center',
+        backgroundColor:'#fff',
         paddingRight:15,
         paddingLeft:15,
-        alignItems:"center"
+        alignItems:"center",
+        borderWidth:0.4,
+        borderColor:'#f4f4f4'
     },
     sec4:{
         height:'10%',
@@ -164,8 +181,23 @@ const styles=StyleSheet.create({
         padding:10,
         fontFamily:'IRANSansMobile_Light',
     },
-
-
+    textIn:{
+        width:'70%',
+        backgroundColor:'#eee',
+        fontSize:15,
+        color:'#666',
+        height:40,
+        textAlign:'right',
+    },
+    text:{
+        width:'30%',
+        padding:5,
+        marginRight:5,
+        backgroundColor:'green',
+        borderRadius:4,
+        fontSize:16,
+        color:'#f1f1f1',
+    },
 
 
 

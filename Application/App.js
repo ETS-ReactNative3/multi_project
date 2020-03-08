@@ -3,6 +3,7 @@ import { createAppContainer } from 'react-navigation'
 import { createStackNavigator } from 'react-navigation-stack'
 import { createDrawerNavigator } from 'react-navigation-drawer';
 import AuthContextProvider from './src/context/Auth/authContext'
+import BasckContextProvider from './src/context/Basc/bascketContext'
 import {I18nManager} from 'react-native'
 I18nManager.allowRTL(false)
 
@@ -22,6 +23,8 @@ import Category from './src/screens/category'
 import Comment from './src/screens/comment'
 import Add_Comment from './src/screens/add_comment'
 import Kala_specification from './src/screens/kala_specification'
+import User_Info from './src/screens/user_info'
+import Payment from './src/screens/payment'
 
 const Stack = createStackNavigator({
   Main:Main,
@@ -36,9 +39,11 @@ const Stack = createStackNavigator({
   Category:Category,
   Comment:Comment,
   Add_Comment:Add_Comment,
-  Kala_specification:Kala_specification
+  Kala_specification:Kala_specification,
+  User_Info:User_Info,
+  Payment:Payment,
 },{
-  initialRouteName:"Main",
+  initialRouteName:"Shop_cart",
   headerMode:'none'  
 });
 
@@ -52,10 +57,13 @@ const Drawer = createDrawerNavigator({
 })
 
 const AppContainer = createAppContainer(Drawer);
+
 const App = ()=>{
   return(
     <AuthContextProvider>
-      <AppContainer />
+      <BasckContextProvider>
+        <AppContainer />
+      </BasckContextProvider>
     </AuthContextProvider>
   )
 }

@@ -7,24 +7,24 @@ import {useNavigation} from 'react-navigation-hooks'
 import AsyncStorage from '@react-native-community/async-storage';
 import axios from 'axios'
 
-import {AuthContext} from '../../context/Auth/authContext'
+import {BascketContext} from '../../context/Basc/bascketContext'
 const w = Dimensions.get('window').width;
 
 const Warranty = (props) => {
-
-    const {dispatch} = useContext(AuthContext);
 
     const { navigate } = useNavigation();
     const [border_color,set_border_color]=useState();
     const [data,SETdata]=useState([])
     const [defaultSeller,SETdefaultSeller]=useState([])
+    const {bascket,AddToBascket} = useContext(BascketContext)
+
 
     useEffect(()=>{
         async function fetchData() {
             axios({
                 url: '/',
                 method: 'post',
-                headers:{'token':`${await AsyncStorage.getItem('token')}`},
+                // headers:{'token':`${await AsyncStorage.getItem('token')}`},
                 data: {
                     query: `
                     query getProduct($page : Int, $limit : Int, $productId : ID, $categoryId : ID) {
@@ -32,10 +32,12 @@ const Warranty = (props) => {
                           _id,
                           attribute {
                             seller {
-                              name
+                                _id,
+                                name
                             }
                             warranty {
-                              name
+                                _id,
+                                name
                             }
                             color,
                             price,
@@ -60,6 +62,8 @@ const Warranty = (props) => {
                 else{
                     SETdata(response.data.data.getProduct[0].attribute)
                     SETdefaultSeller(response.data.data.getProduct[0].attribute[0])
+                    set_border_color(response.data.data.getProduct[0].attribute[0].color)
+                    console.log(response.data.data.getProduct[0].attribute)
                 }
               })
               .catch(function (error) {
@@ -103,8 +107,9 @@ const Warranty = (props) => {
     }
 
     const _add_to_shop_cart=()=>{
-        dispatch({type:'addShopCart',payload:data});
-        navigate('Shop_cart');
+        AddToBascket(data,border_color);
+        alert('محصول با موفقیت ثبت شده')
+        // navigate('Shop_cart');
     }
 
     return(
@@ -187,16 +192,16 @@ const Warranty = (props) => {
             </View>
 
             <View style={[styles.sec4,styles.border_top]}>
-                                    <View style={styles.sec4_part}>
-                                        <MaterialIcons name='keyboard-arrow-left'  style={[styles.icon_ml,styles.text_color_lightGray]}/>
-                                    </View>
-                                    <View style={styles.sec4_part}>
-                                        <Text style={styles.text_color_blue}>
-                                            4 فروشنده و گارانتی برای این کالا وجود دارد
-                                        </Text>
-                                        <MaterialCommunityIcons name='store' style={[styles.icon_ml,styles.text_color_gray]}/>
-                                    </View>
-                                </View>
+                <View style={styles.sec4_part}>
+                    <MaterialIcons name='keyboard-arrow-left'  style={[styles.icon_ml,styles.text_color_lightGray]}/>
+                </View>
+                <View style={styles.sec4_part}>
+                    <Text style={styles.text_color_blue}>
+                        4 فروشنده و گارانتی برای این کالا وجود دارد
+                    </Text>
+                    <MaterialCommunityIcons name='store' style={[styles.icon_ml,styles.text_color_gray]}/>
+                </View>
+            </View>
                         
        </View>
     )

@@ -33,28 +33,28 @@ const Offs = (props) => {
             axios({
                 url: '/',
                 method: 'post',
-                headers:{'token':`${await AsyncStorage.getItem('token')}`},
+                // headers:{'token':`${await AsyncStorage.getItem('token')}`},
                 data: {
                     query: `
-                    query getProduct($page : Int, $limit : Int, $productId : ID, $categoryId : ID) {
-                        getProduct(page : $page, limit : $limit, productId : $productId, categoryId : $categoryId){
-                        _id,
-                        fname,
-                        ename,
-                        attribute {
-                            price,
-                            discount,
-                            suggestion
-                          }
-                          image
+                        query getProduct($page : Int, $limit : Int, $productId : ID, $categoryId : ID) {
+                            getProduct(page : $page, limit : $limit, productId : $productId, categoryId : $categoryId){
+                            _id,
+                            fname,
+                            ename,
+                            attribute {
+                                price,
+                                discount,
+                                suggestion
+                            }
+                            original
+                            }
                         }
-                      }
                     `, 
                     variables : {
                         "page": 1,
                         "limit": 10,
                         "productId": null,
-                        "categoryId" : '5e4ceb5e60d59a0b380f0978'
+                        "categoryId" : props.kala_id
                     }
                 }
                 })
@@ -252,7 +252,7 @@ const Offs = (props) => {
             <Ripple style={full_s.box} onPress={()=>navigate('Kala',{header_name:props.data.fname,item_id:props.data._id})}>
                 <View style={full_s.sec1}>
                     <View style={full_s.image_box}>
-                        <Image source={{uri:props.data.img}} style={full_s.image}/>
+                        <Image source={{uri:'https://digikala.liara.run'+props.data.original}} style={full_s.image}/>
                     </View>
                     <Text style={full_s.pName} numberOfLines={1}>
                         {props.data.fname}
@@ -334,7 +334,7 @@ const Offs = (props) => {
                     </View>
                 </View>
                 <View style={half_s.right}>
-                    <Image source={{uri:props.data.img}} style={half_s.image}/>
+                    <Image source={{uri:'https://digikala.liara.run'+props.data.original}} style={half_s.image}/>
                 </View>
             </Ripple>
         )
@@ -346,7 +346,7 @@ const Offs = (props) => {
             <Ripple style={two_s.box} onPress={()=>navigate('Kala',{header_name:props.data.pname})}>
                 <View style={two_s.sec1}>
                     <View style={two_s.image_box}>
-                        <Image source={{uri:props.data.img}} style={two_s.image}/>
+                        <Image source={{uri:'https://digikala.liara.run'+props.data.original}} style={two_s.image}/>
                     </View>
                     <Text style={two_s.pName} numberOfLines={1}>
                         {props.data.fname}
@@ -519,7 +519,7 @@ const full_s = StyleSheet.create({
         justifyContent:'space-between'
     },
     box_price:{
-        height:'90%'
+        height:null
     },
     red_p:{
         color:'red',
@@ -533,6 +533,7 @@ const full_s = StyleSheet.create({
         color:'#5ecf56',
         fontSize:17,
         margin:3,
+        marginTop:0,
         fontFamily:'B Nazanin',
     } ,
     s_s_text:{
@@ -548,7 +549,7 @@ const full_s = StyleSheet.create({
 const half_s = StyleSheet.create({
     box:{
         width:null,
-        height:w/2.2,
+        height:w/2.1,
         backgroundColor:'#fff',
         marginBottom:8,
         elevation:3,
@@ -587,7 +588,7 @@ const half_s = StyleSheet.create({
 const two_s = StyleSheet.create({
     box:{
         width:'49%',
-        height:w/1.8,
+        height:w/1.7,
         backgroundColor:'#fff',
         elevation:3,
         borderRadius:3,

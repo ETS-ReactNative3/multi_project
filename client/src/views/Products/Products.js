@@ -340,7 +340,7 @@ const Products =(props)=> {
       data: {
         query: `
         mutation updateProductAttribute($addseller : Boolean, $attribute : [InputAttribute!]!) {
-          UpdateProducctAttribute (input : {addSeller : $addseller, attribute : $attribute}) {
+          UpdateProductAttribute (input : {addSeller : $addseller, attribute : $attribute}) {
             status,
             message
           }

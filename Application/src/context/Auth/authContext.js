@@ -7,6 +7,10 @@ const setStorage= async(token)=>{
     await AsyncStorage.setItem('token', token)
 }
 
+const emptyStorage= async()=>{
+    await AsyncStorage.removeItem('token');
+}
+
 // const getStorage = async () => {
 //     const showToken = await AsyncStorage.getItem('token')
 //     if(showToken){
@@ -23,21 +27,10 @@ const authReducer = async (state,action)=>{
             break;
         }
         case 'logout':{
-            _storeData = async () => {
-                try {
-                  await AsyncStorage.removeItem('token');
-                } catch (error) {
-                  alert(error)
-                }
-            };
+            emptyStorage()
             break;
         }
         case 'setToken':{
-            return {authenticated:action.payload}
-            break;
-        }
-        case 'addShopCart':{
-            setStorage(action.payload)
             return {authenticated:action.payload}
             break;
         }

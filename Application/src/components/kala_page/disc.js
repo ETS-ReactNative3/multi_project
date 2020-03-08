@@ -30,7 +30,7 @@ const Disc = (props) => {
             axios({
                 url: '/',
                 method: 'post',
-                headers:{'token':`${await AsyncStorage.getItem('token')}`},
+                // headers:{'token':`${await AsyncStorage.getItem('token')}`},
                 data: {
                     query: `
                     query getProduct($page : Int, $limit : Int, $productId : ID, $categoryId : ID) {

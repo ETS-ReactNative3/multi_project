@@ -11,6 +11,7 @@ const w = Dimensions.get('window').width;
 const Amazing_Auggestion = () => {
 
     const [data,SETdata]=useState([])
+    const [data_attribute,SETdata_attribute]=useState([])
 
     useEffect(()=>{
         axios({
@@ -22,8 +23,12 @@ const Amazing_Auggestion = () => {
                         MainPageApp {
                         Psuggestion {
                             _id,
+                            fname,
+                            original,
                             attribute {
-                                suggestion
+                            price
+                            discount
+                            suggestion
                             }
                         },
                         }
@@ -37,8 +42,9 @@ const Amazing_Auggestion = () => {
                 }
                 else{
                     //--------save token in context-----------
-                    SETdata(response.data.data)
-                    // alert(JSON.stringify(response.data.data.MainPageApp.category))
+                    SETdata(response.data.data.MainPageApp.Psuggestion)
+                    SETdata_attribute(response.data.data.MainPageApp.Psuggestion[0].attribute[0])
+                    // alert(JSON.stringify(response.data.data.MainPageApp.Psuggestion[0].attribute[0]))
                 }
             })
             .catch(function (error) {
@@ -47,8 +53,8 @@ const Amazing_Auggestion = () => {
         });
     },[])
 
-
     const { navigate } = useNavigation();
+
     return(
         <View style={{marginTop:10}}>
             <View style={styles.head}>
@@ -69,27 +75,27 @@ const Amazing_Auggestion = () => {
             <FlatList 
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
-                data={kala}
-                renderItem={({item,index})=>
-                    <Ripple style={styles.box} onPress={()=>navigate('Kala',{header_name:item.pname})}>
+                data={data}
+                renderItem={({item})=>
+                    <Ripple style={styles.box} onPress={()=>navigate('Kala',{header_name:item.fname,item_id:item._id})}>
                         <View style={styles.view_img}>
                             <Image 
                                 style={styles.img}
-                                source={{uri:item.img}}
+                                source={{uri:'https://digikala.liara.run' + item.original}}
                             />
                         </View>
                         <View style={styles.view_name}>
-                            <Text style={styles.text_name}>
-                                {item.pname}
+                            <Text style={styles.text_name} numberOfLines={2}>
+                                {item.fname}
                             </Text>
                         </View>
                         <View style={styles.view_price}>
-                            <Text style={[styles.text_price,{color:'#ef394e',textDecorationLine:'line-through'}]}>
-                                 {item.tprice} تومان
+                             <Text style={[styles.text_price,{color:'#ef394e',textDecorationLine:'line-through'}]}>
+                                 {item.attribute[0].price-(item.attribute[0].price*(item.attribute[0].discount/100))} تومان
                             </Text>
                             <Text style={styles.text_price}>
-                                 {item.price} تومان
-                            </Text>
+                                 {item.attribute[0].price} تومان
+                            </Text> 
                         </View>
                     </Ripple>
                 }
