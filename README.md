@@ -43,6 +43,6 @@ This project uses the following technologies that you can learn each them on rea
 <a href=""><h5>learn mongodb</h5></a><hr/>
 
 ## Preview
-You can see the preview of a part of the project at this [Link](https://reactapp.ir/proejct)
+You can see the preview of a part of the project at this [Link](https://reactapp.ir/project)
 
 
