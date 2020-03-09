@@ -4,11 +4,10 @@ import Stars from 'react-native-stars'
 import AsyncStorage from '@react-native-community/async-storage';
 import axios from 'axios'
 
-import Rait_sq from '../common/rait_sq'
 
 const w = Dimensions.get('window').width;
 
-const Rating = () => {
+const Rating = (props) => {
 
     const [data,SETdata]=useState([])
 
@@ -17,7 +16,7 @@ const Rating = () => {
             axios({
                 url: '/',
                 method: 'post',
-                headers:{'token':`${await AsyncStorage.getItem('token')}`},
+                // headers:{'token':`${await AsyncStorage.getItem('token')}`},
                 data: {
                     query: `
                     query getProduct($page : Int, $limit : Int, $productId : ID, $categoryId : ID) {
@@ -40,12 +39,12 @@ const Rating = () => {
                     alert(response.data.errors[0].message)
                 }
                 else{
-                    SETdata(response.data.data.getProduct[0].description)
-                    console.log(response.data.data.getProduct[0].description)
+                    SETdata(response.data.data.getProduct[0])
+                    alert(JSON.stringify(response.data.data.getProduct[0]))
                 }
               })
               .catch(function (error) {
-                console.log(error)
+                assertValidExecutionArguments(error)
             });
         }
 
@@ -61,10 +60,10 @@ const Rating = () => {
                 <Stars
                     half={true}
                     default={2.5}
-                    // update={(val)=>{this.setState({stars: val})}}
                     spacing={4}
                     starSizeW={20}
                     starSizeH={20}
+                    disabled={true}
                     count={5}
                     fullStar={require('../../assets/img/full_star.png')}
                     emptyStar={require('../../assets/img/empty_star.png')}
@@ -79,7 +78,23 @@ const Rating = () => {
             </View>
             
             <View style={{width:'80%'}}>
-                <Rait_sq />
+                <View style={styles.sec2_part}>
+                    <Stars
+                        half={true}
+                        // default={props.item.value}
+                        default={3}
+                        spacing={2}
+                        starSizeW={43}
+                        starSizeH={7}
+                        count={5}
+                        fullStar={require('../../assets/img/full_sq.png')}
+                        emptyStar={require('../../assets/img/empty_sq.png')}
+                        halfStar={require('../../assets/img/half_sq_c.png')}
+                    />
+                    <Text style={[styles.text_size11,styles.text_color_gray]}>
+                        {/* {props.item.survey} */}jhgjh
+                    </Text>
+                </View>
             </View>
 
         </View>

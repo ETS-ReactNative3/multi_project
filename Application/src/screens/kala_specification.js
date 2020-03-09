@@ -34,7 +34,6 @@ const Kala_specification =() => {
             axios({
                 url: '/',
                 method: 'post',
-                headers:{'token':`${await AsyncStorage.getItem('token')}`},
                 data: {
                     query: `
                     query getProduct($page : Int, $limit : Int, $productId : ID, $categoryId : ID) {
@@ -81,6 +80,7 @@ const Kala_specification =() => {
               .then(function (response) {
                 if(response.data.errors){
                     alert(response.data.errors[0].message)
+                    setLoading(false)
                 }
                 else{
                     const {getProduct} =response.data.data; 
@@ -91,18 +91,18 @@ const Kala_specification =() => {
                         else if(!getProduct[0].category.parent.parent){
                             specId =getProduct[0].category._id
                         }
-                        console.log(specId)
+                        // alert(specId)
                         FetchSpecs(specId,getProduct);
 
                         SETname(response.data.data.getProduct[0].fname)
                 }
               })
               .catch(function (error) {
+                setLoading(false)
                 console.log(error)
             });
         }
 
-        
         fetchData()
     },[])
 
@@ -110,7 +110,6 @@ const Kala_specification =() => {
         axios({
             url: '/',
             method: 'post',
-            headers:{'token':`${await AsyncStorage.getItem('token')}`},
             data: {
               query: `
               query addProductInfo($categoryId : ID, $getSubCategory : Boolean!, $subCategoryId : ID){
@@ -135,6 +134,7 @@ const Kala_specification =() => {
           }
           }).then((result)=>{
             if(result.data.errors){
+                setLoading(false)
                 setMessage('خطا در دریافت اطلاعات مشخصات')
               }
               else{
@@ -162,6 +162,7 @@ const Kala_specification =() => {
                 setLoading(false);
               }
           }).catch((error)=>{
+            setLoading(false)
               console.log(error)
           })
 

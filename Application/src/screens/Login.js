@@ -4,6 +4,7 @@ import {Content,Container} from 'native-base'
 import {useNavigation} from 'react-navigation-hooks'
 import axios from 'axios'
 
+import Loader from '../components/common/loader'
 import {AuthContext} from '../context/Auth/authContext'
 import My_Header from '../components/header/my_header'
 import Body from '../components/login_page/body'
@@ -26,12 +27,16 @@ const Login =() => {
 
     const [usernum,setUsernum]=useState()
     const [userpass,setUserpass]=useState()
+    const [loading,SETloading]=useState(false)
 
     const onLogin = ()=>{
+        SETloading(true);
         if(usernum==null){
+            SETloading(false);
             alert('شماره موبایل خود را وارد کنید')
         }
         else if(userpass==null){
+            SETloading(false);
             alert('پسورد خود را وارد کنید')
         }
         else{
@@ -50,17 +55,18 @@ const Login =() => {
                 })
               .then(function (response) {
                 if(response.data.errors){
+                    SETisLoading(false);
                     alert(response.data.errors[0].message)
                 }
                 else{
                     //--------save token in context-----------
                     dispatch({type:'login',payload:response.data.data.login.token});
-
                     navigate('Main')
                 }
               })
               .catch(function (error) {
-                alert('مشکل در ارتبا با سرور');
+                SETloading(false);
+                alert('مشکل در برقراری ارتبا با سرور');
             });
         }
     }
@@ -76,12 +82,17 @@ const Login =() => {
     return(
         <Container style={{backgroundColor:'#f3f3f3',}}>
             <My_Header {...props} />
-            <Content>
-                <Body 
-                    userpassHandler={(e)=>userpassHandler(e)}
-                    usernameHandler={(e)=>usernameHandler(e)}  
-                />
-            </Content>
+            {
+                loading?
+                    <Loader/>
+                :
+                    <Content>
+                        <Body 
+                            userpassHandler={(e)=>userpassHandler(e)}
+                            usernameHandler={(e)=>usernameHandler(e)}  
+                        />
+                    </Content>
+            }
             <My_Footer onLogin={onLogin}/>
         </Container>
     )

@@ -1,26 +1,69 @@
-import React from 'react'
+import React ,{useEffect, useState}from 'react'
 import {View,TouchableWithoutFeedback,Image,StyleSheet,Dimensions} from 'react-native'
 import Swiper from 'react-native-swiper'
 import {swiper_list} from '../../data/dataArray'
+import axios from 'axios'
 
+import Loader from '../common/loader'
 const w = Dimensions.get('window').width;
 
 const Slider = () => {
-    return(
-        <View style={styles.container}>
-            <Swiper autoplay={true}>
-                {
-                    swiper_list.map((item,key)=>(
-                        <TouchableWithoutFeedback style={styles.btn} key={key}>
-                            <Image 
-                                style={styles.img}
-                                source={{uri:item.img}}
-                            />
-                        </TouchableWithoutFeedback>
-                    ))
+
+    const [data,SETdata]=useState([])
+    const [loading,SETloading]=useState(true)
+
+    useEffect(()=>{
+        axios({
+            url: '/',
+            method: 'post',
+            data: {
+                query: `
+                    query MainPageApp {
+                        MainPageApp {
+                            slider {
+                                image {
+                                    dir
+                            }
+                            },
+                        
+                        }
+                    }
+                ` 
+            }
+            })
+            .then(function (response) {
+                if(response.data.errors){
+                    alert(response.data.errors[0].message)
                 }
-            </Swiper>
-        </View>
+                else{
+                    SETdata(response.data.data.MainPageApp.slider.image)
+                    SETloading(false)
+                }
+            })
+            .catch(function (error) {
+            alert('er'+error)
+        });
+    },[])
+
+
+    return(
+        loading?
+            <Loader/>
+        :
+            <View style={styles.container}>
+                <Swiper autoplay={true}>
+                    {
+                        data.map((item,key)=>(
+                            <View style={styles.btn} key={key}>
+                                <Image 
+                                    style={styles.img}
+                                    source={{uri:'https://digikala.liara.run'+item.dir}}
+                                />
+                            </View>
+                        ))
+                    }
+                </Swiper>
+            </View>
     )
 }
 

@@ -1,23 +1,43 @@
-import React from 'react'
+import React,{useState,useEffect,useContext} from 'react'
 import {StyleSheet,Text,View} from 'react-native'
 import FIcon from 'react-native-vector-icons/FontAwesome'
 import MAIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import Ripple from 'react-native-material-ripple'
 import {useNavigation} from 'react-navigation-hooks'
 import AsyncStorage from '@react-native-community/async-storage';
+import axios from 'axios'
+
+import {AuthContext} from '../../context/Auth/authContext'
 
 // const getStorage= async()=>{
 //     await AsyncStorage.getItem('token');
 // }
 
 const SideMenu =()=>{
-    const { navigate } = useNavigation();
+
+    const { navigate,closeDrawer } = useNavigation();
+    const [token,SETtoken]=useState();
+    const {dispatch,authReducer} = useContext(AuthContext);
+
+    async function _checkToken() {
+        SETtoken(await AsyncStorage.getItem('token'))
+    }
+    _checkToken()
+
+
     return(
         <View style={styles.container}>
             <View style={styles.head}>
-                <Text style={styles.head_text} onPress={()=>navigate('Login')}>
-                    ورود و ثبت نام
-                </Text>
+                {
+                    token?
+                        <Text style={styles.head_text} onPress={()=>dispatch({type:'logout'})}>
+                            خروج
+                        </Text>
+                    :
+                        <Text style={styles.head_text} onPress={()=>navigate('Login')}>
+                            ورود و ثبت نام
+                        </Text>
+                }
                 <FIcon name='user' style={styles.icon} />
             </View>
             <View style={styles.body}>
@@ -43,19 +63,19 @@ const SideMenu =()=>{
 
 
 
-                <Ripple style={[styles.body_btn,styles.border_t]} onPress={()=>navigate('Off')}>
+                <Ripple style={[styles.body_btn,styles.border_t]} onPress={()=>navigate('Off',{item_key:"1",header_name:"پرفروش ترین ها"})}>
                     <Text style={styles.body_btn_txt}>پرفروش ترین ها</Text>
                     <FIcon name='star' style={styles.body_btn_icon}/>
                 </Ripple>
-                <Ripple style={styles.body_btn} onPress={()=>navigate('Off')}>
+                <Ripple style={styles.body_btn} onPress={()=>navigate('Off',{item_key:"1",header_name:"پیشنهاد ویژه دیجی کالا"})}>
                     <Text style={styles.body_btn_txt}>پیشنهاد ویژه دیجی کالا</Text>
                     <FIcon name='star' style={styles.body_btn_icon}/>
                 </Ripple>
-                <Ripple style={styles.body_btn} onPress={()=>navigate('Off')}>
+                <Ripple style={styles.body_btn} onPress={()=>navigate('Off',{item_key:"1",header_name:"پربازدید ترین ها"})}>
                     <Text style={styles.body_btn_txt}>پربازدید ترین ها</Text>
                     <FIcon name='star' style={styles.body_btn_icon}/>
                 </Ripple>
-                <Ripple style={styles.body_btn} onPress={()=>navigate('Off')}>
+                <Ripple style={styles.body_btn} onPress={()=>navigate('Off',{item_key:"1",header_name:"جدیدتربن ها"})}>
                     <Text style={styles.body_btn_txt}>جدیدتربن ها</Text>
                     <FIcon name='star' style={styles.body_btn_icon}/>
                 </Ripple>

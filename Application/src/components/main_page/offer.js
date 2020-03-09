@@ -1,95 +1,95 @@
-import React from 'react'
+import React ,{useEffect, useState}from 'react'
 import {View,Image,StyleSheet,Dimensions} from 'react-native'
 import Ripple from 'react-native-material-ripple'
 import {offer_list} from '../../data/dataArray'
 import {off_list} from '../../data/dataArray'
 import {useNavigation} from 'react-navigation-hooks'
+import axios from 'axios'
 
 const w = Dimensions.get('window').width;
 
 
-console.log(off_list.length)
-
-const Content = (props) => {
-    
-    console.log(props.dataKey)
-    if(off_list.length==2){
-        return(
-            <Ripple style={styles.two_box} onPress={()=>navigate('Off',{header_name:item.pname})}>
-                <Image 
-                    style={styles.img}
-                    source={{uri:props.data.img}}
-                />
-            </Ripple>
-        )
-    }
-    else if(off_list.length==5){
-        if(props.dataKey==2){
-            return(
-                <Ripple style={styles.one_box} onPress={()=>navigate('Off',{header_name:item.pname})}>
-                    <Image 
-                        style={styles.img}
-                        source={{uri:props.data.img}}
-                    />
-                </Ripple>
-            )
-        }else{
-            return(
-                <Ripple style={styles.two_box} onPress={()=>navigate('Off',{header_name:item.pname})}>
-                    <Image 
-                        style={styles.img}
-                        source={{uri:props.data.img}}
-                    />
-                </Ripple>
-            )
-        }
-    }
-    else if(off_list.length==7)
-    {
-        if(props.dataKey==0 || props.dataKey==6){
-            return(
-                <Ripple style={styles.btn_full} onPress={()=>navigate('Off',{header_name:item.pname})}>
-                    <Image 
-                        style={styles.btn_full_img}
-                        source={{uri:props.data.img}}
-                    />
-                </Ripple>
-            )
-        }
-        else if(props.dataKey==3){
-            return(
-                <Ripple style={styles.one_box} onPress={()=>navigate('Off',{header_name:item.pname})}>
-                    <Image 
-                        style={styles.img}
-                        source={{uri:props.data.img}}
-                    />
-                </Ripple>
-            )
-        }
-        else{
-            return(
-                <Ripple style={styles.two_box} onPress={()=>navigate('Off',{header_name:item.pname})}>
-                    <Image 
-                        style={styles.img}
-                        source={{uri:props.data.img}}
-                    />
-                </Ripple>
-            )
-        }
-    }
-}
-
-
-
 
 const Offer = () => {
+
     const { navigate } = useNavigation();
+
+    const [data,SETdata]=useState([])
+    const [data_category,SETdata_category]=useState([])
+
+    useEffect(()=>{
+        axios({
+            url: '/',
+            method: 'post',
+            data: {
+                query: `
+                query MainPageApp {
+                    MainPageApp {
+                      banner {
+                            category {
+                                _id,
+                                name
+                            },
+                            image {
+                                dir
+                            }
+                          }
+                    }
+                  }
+                ` 
+            }
+            })
+            .then(function (response) {
+                if(response.data.errors){
+                    alert(response.data.errors[0].message)
+                }
+                else{
+                    SETdata(response.data.data.MainPageApp.banner)
+                    SETdata_category(response.data.data.MainPageApp.banner.category)
+                    // alert(JSON.stringify(response.data.data.MainPageApp.banner.image))
+                }
+            })
+            .catch(function (error) {
+            alert('er'+error)
+        });
+    },[])
+
+
     return(
         <>
             <View style={styles.container}>
                 {
-                    off_list.map((item,key)=>(
-                        <Content data={item} dataKey={key}/>
+                    data.map((item,key)=>(
+                        <>
+                            {
+                                key==0 || key==6?(
+                                    <Ripple style={styles.btn_full} key={item.category._id} onPress={()=>navigate('Off',{header_name:item.category.name,item_id:item.category._id})}>
+                                        <Image 
+                                            style={styles.btn_full_img}
+                                            source={{uri:'https://digikala.liara.run'+item.image.dir}}
+                                        />
+                                    </Ripple>
+                                )
+                                :
+                                    key==3?(
+                                        <Ripple style={styles.one_box} key={item.category._id} onPress={()=>navigate('Off',{header_name:item.category.name,item_id:item.category._id})}>
+                                            <Image 
+                                                style={styles.img}
+                                                source={{uri:'https://digikala.liara.run'+item.image.dir}}
+                                            />
+                                        </Ripple>
+                                    )
+                                    :
+                                    (
+                                        <Ripple style={styles.two_box} key={item.category._id} onPress={()=>navigate('Off',{header_name:item.category.name,item_id:item.category._id})}>
+                                            <Image 
+                                                style={styles.img}
+                                                source={{uri:'https://digikala.liara.run'+item.image.dir}}
+                                            />
+                                        </Ripple>
+                                    )
+                            }
+                        </>
                     ))
                 }
             </View>
@@ -119,7 +119,8 @@ const styles = StyleSheet.create({
     img:{
         width:'100%',
         height:'100%',
-        borderRadius:10
+        borderRadius:10,
+        backgroundColor: '#ddd'
     },
     btn_full:{
         width:'100%',
@@ -129,7 +130,8 @@ const styles = StyleSheet.create({
     },
     btn_full_img:{
         width:'100%',
-        height:'100%'
+        height:'100%',
+        backgroundColor: '#ddd'
     }
 })
 

@@ -1,17 +1,19 @@
 import React,{useState} from 'react'
 import {Text,StyleSheet,View,Dimensions,ImaPlatformge,TouchableOpacity,UIManager,LayoutAnimation} from 'react-native'
 import Stars from 'react-native-stars'
+import { Item } from 'native-base'
 
 
 
-const Rait_sq =() => {
+const Rait_sq =(props) => {
     return(
         <View style={[styles.sec2,]}>
             <View style={styles.sec2_part}>
                 <Stars
                     half={true}
-                    default={4.5}
-                    // update={(val)=>{this.setState({stars: val})}}
+                    default={props.item.value}
+                    default={3}
+                    update={(val)=>{this.setState({stars: val})}}
                     spacing={2}
                     starSizeW={43}
                     starSizeH={7}
@@ -21,92 +23,7 @@ const Rait_sq =() => {
                     halfStar={require('../../assets/img/half_sq_c.png')}
                 />
                 <Text style={[styles.text_size11,styles.text_color_gray]}>
-                    کیفیت ساخت
-                </Text>
-            </View>
-            <View style={styles.sec2_part}>
-                <Stars
-                    half={true}
-                    default={4.5}
-                    // update={(val)=>{this.setState({stars: val})}}
-                    spacing={2}
-                    starSizeW={43}
-                    starSizeH={7}
-                    count={5}
-                    fullStar={require('../../assets/img/full_sq.png')}
-                    emptyStar={require('../../assets/img/empty_sq.png')}
-                    halfStar={require('../../assets/img/half_sq_c.png')}
-                />
-                <Text style={[styles.text_size11,styles.text_color_gray]}>
-                    ارزش خرید به قسمت
-                </Text>
-            </View>                
-            <View style={styles.sec2_part}>
-                <Stars
-                    half={true}
-                    default={4.5}
-                    // update={(val)=>{this.setState({stars: val})}}
-                    spacing={2}
-                    starSizeW={43}
-                    starSizeH={7}
-                    count={5}
-                    fullStar={require('../../assets/img/full_sq.png')}
-                    emptyStar={require('../../assets/img/empty_sq.png')}
-                    halfStar={require('../../assets/img/half_sq_c.png')}
-                />
-                <Text style={[styles.text_size11,styles.text_color_gray]}>
-                    نوآوری
-                </Text>
-            </View>                
-            <View style={styles.sec2_part}>
-                <Stars
-                    half={true}
-                    default={4.5}
-                    // update={(val)=>{this.setState({stars: val})}}
-                    spacing={2}
-                    starSizeW={43}
-                    starSizeH={7}
-                    count={5}
-                    fullStar={require('../../assets/img/full_sq.png')}
-                    emptyStar={require('../../assets/img/empty_sq.png')}
-                    halfStar={require('../../assets/img/half_sq_c.png')}
-                />
-                <Text style={[styles.text_size11,styles.text_color_gray]}>
-                    امکانات و قابلیت ها 
-                </Text>
-            </View>
-            <View style={styles.sec2_part}>
-                <Stars
-                    half={true}
-                    default={4.5}
-                    // update={(val)=>{this.setState({stars: val})}}
-                    spacing={2}
-                    starSizeW={43}
-                    starSizeH={7}
-                    count={5}
-                    fullStar={require('../../assets/img/full_sq.png')}
-                    emptyStar={require('../../assets/img/empty_sq.png')}
-                    halfStar={require('../../assets/img/half_sq_c.png')}
-                />
-                <Text style={[styles.text_size11,styles.text_color_gray]}>
-                    سهولت استفاده
-                </Text>
-            </View>
-            <View style={styles.sec2_part}>
-                <Stars
-                    half={true}
-                    default={4.5}
-                    // update={(val)=>{this.setState({stars: val})}}
-                    spacing={2}
-                    starSizeW={43}
-                    starSizeH={7}
-                    count={5}
-                    fullStar={require('../../assets/img/full_sq.png')}
-                    emptyStar={require('../../assets/img/empty_sq.png')}
-                    halfStar={require('../../assets/img/half_sq_c.png')}
-                />
-                <Text style={[styles.text_size11,styles.text_color_gray]}>
-                    طراحی و ظاهر
+                    {props.item.survey}
                 </Text>
             </View>
         </View>

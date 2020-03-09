@@ -19,122 +19,33 @@ import { Item } from 'native-base';
 
 const Kala = () => {
 
-    const [s_slider,Sets_slider]=useState([])
-    const [s_fname,Sets_fname]=useState([])
-    const [s_ename,Sets_ename]=useState([])
-    const [s_btn,Sets_btn]=useState([])
-    const [s_warenty,Sets_warenty]=useState([])
-    const [s_disc,Sets_disc]=useState([])
-    const [s_rating,Sets_rating]=useState([])
-
     const {getParam}=useNavigation();
     const head_name = getParam('header_name')
-    // const id = getParam('item_id')
-    const id = "5e4e2dd63fbf17251474119a"
+    const id = getParam('item_id')
+    const [token,SETtoken]=useState();
     
+
     let props = {
         head_name:'Main',
-        head_page_name:'header_name',
+        head_page_name:head_name,
         right_btn:'back'
     }
 
-
-    useEffect(()=>{
-        async function fetchData() {
-            axios({
-                url: '/',
-                method: 'post',
-                headers:{'token':`${await AsyncStorage.getItem('token')}`},
-                data: {
-                    query: `
-                    query getProduct($page : Int, $limit : Int, $productId : ID, $categoryId : ID) {
-                        getProduct(page : $page, limit : $limit, productId : $productId, categoryId : $categoryId){
-                        _id,
-                        fname,
-                        ename,
-                        category {
-                            name
-                            parent {
-                              name
-                            }
-                        }
-                        brand {
-                            name
-                        }
-                        attribute {
-                            seller {
-                              name
-                            }
-                            warranty {
-                              name
-                            }
-                            color,
-                            price,
-                            suggestion
-                        }
-                        description
-                        rate
-                        details {
-                            p_details {
-                              name
-                              specs {
-                                specs
-                                label
-                              }
-                            }
-                            value
-                            label
-                        }
-                        image
-                        }
-                      }
-                    `, 
-                    variables : {
-                        "page": 1,
-                        "limit": 10,
-                        "productId": "5e4e2dd63fbf17251474119a",
-                        "categoryId" : null
-                    }
-                }
-                })
-              .then(function (response) {
-                if(response.data.errors){
-                    alert(response.data.errors[0].message)
-                }
-                else{
-                    Sets_warenty(response.data.data.getProduct[0].attribute)
-                    Sets_slider(response.data.data.getProduct[0].image[0])
-                    Sets_fname(response.data.data.getProduct[0].fname)
-                    Sets_ename(response.data.data.getProduct[0].ename)
-                    // Sets_btn(response.data.data.getProduct[0].details)
-                    Sets_disc(response.data.data.getProduct[0].description)
-                }
-              })
-              .catch(function (error) {
-                console.log(error)
-            });
-        }
-
-        
-        fetchData()
-    },[])
-
-
     return(
-       <ScrollView style={{backgroundColor:'#eee'}}>
+        <ScrollView style={{backgroundColor:'#eee'}}>
             <My_Header {...props}/>
             <Slider item_id={id}/>
             <Sharee item_id={id}/>
             <View style={{marginLeft:20,marginRight:20}}>
-                <Buttons item_id={id}/>
+                <Buttons item_id={id} head_name={head_name}/>
                 <Warranty item_id={id}/>
                 <Disc item_id={id}/>
-                <Rating item_id={id}/>
+                {/* <Rating item_id={id}/> */}
             </View>
             <Cat item_id={id}/>
             <Pro_similar item_id={id}/>
             <Pro_other_by item_id={id}/>
-       </ScrollView>
+        </ScrollView>
     )
 }
 

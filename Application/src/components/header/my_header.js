@@ -58,7 +58,8 @@ const styles = StyleSheet.create({
 
 
 
-const My_Header = (props) => {
+const My_Header = (h_props) => {
+    const props = h_props;
     const {navigate,goBack,toggleDrawer} = useNavigation();
 
     const Main_Header =()=>{
@@ -223,8 +224,8 @@ const My_Header = (props) => {
             return Cart_Header();
             break;
         case 'Login':
-                return Login_Header();
-                break;
+            return Login_Header();
+            break;
         case 'ForrgetPass':
             return ForgetPass_Header();
             break;

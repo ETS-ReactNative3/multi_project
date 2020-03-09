@@ -16,7 +16,7 @@ const Cat = (props) => {
             axios({
                 url: '/',
                 method: 'post',
-                headers:{'token':`${await AsyncStorage.getItem('token')}`},
+                // headers:{'token':`${await AsyncStorage.getItem('token')}`},
                 data: {
                     query: `
                         query getAllCategory($page : Int, $limit : Int, $mainCategory : Boolean, $parentCategory : Boolean, $catId : ID) {

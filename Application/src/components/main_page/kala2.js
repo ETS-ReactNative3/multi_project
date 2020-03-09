@@ -1,13 +1,56 @@
-import React from 'react'
+import React,{useEffect,useState} from 'react'
 import {View,Text,StyleSheet,FlatList,Image,Dimensions} from 'react-native'
 import {kala} from '../../data/dataArray'
 import Ripple from 'react-native-material-ripple'
 import {useNavigation} from 'react-navigation-hooks'
+import axios from 'axios'
 
 const w = Dimensions.get('window').width;
 
 const KalaTwo = () => {
+
     const { navigate } = useNavigation();
+    const [data,SETdata]=useState([])
+    const [data_attribute,SETdata_attribute]=useState([])
+
+    useEffect(()=>{
+        axios({
+            url: '/',
+            method: 'post',
+            data: {
+                query: `
+                    query MainPageApp {
+                        MainPageApp {
+                            Nproduct {
+                            _id,
+                            fname,
+                            original,
+                            attribute {
+                                price
+                            }
+                        },
+                        }
+                    }
+                `
+            }
+            })
+            .then(function (response) {
+                if(response.data.errors){
+                    alert('error' + response.data.errors[0].message)
+                }
+                else{
+                    //--------save token in context-----------
+                    SETdata(response.data.data.MainPageApp.Nproduct)
+                    SETdata_attribute(response.data.data.MainPageApp.Nproduct[0].attribute[0])
+                }
+            })
+            .catch(function (error) {
+            // alert('مشکل در ارتبا با سرور');
+            alert(JSON.stringify('catch error' + error))
+        });
+    },[])
+
+
     return(
         <View>
             <View style={styles.head}>
@@ -21,23 +64,23 @@ const KalaTwo = () => {
             <FlatList 
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
-                data={kala}
+                data={data}
                 renderItem={({item,index})=>
-                    <Ripple style={styles.box} onPress={()=>navigate('Kala',{header_name:item.pname})}>
+                    <Ripple style={styles.box} onPress={()=>navigate('Kala',{header_name:item.fname,item_id:item._id})}>
                         <View style={styles.view_img}>
                             <Image 
                                 style={styles.img}
-                                source={{uri:item.img}}
+                                source={{uri:'https://digikala.liara.run' + item.original}}
                             />
                         </View>
                         <View style={styles.view_name}>
-                            <Text style={styles.text_name}>
-                                {item.pname}
+                            <Text style={styles.text_name} numberOfLines={2}>
+                                {item.fname}
                             </Text>
                         </View>
                         <View style={styles.view_price}>
                             <Text style={styles.text_price}>
-                                 {item.price} تومان
+                                 {data_attribute.price} تومان
                             </Text>
                         </View>
                     </Ripple>
@@ -65,7 +108,7 @@ const styles = StyleSheet.create({
         fontSize:16,
         color:'#666',
         fontWeight:'bold',
-        fontFamily:'IRANSansMobile_Light'
+        fontFamily:'IRANSansMobile'
     },
     box:{
         backgroundColor:'#fff',
@@ -92,24 +135,26 @@ const styles = StyleSheet.create({
     },
     view_name:{
         height:'20%',
-        padding:5
+        padding:5,
     },
     text_name:{
         fontSize:12,
         color:'#333',
-        textAlign:'right'
+        textAlign:'right',
+        fontFamily:'IRANSansMobile_Light'
     },
     view_price:{
         height:'15%',
         borderTopWidth:0.4,
         borderColor:'#eee',
-        padding:5,
-        justifyContent:'center'
+        justifyContent:'center',
+        paddingLeft:5
     },
     text_price:{
         color:'#14dc17',
-        fontSize:13,
-        textAlign:'left'
+        fontSize:14,
+        textAlign:'left',
+        fontFamily:'B Nazanin',
     }
 })
 
