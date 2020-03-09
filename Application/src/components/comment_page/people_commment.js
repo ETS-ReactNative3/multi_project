@@ -3,6 +3,7 @@ import {Text,StyleSheet,View,Dimensions,TouchableOpacity,UIManager,LayoutAnimati
 import Stars from 'react-native-stars'
 import Rait_sq from '../common/rait_sq'
 import FIcon from 'react-native-vector-icons/Foundation'
+import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 const w = Dimensions.get('window').width;
 
@@ -20,7 +21,7 @@ let animate = {
 }
 
 
-const People_Comment = () => {
+const People_Comment = (props) => {
     const [change_height,set_change_height]=useState(true);
     const [change_text,set_change_text]=useState('ادامه مطلب');
 
@@ -37,21 +38,27 @@ const People_Comment = () => {
             <View style={styles.sec1}>
                 <View style={styles.sec1_left}>
                     <View style={styles.box_like}>
-                        <Text>1</Text>
+                        <Text>
+                            {props.item.dislike.length}
+                        </Text>
                         <FIcon name='dislike' style={styles.icongray}/>
                     </View>
                     <View style={styles.box_like} >
-                        <Text>2</Text>
+                        <Text>
+                            {props.item.like.length}
+                        </Text>
                         <FIcon name='like' style={styles.icongray}/>
                     </View>
                 </View>
 
                 <View style={styles.sec1_right}>
                     <Text style={styles.texth3}>
-                        رامین شیخ پور
+                        {props.item.user.fname}
+                        <Text> </Text>
+                        {props.item.user.lname}
                     </Text>
                     <Text style={styles.texth5}>
-                         6 آذر 1398
+                         {props.item.createdAt}
                     </Text>
                 </View>
             </View>
@@ -64,8 +71,32 @@ const People_Comment = () => {
                     </Text>
                 </View>
                 <Text style={styles.sec2_text}>
-                من که 3ماهه دارمش کاراییش مثل روز اول عالی و بی نقصه وهیچ افت گرافیکی یا بی کیفیتی نداشته   
+                    {props.item.description}
                 </Text>
+                <View style={styles.NP}>
+                    <View>
+                        <Text style={styles.h2Green}>نقاط قوت</Text>
+                        {
+                            props.item.positive.map((item)=>(
+                                <View style={styles.FD_row}>
+                                    <Text style={styles.h3Green}>{item}</Text>
+                                    <MCIcon name={'plus'} style={styles.h3Green} />
+                                </View>
+                            ))
+                        }
+                    </View>
+                    <View style={{marginTop:10}}>
+                        <Text style={styles.h2Red}>نقاط ضعف</Text>
+                        {
+                            props.item.negative.map((item)=>(
+                                <View style={styles.FD_row}>
+                                    <Text style={styles.h3Red}>{item}</Text>
+                                    <MCIcon name={'minus'} style={styles.h3Red} />
+                                </View>
+                            ))
+                        }
+                    </View>
+                </View>
             </View>
 
             {
@@ -73,7 +104,27 @@ const People_Comment = () => {
                     null
                 :
                     <View style={[styles.sec2,change_height?{height:0}:{height:200}]}>
-                        <Rait_sq />
+                        {
+                            props.item.survey.map((item)=>( 
+                                <View style={styles.sec2_part}>
+                                    <Stars
+                                        half={true}
+                                        default={item.value}
+                                        disabled={true}
+                                        spacing={2}
+                                        starSizeW={43}
+                                        starSizeH={7}
+                                        count={5}
+                                        fullStar={require('../../assets/img/full_sq.png')}
+                                        emptyStar={require('../../assets/img/empty_sq.png')}
+                                        halfStar={require('../../assets/img/half_sq_c.png')}
+                                    />
+                                    <Text style={[styles.text_size11,styles.text_color_gray]}>
+                                        {item.survey.name}
+                                    </Text>
+                                </View>
+                            ))
+                        }
                     </View>
             }
 
@@ -134,6 +185,12 @@ const styles=StyleSheet.create({
     sec2_text:{
         margin:15
     },
+    sec2_part:{
+        flexDirection:'row',
+        justifyContent:'space-between',
+        alignItems:'center',
+        marginBottom: 8
+    },
     btn:{
         height:40,
         alignItems:'center',
@@ -159,6 +216,31 @@ const styles=StyleSheet.create({
         fontFamily:'IRANSansMobile_Light',
         color:'#999',
         fontSize:8
+    },
+    NP:{
+        
+    },
+    FD_row:{
+        paddingRight:5,
+        flexDirection:'row',
+        alignItems:'center',
+        justifyContent:'flex-end'
+    },
+    h3Green:{
+        color:'green',
+        fontSize:14
+    },
+    h3Red:{
+        color:'red',
+        fontSize:14
+    },
+    h2Green:{
+        color:'green',
+        fontSize:15
+    },
+    h2Red:{
+        color:'red',
+        fontSize:15
     }
 })
 

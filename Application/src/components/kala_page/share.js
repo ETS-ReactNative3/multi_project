@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from 'react'
+import React,{useState,useEffect,useContext} from 'react'
 import {Text,StyleSheet,View,Dimensions,Share} from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import {kala_share} from '../../data/dataArray';
@@ -6,9 +6,13 @@ import Ripple from 'react-native-material-ripple'
 import AsyncStorage from '@react-native-community/async-storage';
 import axios from 'axios'
 
+import {BascketContext} from '../../context/Basc/bascketContext'
+
 const w = Dimensions.get('window').width;
 
 const Sharee = (props) => {
+
+    const {_set_product_Ename,_set_product_name,_set_product_id}=useContext(BascketContext);
 
     const [shareValue,setShareValue]=useState('');
     const [heart_color,setHeart_color]=useState(false)
@@ -21,7 +25,7 @@ const Sharee = (props) => {
             axios({
                 url: '/',
                 method: 'post',
-                headers:{'token':`${await AsyncStorage.getItem('token')}`},
+                // headers:{'token':`${await AsyncStorage.getItem('token')}`},
                 data: {
                     query: `
                     query getProduct($page : Int, $limit : Int, $productId : ID, $categoryId : ID) {
@@ -47,6 +51,9 @@ const Sharee = (props) => {
                 else{
                     setk_ename(response.data.data.getProduct[0].ename)
                     setk_pname(response.data.data.getProduct[0].fname)
+                    _set_product_Ename(response.data.data.getProduct[0].ename)
+                    _set_product_name(response.data.data.getProduct[0].fname)
+                    _set_product_id(response.data.data.getProduct[0]._id)
                 }
               })
               .catch(function (error) {

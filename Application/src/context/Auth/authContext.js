@@ -7,6 +7,10 @@ const setStorage= async(token)=>{
     await AsyncStorage.setItem('token', token)
 }
 
+const emptyStorage= async()=>{
+    await AsyncStorage.removeItem('token');
+}
+
 // const getStorage = async () => {
 //     const showToken = await AsyncStorage.getItem('token')
 //     if(showToken){
@@ -19,20 +23,11 @@ const authReducer = async (state,action)=>{
     switch (action.type) {
         case 'login':{
             setStorage(action.payload)
-            
             return {authenticated:action.payload}
-
             break;
         }
-        case 'logout':
-        {
-            _storeData = async () => {
-                try {
-                  await AsyncStorage.removeItem('token');
-                } catch (error) {
-                  alert(error)
-                }
-            };
+        case 'logout':{
+            emptyStorage()
             break;
         }
         case 'setToken':{
@@ -44,8 +39,7 @@ const authReducer = async (state,action)=>{
     }
 }
 const AuthContextProvider=(props)=>{
-    const[authenticated,dispatch] = useReducer(authReducer,'');
-    
+    const[authenticated,dispatch] = useReducer(authReducer,''); 
     return(
         <AuthContext.Provider value={{authenticated,dispatch}}>
             {props.children}

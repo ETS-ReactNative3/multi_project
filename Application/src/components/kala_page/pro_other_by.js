@@ -1,13 +1,55 @@
-import React from 'react'
+import React,{useEffect,useState} from 'react'
 import {View,Text,StyleSheet,FlatList,Image,Dimensions} from 'react-native'
 import {kala} from '../../data/dataArray'
 import Ripple from 'react-native-material-ripple'
 import {useNavigation} from 'react-navigation-hooks'
+import axios from 'axios'
 
 const w = Dimensions.get('window').width;
 
 const Pro_other_by = () => {
+
     const {navigate}=useNavigation();
+    const [data,SETdata]=useState([])
+    const [data_attribute,SETdata_attribute]=useState([])
+
+    useEffect(()=>{
+        axios({
+            url: '/',
+            method: 'post',
+            data: {
+                query: `
+                    query MainPageApp {
+                        MainPageApp {
+                        Tselling {
+                            _id,
+                            fname,
+                            original,
+                            attribute {
+                                price
+                            }
+                        },
+                        }
+                    }
+                `
+            }
+            })
+            .then(function (response) {
+                if(response.data.errors){
+                    alert('error' + response.data.errors[0].message)
+                }
+                else{
+                    //--------save token in context-----------
+                    SETdata(response.data.data.MainPageApp.Tselling)
+                    SETdata_attribute(response.data.data.MainPageApp.Tselling[0].attribute[0])
+                }
+            })
+            .catch(function (error) {
+            // alert('مشکل در ارتبا با سرور');
+            alert(JSON.stringify('catch error' + error))
+        });
+    },[])
+
     return(
         <View style={styles.container}>
             <View style={styles.head}>
@@ -18,23 +60,23 @@ const Pro_other_by = () => {
             <FlatList 
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
-                data={kala}
+                data={data}
                 renderItem={({item,index})=>
-                    <Ripple style={styles.box} onPress={()=>navigate('Kala',{header_name:item.pname})}>
+                <Ripple style={styles.box} onPress={()=>navigate('Kala',{header_name:item.fname,item_id:item._id})}>
                         <View style={styles.view_img}>
                             <Image 
                                 style={styles.img}
-                                source={{uri:item.img}}
+                                source={{uri:'https://digikala.liara.run' + item.original}}
                             />
                         </View>
                         <View style={styles.view_name}>
                             <Text style={styles.text_name}>
-                                {item.name}
+                                {item.fname}
                             </Text>
                         </View>
                         <View style={styles.view_price}>
                             <Text style={styles.text_price}>
-                                 {item.price} تومان
+                                {data_attribute.price} تومان
                             </Text>
                         </View>
                     </Ripple>

@@ -1,14 +1,60 @@
-import React from 'react'
+import React,{useEffect,useState} from 'react'
 import {View,Text,StyleSheet,FlatList,Image,Dimensions} from 'react-native'
 import {kala} from '../../data/dataArray'
 import Ripple from 'react-native-material-ripple'
 import CountDown from 'react-native-countdown-component';
 import {useNavigation} from 'react-navigation-hooks'
+import axios from 'axios'
 
 const w = Dimensions.get('window').width;
 
 const Amazing_Auggestion = () => {
+
+    const [data,SETdata]=useState([])
+    const [data_attribute,SETdata_attribute]=useState([])
+
+    useEffect(()=>{
+        axios({
+            url: '/',
+            method: 'post',
+            data: {
+                query: `
+                    query MainPageApp {
+                        MainPageApp {
+                        Psuggestion {
+                            _id,
+                            fname,
+                            original,
+                            attribute {
+                            price
+                            discount
+                            suggestion
+                            }
+                        },
+                        }
+                    }
+                `
+            }
+            })
+            .then(function (response) {
+                if(response.data.errors){
+                    alert('error' + response.data.errors[0].message)
+                }
+                else{
+                    //--------save token in context-----------
+                    SETdata(response.data.data.MainPageApp.Psuggestion)
+                    SETdata_attribute(response.data.data.MainPageApp.Psuggestion[0].attribute[0])
+                    // alert(JSON.stringify(response.data.data.MainPageApp.Psuggestion[0].attribute[0]))
+                }
+            })
+            .catch(function (error) {
+            // alert('مشکل در ارتبا با سرور');
+            alert(JSON.stringify('catch error' + error))
+        });
+    },[])
+
     const { navigate } = useNavigation();
+
     return(
         <View style={{marginTop:10}}>
             <View style={styles.head}>
@@ -29,27 +75,27 @@ const Amazing_Auggestion = () => {
             <FlatList 
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
-                data={kala}
-                renderItem={({item,index})=>
-                    <Ripple style={styles.box} onPress={()=>navigate('Kala',{header_name:item.pname})}>
+                data={data}
+                renderItem={({item})=>
+                    <Ripple style={styles.box} onPress={()=>navigate('Kala',{header_name:item.fname,item_id:item._id})}>
                         <View style={styles.view_img}>
                             <Image 
                                 style={styles.img}
-                                source={{uri:item.img}}
+                                source={{uri:'https://digikala.liara.run' + item.original}}
                             />
                         </View>
                         <View style={styles.view_name}>
-                            <Text style={styles.text_name}>
-                                {item.pname}
+                            <Text style={styles.text_name} numberOfLines={2}>
+                                {item.fname}
                             </Text>
                         </View>
                         <View style={styles.view_price}>
-                            <Text style={[styles.text_price,{color:'#ef394e',textDecorationLine:'line-through'}]}>
-                                 {item.tprice} تومان
+                             <Text style={[styles.text_price,{color:'#ef394e',textDecorationLine:'line-through'}]}>
+                                 {item.attribute[0].price-(item.attribute[0].price*(item.attribute[0].discount/100))} تومان
                             </Text>
                             <Text style={styles.text_price}>
-                                 {item.price} تومان
-                            </Text>
+                                 {item.attribute[0].price} تومان
+                            </Text> 
                         </View>
                     </Ripple>
                 }

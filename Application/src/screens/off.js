@@ -9,7 +9,7 @@ import My_Header from '../components/header/my_header'
 const Off =() => {
 
     const {getParam}=useNavigation();
-    const id = getParam('id');
+    const id = getParam('item_id');
     const name = getParam('header_name')
     
     let props = {
@@ -21,7 +21,8 @@ const Off =() => {
     return(
         <ScrollView style={{backgroundColor:'#f3f3f3',}}>
             <My_Header {...props}/>
-            <Offs kala_id={id}/>
+            <Offs kala_id={"5e4ceb5e60d59a0b380f0978"}/>
+            {/* <Offs kala_id={id}/> */}
         </ScrollView>
     )
 }
