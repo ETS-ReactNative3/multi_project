@@ -8,10 +8,10 @@ const Comment = Schema({
     survey : [{ type : Schema.Types.ObjectId, ref : 'Vsurvey'}],
     title : { type : String, required : true},
     description : { type : String, required : true},
-    like : { type : Number},
-    dislike : { type : Number},
-    negative : [{ type : String},],
-    positive : [{ type : String},],
+    like : [{ type : Schema.Types.ObjectId, ref : 'User'}],
+    dislike : [{ type : Schema.Types.ObjectId, ref : 'User'}],
+    negative : [{ type : String}],
+    positive : [{ type : String}],
     check : { type : Boolean, default : false},
 }, {
     timestamps : true

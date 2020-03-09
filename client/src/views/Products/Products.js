@@ -154,7 +154,7 @@ const Products =(props)=> {
         suggestion:item.suggestion
       })
     })
-    console.log(attributeHolder);
+    
     axios({
       url: '/',
       method: 'post',
@@ -162,7 +162,7 @@ const Products =(props)=> {
       data: {
         query: `
         mutation updateProductAttribute($addSeller : Boolean, $attribute : [InputAttribute!]!) {
-          UpdateProducctAttribute (input : {addSeller : $addSeller, attribute : $attribute}) {
+          UpdateProductAttribute (input : {addSeller : $addSeller, attribute : $attribute}) {
             status,
             message
           }
@@ -180,7 +180,8 @@ const Products =(props)=> {
       
     }
     else{
-      toast.success(result.data.data.UpdateProducctAttribute.message);
+      
+      toast.success(result.data.data.UpdateProductAttribute.message);
       setLoadAgain(!loadAgain);
       setModal(false);
     }
@@ -414,7 +415,7 @@ const Products =(props)=> {
                                     <span>{item.ename}</span>
                                   </td>
                                   <td>
-                                    <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.original}`)} alt="pic" />
+                                    <img src={`${process.env.REACT_APP_PUBLIC_URL}${item.original}`} alt="pic" />
                                   </td>
                                   <td>{item.brand.name}</td>
                                   <td>

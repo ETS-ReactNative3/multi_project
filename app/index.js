@@ -35,13 +35,60 @@ module.exports = class Application {
                     const secretID = 'asdasw!@#ASdjshxwe.xfisdyf6%$qwsdahgsd#$';
                     let check = await User.CheckToken(req, secretID);
                     let isAdmin = false
+                    let info = []
                     if(check) {
                         isAdmin = await User.findById(check.id);
+                        switch (true) {
+                            case isAdmin.fname == null :
+                                info.push({
+                                    fname : "نام وارد نشده است"
+                                })
+                            case isAdmin.lname == null :
+                                info.push({
+                                    lname : "نام خانوادگی وارد نشده است"
+                                })
+                            case isAdmin.number == null :
+                                info.push({
+                                    number : "تلغن ثالت وارد نشده است"
+                                })
+                            case isAdmin.code == null:
+                                info.push({
+                                    code : "کدپستی وارد نشده است"
+                                })
+                            case isAdmin.email == null :
+                                info.push({
+                                    email : "ایمیل وارد نشده است"
+                                })
+                            case isAdmin.birthday == null :
+                                info.push({
+                                    birthday : "تاریخ تولد وارد نشده است"
+                                })
+                            case isAdmin.gender == null :
+                                info.push({
+                                    gender : "جنسیت وارد نشده است"
+                                })
+                            case isAdmin.state == null :
+                                info.push({
+                                    state : "استان وارد نشده است"
+                                })
+                            case isAdmin.city == null :
+                                info.push({
+                                    city : "شهر وارد نشده است"
+                                })
+                            case isAdmin.address == null :
+                                info.push({
+                                    address : "آدرس وارد نشده است"
+                                })
+                        
+                            default:
+                                break;
+                        }
                     }
                     return {
                         isAdmin : isAdmin.level,
                         check,
-                        secretID
+                        secretID,
+                        info
                     }
             }
     });

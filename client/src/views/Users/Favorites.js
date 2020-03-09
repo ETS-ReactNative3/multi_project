@@ -19,7 +19,7 @@ const UserRow = (props) =>{
       </td>
       <td>
           <img 
-          src={require(`${process.env.REACT_APP_PUBLIC_URL}${favorite.product.image}`)} 
+          src={`${process.env.REACT_APP_PUBLIC_URL}${favorite.product.image}`} 
           alt={favorite.product.image}
           className="Prieview"
            /></td>

@@ -2,27 +2,26 @@ const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
     type Query {
-        login(input : LRInput) : Token!,
+        login(input : loginInput) : Token!,
         getUsers(userId : ID) : [User!]!,
+        getSelfInfo : User,
         getProduct(page : Int, limit : Int, productId : ID, categoryId : ID) : [product!]!,
         getAllCategory(input : InputgetCategory) : [Category!]!,
         senMail : operation!,
         getAllBrand(input : InputGetBrand) : [Brand!]!
-        getAllSurvey(categoryId : ID!) : Survey!
+        getAllSurvey(categoryId : ID!) : [Survey!]!
         getAllProductSpecs(categoryId : ID!) : [Specs!]!
         getAllProductSpecsDetails(specsId : ID!) : [SpecsDetails!]!
         getAllSeller(categoryId : ID!) : [Seller!]!
         getAllWarranty : [Warranty!]!
         getAddProductInfo(categoryId : ID, getSubCategory : Boolean!, subCategoryId : ID) : addProductInfo!,
         getAllComment(page : Int, limit : Int, productId : ID, commentId : ID) : [Comment],
-        verifyRegister : operation,
+        verifyRegister(Phone : String!) : operation,
         getAllPayment(orderId : ID) : [Payment],
         getAllOrderStatus : [OrderStatus],
         getAllMultimedia(page : Int, limit : Int) : [Multimedia],
         getAllSlider(sliderId : ID) : [Slider],
         getBanner : [Banner]
-
-        sortPoduct(categoryId : ID, viewCount : Boolean, soldCount : Boolean, priceUp : Boolean, priceDown : Boolean, newP : Boolean, suggestion : Boolean) : [product],
 
         userAtmonth : [AtMonth],
         productAtmonth : [AtMonth],
@@ -38,10 +37,13 @@ const typeDefs = gql`
 
         
         MainPageApp : mainInfo,
+        sortProduct(categoryId : ID, viewCount : Boolean, soldCount : Boolean, priceUp : Boolean, priceDown : Boolean, newP : Boolean, suggestion : Boolean) : [product],
+        productRate(productId : ID!) : Rate
 
     }
 
     type Mutation {
+        UpdateSelfInfo(input : updateSelfInfo) : operation!,
         register(input : LRInput) : operation!,
         multimedia(image : Upload!) : operation!,
         category(input : InputCategory) : operation!,
@@ -65,6 +67,9 @@ const typeDefs = gql`
         favorite(productId : ID!) : operation!
         Banner(categoryId : ID!, imageId : ID!, default : Boolean = false) : operation!
 
+        addLike(commentId : ID!) : operation!,
+        addDisLike(commentId : ID!) : operation!
+
 
         UpdateCategory(input : InputCategory) : operation!
         UpdateBrand(input : InputBrand) : operation!,
@@ -86,6 +91,7 @@ const typeDefs = gql`
         DeleteBanner(bannerId : ID!) : operation!
 
 
+
     }
 
     input InputReceptor {
@@ -100,8 +106,8 @@ const typeDefs = gql`
     }
 
     input Inputpayment {
-        product : ID!,
-        attribute : ID!,
+        products : [ID!]!,
+        attributes : [ID!]!,
         receptor : ID,
         count : Int = 1,
         discount : Int = 0
@@ -109,17 +115,14 @@ const typeDefs = gql`
 
     input InputSurveyValue {
         survey : ID!,
-        value : Int = 3
+        value : Float = 3
     }
 
     input InputComment {
-        user : ID!,
         product : ID!,
         survey : [InputSurveyValue!]!
         title : String!,
         description : String!,
-        like : Int = 0,
-        dislike : Int = 0,
         negative : [String],
         positive : [String],
         check : Boolean = false
@@ -263,7 +266,9 @@ const typeDefs = gql`
         _id : ID,
         status : Int,
         message : String,
-        payLink : String
+        payLink : String,
+        like : Int,
+        dislike : Int
     }
 
     type ProductOperation {
@@ -283,7 +288,25 @@ const typeDefs = gql`
         email : String,
         password : String!,
         level : Boolean,
-        digit : Int
+        digit : String!
+    }
+
+    input loginInput {
+        phone : String!,
+        password : String!
+    }
+
+    input updateSelfInfo {
+        fname : String,
+        lname : String,
+        code : String,
+        number : String,
+        birthday : String,
+        gender : Gender,
+        email : String,
+        city : String,
+        state : String,
+        address : String
     }
 
     enum Gender {
@@ -439,8 +462,8 @@ const typeDefs = gql`
         survey : [SurveyValue],
         title : String,
         description : String,
-        like : Int,
-        dislike : Int,
+        like : [User],
+        dislike : [User],
         negative : [String],
         positive : [String],
         createdAt : Date,
@@ -541,6 +564,11 @@ const typeDefs = gql`
         category : Category,
         image : Multimedia,
         default : Boolean
+    }
+
+    type Rate {
+        count : Int,
+        value : Float
     }
 
 `;

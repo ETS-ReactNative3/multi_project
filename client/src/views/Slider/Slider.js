@@ -141,7 +141,7 @@ const slides2 = sliderImage.map((item,index) => {
         key={index}
         className={classes.CarouselItem}
       >
-        <img className="d-block w-100" src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.src}`)} alt={item.src} />
+        <img className="d-block w-100" src={`${process.env.REACT_APP_PUBLIC_URL}${item.src}`} alt={item.src} />
       </CarouselItem>
     );
   });
@@ -541,7 +541,7 @@ return(
                                                             <span className={classes.removeIcons} onClick={()=>removeImage(index,idx)}> 
                                                                 <i className="fa fa-remove fa-lg mt-4"></i>
                                                             </span>
-                                                            <img style={{width:'90px', height:'110px'}}src={require(`${process.env.REACT_APP_PUBLIC_URL}${imgeItem.dir}`)} alt={imgeItem.dir} />
+                                                            <img style={{width:'90px', height:'110px'}}src={`${process.env.REACT_APP_PUBLIC_URL}${imgeItem.dir}`} alt={imgeItem.dir} />
                                                             
                                                         </div>
                                                     )
@@ -605,7 +605,7 @@ return(
                                     <div className={classes.media}  key={item._id}
                                     >
                                         <Input type="checkbox" onChange={()=>addSlider(item._id)} checked={item.checked}/>
-                                        <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.dir}`)} alt={item.dir} />
+                                        <img src={`${process.env.REACT_APP_PUBLIC_URL}${item.dir}`} alt={item.dir} />
                                     </div>
                                     )
                                 })
@@ -660,7 +660,7 @@ return(
                                     <div className={classes.media}  key={item._id}
                                     >
                                         <Input type="checkbox" onChange={()=>addImage(item._id,item.dir)} checked={item.checked}/>
-                                        <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.dir}`)} alt={item.dir} />
+                                        <img src={`${process.env.REACT_APP_PUBLIC_URL}${item.dir}`} alt={item.dir} />
                                     </div>
                                     )
                                 })

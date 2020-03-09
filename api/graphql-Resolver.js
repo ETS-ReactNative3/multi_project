@@ -372,8 +372,18 @@ const resolvers = {
             }
         },
 
-        getProduct : async (param, args, { check, isAdmin }) => {
+        getSelfInfo : async (param, args, { check }) => {
             if(check) {
+                const info = await User.findById(check.id).populate([ {path : 'payment' }, { path : 'comment'}, {path : 'favorite'}])
+                return info
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        getProduct : async (param, args) => {
                 let page = args.page || 1;
                 let limit = args.limit || 10;
                 if(args.productId == null && args.categoryId == null) {
@@ -386,15 +396,9 @@ const resolvers = {
                     const product = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute'}]});
                     return product.docs
                 }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
         },
 
-        getAllCategory : async (param, args, { check, isAdmin }) => {
-            if(check) {
+        getAllCategory : async (param, args) => {
                 if(args.input.mainCategory == true) {
                     let page = args.input.page || 1;
                     let limit = args.input.limit || 10;
@@ -411,11 +415,6 @@ const resolvers = {
                     const categorys = await Category.find({}).skip((page - 1) * limit).limit(limit).populate('parent').exec();
                     return categorys
                 }
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
         },
 
 
@@ -508,18 +507,27 @@ const resolvers = {
             }
         },
 
-        getAllSurvey : async (param, args, { check, isAdmin }) => {
-            if(check) {
-                const list = await Survey.find({ category : args.categoryId});
-                if(list) {
+        getAllSurvey : async (param, args) => {
+            try {
+                const maincategory = await Category.findById(args.categoryId).populate('parent');
+                if(maincategory.parent == null) {
+                    throw error;
+                } else if(maincategory.parent.parent == null){
+                    const list = await Survey.find({ category : args.categoryId});
+                    if(list.length == 0) {
+                        throw error
+                    }
                     return list
                 } else {
-                    const error = new Error('هیچ فیلد نظر سنجی برای این دسته بندی وجود ندارد!');
-                    error.code = 401;
-                    throw error;
+                    const categoryId = await Category.findById(maincategory.parent);
+                    const list = await Survey.find({ category : categoryId._id});
+                    if(list.length == 0) {
+                        throw error
+                    }
+                    return list
                 }
-            } else {
-                const error = new Error('این شماره تلفن قبلا در سیستم ثبت شده است!');
+            } catch {
+                const error = new Error('هیچ فیلد نظر سنجی برای این دسته بندی وجود ندارد!');
                 error.code = 401;
                 throw error;
             }
@@ -591,9 +599,6 @@ const resolvers = {
         },
 
         getAddProductInfo : async (parm, args, { check, isAdmin }) => {
-
-            if(check && isAdmin) {
-
                 if(args.getSubCategory == true && args.subCategoryId != null) {
                     const subcats = await Category.find({parent : args.subCategoryId});
                     const brands = await Brand.find({category : args.subCategoryId});
@@ -622,19 +627,13 @@ const resolvers = {
                     error.code = 401;
                     throw error;
                 }
-
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
         },
 
-        getAllComment : async (param, args, { check }) => {
-            if(check) {
+        getAllComment : async (param, args) => {
                     let page = args.page || 1;
                     let limit = args.limit || 10;
-                    if(! args.productId ) {
+                    let arr = [];
+                    if(args.productId == null && args.commentId == null) {
                         const comments = await Comment.paginate({}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
                         if(!comments) {
                             return {
@@ -646,15 +645,20 @@ const resolvers = {
 
                     } else if(args.productId) {
                         const comments = await Comment.paginate({product : args.productId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
-
                         if(!comments) {
                             return {
                                 status : 401,
                                 message : 'کامنتی برای این محصول ثبت نشده است!'
                             }
                         }
-    
-                        return comments.docs;
+                        for (let index = 0; index < comments.docs.length; index++) {
+                            const element = comments.docs[index];
+                            if(element.check == true) {
+                                arr[index] = element
+                            }
+                        }
+
+                        return arr;
 
                     } else if(args.commentId != null && args.productId == null) {
                         const comments = await Comment.paginate({_id : args.commentId}, {page, limit, populate : [{ path : 'user'}, { path : 'product'}, { path : 'survey' , populate : { path : 'survey'}}]})
@@ -669,24 +673,17 @@ const resolvers = {
                         return comments.docs;
                     }
 
-            } else {
-                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
-                error.code = 401;
-                throw error;
-            }
         },
 
         verifyRegister : async (param, args, { secretID }) => {
             try {
                 const digit = Math.floor(Math.random() * (9999 - 1000)) + 1000;
-                console.log('digit :' + digit)
-                const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
                 await VlidationRegister.create({
-                    verifyToken : token
+                    verifyToken : digit
                 })
 
                 const api = Kavenegar.KavenegarApi({apikey: '2F647571766C745A7030745A61585273523734365946544D783648744343767768636F6B374779587255553D'});
-                api.Send({ message: `کد تایید حساب کاربری شما : ${digit}` , sender: "1000596446" , receptor: "09154968751" });
+                api.Send({ message: `کد تایید حساب کاربری شما : ${digit}` , sender: "1000596446" , receptor: `${args.Phone}` });
 
                 return {
                     status : 200,
@@ -704,7 +701,6 @@ const resolvers = {
         getAllPayment : async (param, args, { check, isAdmin }) => {
             if(check) {
                 try {
-                    console.log(args.orderId)
                     if(args.orderId) {
                         const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);``
                         return [pay]
@@ -732,9 +728,9 @@ const resolvers = {
             let page = args.page || 1;
             let limit = args.limit || 10;
             let sugg = [];
-            const Tselling = await Product.find({}).sort({ soldCount : -1});
-            const Nproduct = await Product.find({}).sort({ createdAt : -1});
-            const psuggestion = await Product.paginate({}, { page, limit, populate : { path : 'attribute', match : { suggestion : true}}});
+            const Tselling = await Product.find({}).sort({ soldCount : -1}).populate('attribute');
+            const Nproduct = await Product.find({}).sort({ createdAt : -1}).populate('attribute');
+            const psuggestion = await Product.paginate({}, { page, limit, populate : { path : 'attribute'}});
             const banner = await Banner.find({ default : true}).populate([{ path : 'Category'}, { path : 'Multimedia'}]).limit(7);
             psuggestion.docs.map(async item => {
                 const pa = await Productattribute.find({ _id : { $in : item.attribute}, suggestion : true})
@@ -778,26 +774,44 @@ const resolvers = {
             }
         }, 
 
-        sortPoduct : async (param, args) => {
+        sortProduct : async (param, args) => {
             try {
+                let page = args.page || 1;
+                let limit = args.limit || 10;
                 switch (args.categoryId != null) {
                     case args.viewCount == true :
-                        const productsView = await Product.paginate({ category : args.categoryId}, { sort : { viewCount : 1}});
+                        const productsView = await Product.paginate({ category : args.categoryId}, {page, limit, populate : { path : 'attribute' }, sort : { viewCount : 1}});
                         return productsView.docs;
                     case args.soldCount == true :
-                        const productsSold = await Product.paginate({ category : args.categoryId}, { sort : { soldCount : 1}});
+                        const productsSold = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { soldCount : 1}, populate : { path : 'attribute' }});
                         return productsSold.docs;
                     case args.priceUp == true :
-                        const productsPriceUp = await Product.paginate({category : args.categoryId}, {page, limit, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        let arr = [];
+                        const attribute = await Productattribute.find({}).sort({ price : 1});
+                        for (let index = 0; index < attribute.length; index++) {
+                            const element = attribute[index];
+                            const product = await Product.find({category : args.categoryId, attribute : { $in : element._id}})
+                            for (let index = 0; index < product.length; index++) {
+                                const element = product[index];
+                                if(element != null) {
+                                    if(!arr.indexOf(element._id) === -1) {
+                                        arr.push(element._id)
+                                    }
+                            }
+                            }
+
+                        }
+
+                        const productsPriceUp = await Product.paginate({category : args.categoryId}, {page, limit, populate : { path : 'attribute' , sort: {'attribute' : -1 }}});
                         return productsPriceUp.docs;
                     case args.priceDown == true :
-                        const productspriceDown = await Product.paginate({category : args.categoryId}, {page, limit, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        const productspriceDown = await Product.paginate({category : args.categoryId}, {page, limit, populate : { path : 'attribute' , sort : { price : 1} }});
                         return productspriceDown.docs;
                     case args.newP == true :
-                        const producsNew = await Product.paginate({category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        const producsNew = await Product.paginate({category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : { path : 'attribute' }});
                         return producsNew.docs;
                     case args.suggestion == true : 
-                        const productsSuggestion = await Product.paginate([{category : args.categoryId }, {suggestion : true}], {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
+                        const productsSuggestion = await Product.paginate({category : args.categoryId }, {page, limit, sort : { createdAt : 1}, populate : { path : 'attribute', match : {suggestion : true}}});
                         return productsSuggestion.docs;
                     default:
                         break;
@@ -899,24 +913,68 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
+        },
+
+        productRate : async(param, args) => {
+            const rate = await Comment.find({ product : args.productId}).populate('survey');
+            const commentcount = rate.length;
+            let surveyCount = 0;
+            let value = 0;
+            for (let index = 0; index < rate.length; index++) {
+                const element = rate[index];
+                surveyCount = element.survey.length
+                for (let index = 0; index < element.survey.length; index++) {
+                    const ele = element.survey[index];
+                    value += ele.value
+                }
+            }
+            
+            return {
+                count : commentcount,
+                value : ((value)/(commentcount*surveyCount)).toFixed(1)
+            }
         }
 
     },
 
     Mutation : {
+        UpdateSelfInfo : async (param, args, { check }) => {
+            if(check) {
+                await User.findByIdAndUpdate(check.id, { $set : {
+                    fname : args.input.fname,
+                    lname : args.input.lname,
+                    code : args.input.code,
+                    number : args.input.number,
+                    email : args.input.email,
+                    state : args.input.state,
+                    city : args.input.city,
+                    address : args.input.address,
+                    gender : args.input.gender,
+                    birthday : args.input.birthday
+                }})
+
+                return {
+                    status : 200,
+                    message : 'اطلاعات کاربری ویرایش شد'
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
         register : async (param, args, { secretID }) => {            
             try {
-                    // const digit = args.input.digit;
-                    // const token = await jwt.sign({digit}, secretID, { expiresIn : '1h'});
-                    // const codeToken = await VlidationRegister.findOne({ verifyToken : token});
-                    // const verify = await jwt.verify(codeToken, secretID);
 
-                    // if(!verify) {
-                    //     return {
-                    //         status : 403,
-                    //         message : 'درخواست شما اعتبار لازم برای ثبت نام را ندارد!'
-                    //     }
-                    // } else {
+                    const codeToken = await VlidationRegister.findOne({ verifyToken : args.input.digit});
+
+                    if(!codeToken) {
+                        return {
+                            status : 403,
+                            message : 'درخواست شما اعتبار لازم برای ثبت نام را ندارد!'
+                        }
+                    } else {
                         const salt = await bcrypt.genSaltSync(15);
                         const hash = await bcrypt.hashSync(args.input.password, salt);
                         await User.create({
@@ -932,7 +990,7 @@ const resolvers = {
                             message : 'اطلاعات شما با موفقیت ثبت شد. می توانید به حساب کاربری خود لاگین نمایید.'
                         };
 
-                    // } 
+                    } 
 
             } catch {
                 const error = new Error('ارنباط با سرور محدود شده است!!');
@@ -1335,9 +1393,10 @@ const resolvers = {
                         throw error;
                     }
                     const surveyValue = await saveSurveyValue(args.input.survey);
+                    console.log(surveyValue)
                     
                     await Comment.create({
-                        user : args.input.user,
+                        user : check.id,
                         product : args.input.product,
                         survey : surveyValue,
                         title : args.input.title,
@@ -1405,82 +1464,96 @@ const resolvers = {
 
         payment : async (param, args, { check, res} ) => {
             if(check) {
-                try {
-                    const user = await User.findById(check.id);
-                    if(user.fname != null) {
-                        const ostatus = await OrderStatus.findOne({ default : true });
-                        const product = await Product.findById(args.input.product);
-                        const attribute = await Productattribute.findById(args.input.attribute);
-                        if(!product) {
-                            return {
-                                status : 401,
-                                message : 'خرید این محصول مجاز نمی باشد'
-                            }
-                        }
-
-                        if(!attribute) {
-                            return {
-                                status : 401,
-                                message : 'قیمت گذاری این کالا به درستی انجام نشده است!'
-                            }
-                        }
-
-                           // pay process
-
-                            let params = {
-                                MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
-                                Amount: (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
-                                CallbackURL: 'http://localhost:4000/api/product/payment/callbackurl',
-                                Description: `خرید محصول ${product.ename}`,
-                                Mobile : user.phone,
-                            }
-
-                            let options = getOptions('https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json', params);
-
-                            // options
-                            //     .then(data => {
-                            //         console.log(data.uri)
-                            //     })
-                            // return;
-
-                            const data = await request(options);
-
-                            if(! data) {
-                                return {
-                                    status : 401,
-                                    message : 'امکان خرید محصول در حال حاضر وجود ندارد بعدا امتحان نمایید!'
+                if(info.length == 0) {
+                    try {
+                        const user = await User.findById(check.id);
+                        let products = []
+                        let attributes = []
+                        let price = 0;
+    
+                        if(user.fname != null) {
+                            const ostatus = await OrderStatus.findOne({ default : true });
+                            for (let index = 0; index < args.input.products.length; index++) {
+                                const element = args.input.products[index]
+                                const product = await Product.findById(element);
+                                if(product == null) {
+                                    throw error
                                 }
-                            } 
-
-                            await Payment.create({
-                                user : check.id,
-                                product : product._id,
-                                resnumber : data.Authority,
-                                attribute : args.input.attribute,
-                                discount : args.input.discount,
-                                count : args.input.count,
-                                price : (attribute.price* args.input.count) - ((attribute.price* args.input.count) * (args.input.discount/100)),
-                                orderStatus : ostatus._id
-                            })
-
-                            const link = `https://www.zarinpal.com/pg/StartPay/${data.Authority}`;
-
-                            return {
-                                status : 200,
-                                payLink : link
+                                products[index] = product._id
                             }
-
-                    } else {
-                        return {
-                            status : 401,
-                            message : 'اطلاعات خریدار ناقص است!!'
+    
+                            for (let index = 0; index < args.input.attributes.length; index++) {
+                                const element = args.input.attributes[index];
+                                const attribute = await Productattribute.findById(element);
+                                if(attribute == null) {
+                                    throw error
+                                }
+                                price += (((attribute.price) - ((attribute.price *attribute.discount)/100)))
+                                attributes[index] = attribute._id
+                            }
+    
+                               // pay process
+    
+                                let params = {
+                                    MerchantID: '97221328-b053-11e7-bfb0-005056a205be',
+                                    Amount: (price - ((price * args.input.discount)/100)),
+                                    CallbackURL: 'http://digikala.liara.run/api/product/payment/callbackurl',
+                                    Description: `خرید محصول`,
+                                    Mobile : user.phone,
+                                }
+    
+                                let options = getOptions('https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json', params);
+    
+                                // options
+                                //     .then(data => {
+                                //         console.log(data.uri)
+                                //     })
+                                // return;
+    
+                                const data = await request(options);
+    
+                                if(! data) {
+                                    return {
+                                        status : 401,
+                                        message : 'امکان خرید محصول در حال حاضر وجود ندارد بعدا امتحان نمایید!'
+                                    }
+                                } 
+    
+                                await Payment.create({
+                                    user : check.id,
+                                    products : products,
+                                    resnumber : data.Authority,
+                                    attributes : attributes,
+                                    discount : args.input.discount,
+                                    count : args.input.count,
+                                    price : (price - ((price * args.input. discount)/100)),
+                                    orderStatus : ostatus._id
+                                })
+    
+                                const link = `https://www.zarinpal.com/pg/StartPay/${data.Authority}`;
+    
+                                return {
+                                    status : 200,
+                                    payLink : link
+                                }
+    
+                        } else {
+                            return {
+                                status : 401,
+                                message : 'اطلاعات خریدار ناقص است!!'
+                            }
                         }
+                        
+                    } catch {
+                        const error = new Error('امکان ثبت سفارش وجود ندارد!');
+                        error.code = 401;
+                        throw error;
                     }
-                    
-                } catch {
-                    const error = new Error('امکان ثبت سفارش وجود ندارد!');
-                    error.code = 401;
-                    throw error;
+                } else {
+                    return {
+                        status : 401,
+                        message : 'اطلاعات حساب کاربری شما تکمیل نشده است!'
+                    }
                 }
             } else {
                 const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
@@ -1878,7 +1951,7 @@ const resolvers = {
                         }
 
 
-
+                        
                         const product = await Product.findByIdAndUpdate(args.input.id, { $set : {
                             fname : args.input.fname,
                             ename : args.input.ename,
@@ -2216,7 +2289,110 @@ const resolvers = {
                 error.code = 401;
                 throw error;
             }
-        }
+        },
+
+        addLike : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    let hasLike = false;
+                    let hasDisLike = false;
+                    let comment = await Comment.findById(args.commentId);
+                    if(comment.dislike.length != 0) {
+                        comment.dislike.map(item => {
+                            if(item == check.id) {
+                                hasDisLike = true
+                            }
+                        })
+                    }
+
+                    if(hasDisLike == true) {
+                        const index = comment.dislike.indexOf(check.id);
+                        if(index > -1) {
+                            comment.dislike.splice(index, 1)
+                        }
+                    }
+
+                    comment.like.map(item => {
+                        if(item == check.id) {
+                            hasLike = true
+                        }
+                    })
+     
+
+                    if(hasLike == true) {
+                        throw error
+                    }
+
+                    comment.like.push(check.id);
+                    await comment.save()
+
+                    return {
+                        status : 200
+                    }
+
+                } catch {
+                    const error = new Error('امکان درج like وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error;
+            }
+        },
+
+        addDisLike : async (param, args, { check }) => {
+            if(check) {
+                try {
+                    let hasLike = false;
+                    let hasDisLike = false;
+                    let comment = await Comment.findById(args.commentId);
+                    if(comment.like.length != 0) {
+                        comment.like.map(item => {
+                            if(item == check.id) {
+                                hasLike = true
+                            }
+                        })
+                    }
+
+                    if(hasLike == true) {
+                        const index = comment.like.indexOf(check.id);
+                        if(index > -1) {
+                            comment.like.splice(index, 1)
+                        }
+                    }
+
+                    comment.dislike.map(item => {
+                        if(item == check.id) {
+                            hasDisLike = true
+                        }
+                    })
+     
+
+                    if(hasDisLike == true) {
+                        throw error
+                    }
+
+                    comment.dislike.push(check.id);
+                    await comment.save()
+
+                    return {
+                        status : 200
+                    }
+    
+                } catch {
+                    const error = new Error('امکان درج dislike وجود ندارد!');
+                    error.code = 401;
+                    throw error;
+                }
+            } else {
+                const error = new Error('دسترسی شما به اطلاعات مسدود شده است.');
+                error.code = 401;
+                throw error; 
+            }
+        },
 
     },
   
@@ -2395,7 +2571,6 @@ let saveSurveyValue = async (args) => {
                         })
 
                         arr[index] = vs._id
-    
         }
         return arr;
     } catch {

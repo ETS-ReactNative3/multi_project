@@ -130,6 +130,7 @@ const Banner =(props)=> {
         for(let i=0;i<getBanner.length;i++){
             getBanner[i].flag = false;
         }
+        console.log(getBanner);
       setAllBanner(getBanner);
       setResultLoading(false)
     }).catch((error)=>{
@@ -473,7 +474,7 @@ const Banner =(props)=> {
                                                 <span className={classes.removeIconsPicturesProduct} onClick={()=>removeImage(item._id,index)}> 
                                                     <i className="fa fa-remove fa-lg mt-4"></i>
                                                 </span>
-                                                <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.dir}`)} alt={item.dir} />
+                                                <img src={`${process.env.REACT_APP_PUBLIC_URL}${item.dir}`} alt={item.dir} />
                                             </div>
                                             )
                                             })
@@ -527,7 +528,7 @@ const Banner =(props)=> {
                                             }
                                           </td>
                                           <td>
-                                            <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.image.dir}`)} alt={item.image.dir} style={{width:'90px'}} />
+                                            <img src={`${process.env.REACT_APP_PUBLIC_URL}${item.image.dir}`} alt={item.image.dir} style={{width:'90px'}} />
                                           </td>
                                           <td>
                                             {
@@ -609,7 +610,7 @@ const Banner =(props)=> {
                                     <div className={classes.media}  key={item._id}
                                     >
                                         <Input type="checkbox" onChange={()=>addImage(item._id,item.dir)} checked={item.checked}/>
-                                        <img src={require(`${process.env.REACT_APP_PUBLIC_URL}${item.dir}`)} alt={item.dir} />
+                                        <img src={`${process.env.REACT_APP_PUBLIC_URL}${item.dir}`} alt={item.dir} />
                                     </div>
                                     )
                                   })

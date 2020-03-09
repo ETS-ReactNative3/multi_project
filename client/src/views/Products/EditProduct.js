@@ -324,6 +324,7 @@ const EditProduct = (props)=>{
     }
     let dataServer=newData;
     if(image){
+      console.log(data);
       let formD = new FormData();
       formD.append('operations' , JSON.stringify(data));
        formD.append('map', JSON.stringify(map));
@@ -649,7 +650,7 @@ const EditProduct = (props)=>{
                   </Col>
                   <Col xl="4">
                     {
-                      imageServer ?<img src={require(`${process.env.REACT_APP_PUBLIC_URL}${imageServer}`)} alt={imageServer} className={classes.preview} />:
+                      imageServer ?<img src={`${process.env.REACT_APP_PUBLIC_URL}${imageServer}`} alt={imageServer} className={classes.preview} />:
                       image ? <img src={ image } alt={image} className={classes.preview} />:null
                       }
                   </Col>
