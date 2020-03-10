@@ -239,9 +239,6 @@ const resolvers = {
                     }
                 })
 
-                console.log(price)
-
-
                 day.push({
                     day : moment(d - index * 24 * 60 *60 * 1000).jDate(),
                     count : price
@@ -256,8 +253,8 @@ const resolvers = {
         allUserCount : async (param, args, { check, isAdmin}) =>{
             if(check && isAdmin) {
                 try {
-                    const Maleusers = await User.find({gender : 'Male'}).count();
-                    const Femaleusers = await User.find({gender : 'Female'}).count();
+                    const Maleusers = await User.find({gender : 'Male'}).count().exec();
+                    const Femaleusers = await User.find({gender : 'Female'}).count().exec();
 
                     return {
                         Male : ( Maleusers * 100 ) / (Maleusers + Femaleusers),
@@ -278,7 +275,7 @@ const resolvers = {
 
         allOrderStatus : async (param, args, { check, isAdmin}) => {
             const orderStatus = await OrderStatus.find({});
-            const payment = await Payment.find({ payment : true}).populate('orderStatus');
+            const payment = await Payment.find({ payment : true}).populate('orderStatus').exec();
 
             const t = orderStatus.map(item => {
                 return {
@@ -390,7 +387,7 @@ const resolvers = {
                     const producs = await Product.paginate({}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'brand'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}]});
                     return producs.docs
                 } else if(args.productId != null && args.categoryId == null) {
-                    const product = await Product.findById({ _id : args.productId}).populate([{ path : 'brand'}, {path : 'images'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
+                    const product = await Product.findByIdAndUpdate({ _id : args.productId}, { $inc : { viewCount : 1}}).populate([{ path : 'brand'}, {path : 'images'}, { path : 'attribute', populate : [{path : 'seller'}, {path : 'warranty'}]}, { path : 'category', populate : { path : 'parent', populate : { path : "parent"}}}, { path : 'details', populate : { path : 'p_details', populate : { path : 'specs'}}}])
                     return [product]
                 } else if(args.categoryId != null && args.productId == null) {
                     const product = await Product.paginate({ category : args.categoryId}, {page, limit, sort : { createdAt : 1}, populate : [{ path : 'attribute'}]});
@@ -509,7 +506,7 @@ const resolvers = {
 
         getAllSurvey : async (param, args) => {
             try {
-                const maincategory = await Category.findById(args.categoryId).populate('parent');
+                const maincategory = await Category.findById(args.categoryId).populate('parent').exec();
                 if(maincategory.parent == null) {
                     throw error;
                 } else if(maincategory.parent.parent == null){
@@ -702,10 +699,10 @@ const resolvers = {
             if(check) {
                 try {
                     if(args.orderId) {
-                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'product'}, { path : 'attribute', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);``
+                        const pay = await Payment.findById(args.orderId).populate([{ path : 'user'}, { path : 'products'}, { path : 'attributes', populate : [{ path : 'seller'}, { path : 'warranty'}]} , { path : 'receptor'}, { path : 'orderStatus'}]);``
                         return [pay]
                     } else if(args.orderId == null && isAdmin) {
-                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]);
+                        const pay = await Payment.find({}).populate([{ path : 'user'}, { path : 'product'}, { path : 'orderStatus'}]).exec();
                         return pay
                     } else {
                         const error = new Error('سفارشی برای نمایش وجود ندارد!');
@@ -728,10 +725,10 @@ const resolvers = {
             let page = args.page || 1;
             let limit = args.limit || 10;
             let sugg = [];
-            const Tselling = await Product.find({}).sort({ soldCount : -1}).populate('attribute');
-            const Nproduct = await Product.find({}).sort({ createdAt : -1}).populate('attribute');
+            const Tselling = await Product.find({}).sort({ soldCount : -1}).populate('attribute').exec();
+            const Nproduct = await Product.find({}).sort({ createdAt : -1}).populate('attribute').exec();
             const psuggestion = await Product.paginate({}, { page, limit, populate : { path : 'attribute'}});
-            const banner = await Banner.find({ default : true}).populate([{ path : 'Category'}, { path : 'Multimedia'}]).limit(7);
+            const banner = await Banner.find({ default : true}).populate([{ path : 'Category'}, { path : 'Multimedia'}]).limit(7).exec();
             psuggestion.docs.map(async item => {
                 const pa = await Productattribute.find({ _id : { $in : item.attribute}, suggestion : true})
                 if(pa.length != 0) {
@@ -740,7 +737,7 @@ const resolvers = {
             })
 
             const category = await Category.find({ parent : null});
-            const slider = await Slider.findOne({ default : true}).populate('image');
+            const slider = await Slider.findOne({ default : true}).populate('image').exec();
             return {
                 Tselling,
                 Nproduct,
@@ -787,7 +784,7 @@ const resolvers = {
                         return productsSold.docs;
                     case args.priceUp == true :
                         let arr = [];
-                        const attribute = await Productattribute.find({}).sort({ price : 1});
+                        const attribute = await Productattribute.find({}).sort({ price : 1}).exec();
                         for (let index = 0; index < attribute.length; index++) {
                             const element = attribute[index];
                             const product = await Product.find({category : args.categoryId, attribute : { $in : element._id}})
@@ -859,7 +856,7 @@ const resolvers = {
             if(check && isAdmin) {
                 try {
                     if(args.sliderId == null && isAdmin) {
-                        const sliders = await Slider.find({}).populate('image');
+                        const sliders = await Slider.find({}).populate('image').exec();
                         if(sliders == null) {
                             return {
                                 status : 401,
@@ -1393,7 +1390,6 @@ const resolvers = {
                         throw error;
                     }
                     const surveyValue = await saveSurveyValue(args.input.survey);
-                    console.log(surveyValue)
                     
                     await Comment.create({
                         user : check.id,
@@ -2493,8 +2489,6 @@ let deleteAttributeProduct = async (args) => {
 }
 
 let getImageSize = (type) => {
-    console.log(type);
-    return;
     if(type.ext === ('png' || 'jpg' || 'jpeg')) {
         ImageSize(args.file, (err, dimension) => {
             if(err) {

@@ -492,10 +492,10 @@ const typeDefs = gql`
     type Payment {
         _id :ID,
         user : User,
-        product : product,
+        products : [product],
         payment : Boolean!,
         resnumber : String,
-        attribute : [Attribute],
+        attributes : [Attribute],
         discount : Int,
         count : Int,
         price : Int,

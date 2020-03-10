@@ -10,17 +10,16 @@ class paymentController {
         AutoBind(this)
     }
     async pay(req, res, next) {
-        const payment = await Payment.findOne({ resnumber: req.query.Authority }).populate('products');
+        const payment = await Payment.findOne({ resnumber: req.query.Authority }).populate([{path : 'products'}, { path : 'attributes'}]).exec();
         if (payment.products.length == 0) {
             res.status(401).send('هیچ محصولی برای خرید انتخاب نشده است و لینک پرداخت فاقد اعتبار می باشد.')
-            // return {
-            //     status : 401,
-            //     message : 'هیچ محصولی برای خرید انتخاب نشده است و لینک پرداخت فاقد اعتبار می باشد.'
-            // }
+            return;
         }
 
         if (req.query.Status && req.query.Status != 'OK') {
+
             res.status(401).send('امکان خرید وجود ندارد می توانید در فرصتی دیگر نسبت به خرید محصول مورد نظر خود اقدام کنید!')
+            return ;
         }
 
         let params = {
@@ -34,26 +33,29 @@ class paymentController {
         request(options)
             .then(async data =>{
                 if(data.Status == 100){
-                    payment.set({ payment : true});
+                    await payment.set({ payment : true});
                     payment.products.map(async item => {
-                        await User.findByIdAndUpdate(payment.user , { $push : { payCash : item._id }})
+                        await Product.findByIdAndUpdate(item._id, { $inc : { soldCount : 1}})
+                        const user = await User.findById(payment.user);
+                        if(user.payCash.indexOf(item._id) === -1) {
+                            user.payCash.push(item._id);
+                            await user.save()
+                        }
+                    })
+
+                    payment.attributes.map(async item => {
+                        await Productattribute.findByIdAndUpdate(item._id, { $inc : { stock : -1 }})
                     })
                     await payment.save();
 
-                    res.status(200).send("خرید شما با موفقیت ثبت شد می توانید فرآیند آماده سازی و ارسال سفارش خود را از داخل پنل کاربری خود بررسی نمایید");
-                    // return {
-                    //     status : 200,
-                    //     message : 'خرید شما با موفقیت ثبت شد می توانید فرآیند آماده سازی و ارسال سفارش خود را از داخل پنل کاربری خود بررسی نمایید'
-                    // }
+                    res.status(401).send("خرید شما با موفقیت ثبت شد می توانید فرآیند آماده سازی و ارسال سفارش خود را از داخل پنل کاربری خود بررسی نمایید");
+                    return;
                 }else {
                     res.status(401).send('متاسفانه در فرآیند خرید محصول مورد نظر مشکلی به وجود آمده است لطفا مجددا انتحان نمایید!')
-                    // return {
-                    //     status : 401,
-                    //     message : 'متاسفانه در فرآیند خرید محصول مورد نظر مشکلی به وجود آمده است لطفا مجددا انتحان نمایید!'
-                    // }
+                    return;
                 }
             })
-            .catch(err => res.json(err.message))
+            .catch(err => res.status(401).json(err.message))
 
 
     }

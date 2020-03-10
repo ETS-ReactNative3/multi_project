@@ -107,7 +107,7 @@ module.exports = class Application {
         }
     }
 
-    async SetConfig() {
+    SetConfig() {
         
         app.use(cors());
         app.use(express.static(config.layout.PUBLIC_DIR));
