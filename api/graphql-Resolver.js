@@ -358,7 +358,7 @@ const resolvers = {
                     return users.docs;
                 } else {
 
-                const user = await User.findById(args.userId).sort({ createAt : -1}).populate([{ path : 'comment', populate : {path : 'product'}}, { path : 'payment', populate : { path : 'product'}}, { path : 'favorite', populate : { path : 'product', populate : { path : 'attribute'}}}])
+                const user = await User.findById(args.userId).sort({ createAt : -1}).populate([{ path : 'comment', populate : {path : 'product'}}, { path : 'payment',  populate : [{ path : 'product'}, { path : 'orderStatus'}]}, { path : 'favorite', populate : { path : 'product', populate : { path : 'attribute'}}}])
                 return [user];
                 }
 
