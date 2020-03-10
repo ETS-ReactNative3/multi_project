@@ -1,12 +1,12 @@
 import React,{useState} from 'react'
-import {ScrollView} from 'react-native'
+import {ToastAndroid} from 'react-native'
 import {Content,Container} from 'native-base'
 import {useNavigation} from 'react-navigation-hooks'
 
 import My_Header from '../components/header/my_header'
 import Shop_box from '../components/cart_page/shop_box'
 import My_Footer from '../components/footer/my_footer'
-
+import AsyncStorage from '@react-native-community/async-storage';
 
 let props = {
     head_name:'Cart',
@@ -20,9 +20,23 @@ const Shop_cart =() => {
     _set_product_id=(e)=>{
         SETp_id(e)
     }
-    alert(JSON.stringify(p_id))
-    const onLogin =() => {
+    const onLogin = async() => {
+       const token =  await AsyncStorage.getItem('token');
+       if(token)
+       {
         navigate("User_Info")
+       }
+       else{
+        ToastAndroid.showWithGravityAndOffset(
+            'برای ثبت سفارش باید وارد حساب کاربری خود شوید!',
+            ToastAndroid.LONG,
+            ToastAndroid.BOTTOM,
+            25,
+            50,
+          );
+       }
+       
+        
     }
 
     return(

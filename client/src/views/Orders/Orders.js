@@ -53,7 +53,7 @@ const AllOrders =(props)=>{
     }
     else{
       const {getAllPayment} =result.data.data;
-      console.log(getAllPayment);
+      
       setOrders(getAllPayment);
 
       axios({
@@ -78,7 +78,7 @@ const AllOrders =(props)=>{
       else{
        const{getAllOrderStatus} = result.data.data;
        setStatus(getAllOrderStatus);
-       console.log(getAllOrderStatus);
+      
       }
      
     }).catch(error=>{

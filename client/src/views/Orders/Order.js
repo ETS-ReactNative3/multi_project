@@ -1,5 +1,5 @@
 import React, { useEffect,useState,useContext } from 'react';
-import {  Card, CardBody, CardHeader, Col, Row, Table,Button  } from 'reactstrap';
+import {  Card, CardBody, CardHeader, Col, Row, Table,Button, Spinner  } from 'reactstrap';
 import './Order.css';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
@@ -14,9 +14,11 @@ const OrderDetails =(props)=>{
     const {dispatch} = useContext(AuthContext);
     const token =  GetToken();
     const [order,setOrder] = useState(null);
-    const [status,setStatus] = useState(null);
+    const [status,setStatus] = useState([]);
+    const [loading,setLoading] = useState(true)
     useEffect(()=>{
       dispatch({type:'check',payload:props});
+      
       axios({
         url: '/',
         method: 'post',
@@ -25,44 +27,38 @@ const OrderDetails =(props)=>{
           query: `
           query getallpayment($orderId : ID) {
             getAllPayment(orderId : $orderId) {
-                _id,
+              _id,
               user {
                 fname,
-                lname
+                lname,
+                address,
+                phone
               }
-              product {
+              products {
                 fname,
                 ename,
-                image
+                original
               }
               payment,
               resnumber,
-              attribute {
+              attributes {
                 seller {
                   name
                 },
                 warranty {
                   name
                 },
-                discount,
                 color,
-                price
+                price,
+                discount
               },
               discount,
               count,
               price,
-              ,
+              createdAt,
               orderStatus{
-                name,
                 _id
-              },
-              receptor {
-                fname,
-                lname,
-                address,
-                phone
-              },
-              createdAt
+              }
             }
           }  
             `,
@@ -77,6 +73,7 @@ const OrderDetails =(props)=>{
       }
       else{
         const {getAllPayment} =result.data.data;
+       
         setOrder(getAllPayment[0])
       }
      
@@ -107,6 +104,7 @@ const OrderDetails =(props)=>{
     }
     else{
      const{getAllOrderStatus} = result.data.data;
+     setLoading(false)
       setStatus(getAllOrderStatus); 
     }
    
@@ -125,6 +123,7 @@ const OrderDetails =(props)=>{
             <div className="form-group">
                 <ToastContainer />
             </div>
+            
               <Card>
                 <CardHeader>
                     <h3>سفارش {order._id}</h3>
@@ -133,11 +132,11 @@ const OrderDetails =(props)=>{
                 <CardBody className="CardBody" >
                     <Row>
                         <Col>
-                            تحویل گیرنده : {order.receptor.fname} {order.receptor.lname} 
+                            تحویل گیرنده : {order.user.fname} {order.user.lname} 
                             
                         </Col>
                         <Col>
-                            شماره تماس تحویل گیرنده : {order.receptor.phone}
+                            شماره تماس تحویل گیرنده : {order.user.phone}
                             
                         </Col>
                     </Row> 
@@ -145,7 +144,7 @@ const OrderDetails =(props)=>{
                 <CardBody className="CardBody">
                     <Row>
                         <Col>
-                        آدرس تحویل گیرنده: {order.receptor.address}                  
+                        آدرس تحویل گیرنده: {order.user.address}                  
                         </Col>
                         <Col>
                         تعداد محصولات مرسوله : {order.count}
@@ -173,6 +172,7 @@ const OrderDetails =(props)=>{
                 <CardBody>
                     <Row>
                       {
+                        loading?<center><Spinner /></center> :
                         status.map((item)=>{
                           
                           return(
@@ -238,35 +238,45 @@ const OrderDetails =(props)=>{
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>
-                          <img 
-                          src={`${process.env.REACT_APP_PUBLIC_URL}${order.product.image[0]}`} 
-                          alt={order.product.image[0]}
-                          className="Preview"
-                            />
-                        </td>
-                        <td className="sp-span">
+                     
+                      {  
                         
-                          <span>{order.product.fname}</span>
-                          <span>فروشنده : {order.attribute[0].seller.name}</span>
-                          <span className="box-shape">
-                            رنگ : {' '} 
-                            <span style={{background:order.attribute[0].color}} className="shape"></span>
-                             </span>
-                        </td>
-                        <td>{order.count}</td>
-                        <td>
-                        {order.attribute[0].price} تومان
-                        </td>
-                        <td>
-                        {order.attribute[0].price * order.count} تومان
-                        </td>
-                        <td>{((order.attribute[0].price * order.count)-order.price)/100} %</td>
-                        <td>{order.price} تومان</td>
-                        <td>   <Button block color="primary">مشاهده نظرات</Button></td>
-                    </tr>
+                        order.products.map((p,index)=>{
+                            
+                          return(
+                            <tr key={index}>
+                            <td>{index}</td>
+                            <td>
+                              <img 
+                              src={`${process.env.REACT_APP_PUBLIC_URL}${p.original}`} 
+                              alt={p.original}
+                              className="Preview"
+                                />
+                            </td>
+                            <td className="sp-span">
+                            
+                              <span>{p.fname}</span>
+                              <span>فروشنده : {order.attributes[index].seller.name}</span>
+                              <span className="box-shape">
+                                رنگ : {' '} 
+                                {/* <span style={{background:order.attributes[index].color}} className="shape"></span> */}
+                              </span>
+                            </td>
+                            <td>1</td>
+                            <td>
+                            {order.attributes[index].price} تومان
+                            </td>
+                            <td>
+                            {order.attributes[index].price } تومان
+                            </td>
+                            <td>{((order.attributes[index].price*order.attributes[index].discount)/100)}</td>
+                            <td>{(order.attributes[index].price) -((order.attributes[index].price*order.attributes[index].discount)/100)} تومان</td>
+                            <td>   <Button block color="primary">مشاهده نظرات</Button></td>
+                        </tr>
+                          )
+                        })
+                      }
+                   
                     </tbody>
                     </Table>
                   </CardBody>

@@ -5,6 +5,7 @@ import Ripple from 'react-native-material-ripple'
 import {useNavigation} from 'react-navigation-hooks'
 import axios from 'axios'
 
+
 const w = Dimensions.get('window').width;
 
 const KalaOne = () => {
@@ -41,6 +42,7 @@ const KalaOne = () => {
                 else{
                     //--------save token in context-----------
                     SETdata(response.data.data.MainPageApp.Tselling)
+                    console.log(response.data.data.MainPageApp.Tselling)
                     SETdata_attribute(response.data.data.MainPageApp.Tselling[0].attribute[0])
                 }
             })
@@ -81,7 +83,7 @@ const KalaOne = () => {
                         </View>
                         <View style={styles.view_price}>
                             <Text style={styles.text_price}>
-                                 {data_attribute.price} تومان
+                                 {item.attribute[0].price} تومان
                             </Text>
                         </View>
                     </Ripple>

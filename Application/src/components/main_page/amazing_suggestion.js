@@ -6,6 +6,7 @@ import CountDown from 'react-native-countdown-component';
 import {useNavigation} from 'react-navigation-hooks'
 import axios from 'axios'
 
+
 const w = Dimensions.get('window').width;
 
 const Amazing_Auggestion = () => {
@@ -43,6 +44,7 @@ const Amazing_Auggestion = () => {
                 else{
                     //--------save token in context-----------
                     SETdata(response.data.data.MainPageApp.Psuggestion)
+                    
                     SETdata_attribute(response.data.data.MainPageApp.Psuggestion[0].attribute[0])
                     // alert(JSON.stringify(response.data.data.MainPageApp.Psuggestion[0].attribute[0]))
                 }

@@ -19,8 +19,8 @@ const UserRow = (props) =>{
       </td>
       <td>
           <img 
-          src={`${process.env.REACT_APP_PUBLIC_URL}${favorite.product.image}`} 
-          alt={favorite.product.image}
+          src={`${process.env.REACT_APP_PUBLIC_URL}${favorite.product.original}`} 
+          alt={favorite.product.original}
           className="Prieview"
            /></td>
       <td>{favorite.product.rate ? favorite.product.rate :'0'}</td>
@@ -54,26 +54,48 @@ const Favorites =(props)=> {
         headers:{'token':`${token}`},
         data: {
           query: `
+
           query getAllUsers($userId : ID) {
             getUsers(userId : $userId) {
-              _id,
+              _id
               fname,
               lname,
-    		  favorite {
-                  _id,
+              comment {
+                _id
+                title,
+                like {
+                  _id
+                },
+                dislike {
+                  _id
+                },
+                createdAt,
+                check,
                 product {
-                    fname,
-                    ename,
-                    image,
-                    rate,
-                  attribute {
+                  _id
+                }
+              },
+              favorite {
+                _id,
+                product{
+                  fname,
+                  ename,
+                  original,
+                  rate,
+                  attribute{
                     color,
                     price
                   }
                 }
+              },
+              payment {
+                _id
               }
             }
           }
+
+
+         
             `,
             variables :{
               "userId":userid  

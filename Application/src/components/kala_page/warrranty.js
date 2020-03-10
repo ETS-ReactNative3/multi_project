@@ -1,5 +1,5 @@
 import React,{useState,useEffect,useContext} from 'react'
-import {StyleSheet,View,Text,Dimensions,TouchableOpacity} from 'react-native'
+import {StyleSheet,View,Text,Dimensions,TouchableOpacity, ToastAndroid} from 'react-native'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import Ripple from 'react-native-material-ripple'
@@ -31,6 +31,7 @@ const Warranty = (props) => {
                         getProduct(page : $page, limit : $limit, productId : $productId, categoryId : $categoryId){
                           _id,
                           attribute {
+                              _id
                             seller {
                                 _id,
                                 name
@@ -63,7 +64,7 @@ const Warranty = (props) => {
                     SETdata(response.data.data.getProduct[0].attribute)
                     SETdefaultSeller(response.data.data.getProduct[0].attribute[0])
                     set_border_color(response.data.data.getProduct[0].attribute[0].color)
-                    console.log(response.data.data.getProduct[0].attribute)
+                    
                 }
               })
               .catch(function (error) {
@@ -108,7 +109,13 @@ const Warranty = (props) => {
 
     const _add_to_shop_cart=()=>{
         AddToBascket(data,border_color);
-        alert('محصول با موفقیت ثبت شده')
+        ToastAndroid.showWithGravityAndOffset(
+            'مجصول به ثبت خرید اضافه شد',
+            ToastAndroid.LONG,
+            ToastAndroid.BOTTOM,
+            25,
+            50,
+          );
         // navigate('Shop_cart');
     }
 
@@ -129,6 +136,7 @@ const Warranty = (props) => {
                             <TouchableOpacity 
                                 style={[styles.sec1_part2_box,border_color===item.color?{borderColor:'blue'}:{}]} 
                                 onPress={()=>_changeBorderColor(item.color,item)}
+                                key={key}
                             >
                                 <View style={[styles.sec1_part2_box_color,{backgroundColor:item.color}]}/>
                                 <Text style={[styles.text_size13,styles.text_color_gray]}>

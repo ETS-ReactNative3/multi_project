@@ -22,6 +22,7 @@ const Slider = () => {
                         MainPageApp {
                             slider {
                                 image {
+                                    _id,
                                     dir
                             }
                             },
@@ -51,7 +52,7 @@ const Slider = () => {
             <Loader/>
         :
             <View style={styles.container}>
-                <Swiper autoplay={true}>
+                {/* <Swiper>
                     {
                         data.map((item,key)=>(
                             <View style={styles.btn} key={key}>
@@ -62,7 +63,13 @@ const Slider = () => {
                             </View>
                         ))
                     }
-                </Swiper>
+                </Swiper> */}
+                <View style={styles.btn}>
+                  <Image 
+                                    style={styles.img}
+                                    source={{uri:'https://digikala.liara.run'+data[0].dir}}
+                                />
+                </View>
             </View>
     )
 }

@@ -26,6 +26,7 @@ const BasckContextProvider=(props)=>{
         }else{
             newBascket.push({
                 "sellerId":item[0].seller._id,
+                "attributeId":item[0]._id,
                 "sellerName":item[0].seller.name,
                 "warrantyID":item[0].warranty._id,
                 "warrantyName":item[0].warranty.name,
@@ -63,9 +64,12 @@ const BasckContextProvider=(props)=>{
     const _set_product_id=(id)=>{
         SETproductId(id)
     }
+    const emptyBascket = ()=>{
+        setBascket([]);
+    }
 
     return(
-        <BascketContext.Provider value={{bascket,AddToBascket,removeBascket,productName,_set_product_name,productEName,_set_product_Ename,productImage,_set_product_image,productId,_set_product_id}}>
+        <BascketContext.Provider value={{bascket,AddToBascket,removeBascket,productName,_set_product_name,productEName,_set_product_Ename,productImage,_set_product_image,productId,_set_product_id,emptyBascket}}>
             {props.children}
         </BascketContext.Provider>
     )

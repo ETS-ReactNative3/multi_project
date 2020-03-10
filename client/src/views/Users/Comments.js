@@ -31,18 +31,28 @@ const UserComments =(props)=> {
               fname,
               lname,
               comment {
-                product {
-                  fname
-                },
-                _id,
+                _id
                 title,
-                like,
-                dislike,
+                like {
+                  _id
+                },
+                dislike {
+                  _id
+                },
                 createdAt,
-                check  
+                check,
+                product {
+                  _id
+                }
+              },
+              favorite {
+                _id
+              },
+              payment {
+                _id
               }
             }
-          }   
+          } 
             `,
             variables :{
               "userId":userid  
@@ -150,8 +160,8 @@ const UserComments =(props)=> {
                                   <td>{item.fname} {item.lname}</td>
                                   <td >{date}</td>
                                   <td>{comment.title}</td>
-                                  <td>{comment.like}</td>
-                                  <td >{comment.dislike}</td>
+                                  <td>{comment.like.length}</td>
+                                  <td >{comment.dislike.length}</td>
                                   <td>
                                     <Badge color={getBadge(comment.check)} onClick={()=>toggleLarge(comment._id)}>
                                       {comment.check ?'تایید شده': 'تایید نشده'}

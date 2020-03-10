@@ -60,10 +60,10 @@ const Offer = () => {
             <View style={styles.container}>
                 {
                     data.map((item,key)=>(
-                        <>
+                        <React.Fragment key={key}>
                             {
                                 key==0 || key==6?(
-                                    <Ripple style={styles.btn_full} key={item.category._id} onPress={()=>navigate('Off',{header_name:item.category.name,item_id:item.category._id})}>
+                                    <Ripple style={styles.btn_full}  onPress={()=>navigate('Off',{header_name:item.category.name,item_id:item.category._id})}>
                                         <Image 
                                             style={styles.btn_full_img}
                                             source={{uri:'https://digikala.liara.run'+item.image.dir}}
@@ -89,7 +89,7 @@ const Offer = () => {
                                         </Ripple>
                                     )
                             }
-                        </>
+                        </React.Fragment>
                     ))
                 }
             </View>

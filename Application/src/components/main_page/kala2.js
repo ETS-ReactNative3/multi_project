@@ -80,7 +80,7 @@ const KalaTwo = () => {
                         </View>
                         <View style={styles.view_price}>
                             <Text style={styles.text_price}>
-                                 {data_attribute.price} تومان
+                                 {item.attribute[0].price} تومان
                             </Text>
                         </View>
                     </Ripple>

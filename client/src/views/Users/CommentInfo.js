@@ -42,12 +42,16 @@ const UserCommentInfo =(props)=> {
                   description,
                   negative,
                   positive,
-                  like,
-                  dislike,
+                  like {
+                      _id
+                  },
+                  dislike {
+                      _id
+                  },
                   createdAt,
                   check  
                 }
-              }    
+              }     
                 `,
                 variables :{
                   "page": 1,
