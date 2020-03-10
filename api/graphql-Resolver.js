@@ -1462,7 +1462,7 @@ const resolvers = {
             }
         },
 
-        payment : async (param, args, { check, res} ) => {
+        payment : async (param, args, { check, info} ) => {
             if(check) {
                 if(info.length == 0) {
                     try {

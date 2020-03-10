@@ -46,7 +46,7 @@ useEffect(()=>{
           `,
           variables :{        
                 "page": 1,
-                "limit": 10
+                "limit": 100
         }
     }
   }).then((result)=>{
