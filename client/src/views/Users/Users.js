@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext  } from 'react';
 import { Link } from 'react-router-dom';
-import { Badge, Card, CardBody, CardHeader, Col, Row, Table,Spinner  } from 'reactstrap';
+import { Badge, Card, CardBody, CardHeader, Col, Row, Table,Spinner,Button  } from 'reactstrap';
 import {AuthContext} from '../../context/Auth/AuthContext';
 import GetToken from '../../context/Auth/GetToken';
 import axios from 'axios';
@@ -21,9 +21,27 @@ const UserRow =(props) =>{
   return (
     <tr key={user._id}>
       
-      <td ><Link to={orderLink}><i className="fa fa-shopping-bag fa-lg mt-10" style={{color:'green'}}></i></Link></td>
-      <td><Link to={favotitesLink}><i className="fa fa-heart fa-lg mt-10"  style={{color:'red'}}></i></Link></td>
-      <td><Link to={commentLink}> <i className="fa fa-comments fa-lg mt-10"  style={{color:'black'}}></i></Link></td>
+      <td >
+        <Link to={orderLink}>
+        <Button type="submit" size="sm" color="warning">
+          <i className="fa fa-shopping-bag fa-lg mt-10" style={{color:'#FFF'}} ></i>
+        </Button>
+        </Link>
+      </td>
+      <td>
+        <Link to={favotitesLink}>
+          <Button size="sm" color="danger">
+            <i className="fa fa-heart-o fa-lg mt-10" ></i>
+          </Button>
+        </Link>
+      </td>
+      <td>
+        <Link to={commentLink}> 
+          <Button size="sm" color="primary">
+            <i className="fa fa-comments fa-lg mt-10"></i>
+          </Button>        
+        </Link>
+      </td>
       <td><Link to={userLink}>{user.phone}</Link></td>
       <td>{user.fname}</td>
       <td>{user.lname}</td>

@@ -1,21 +1,22 @@
-import React,{useState,useEffect} from 'react'
-import {View,StyleSheet,Text,TextInput,CheckBox,Picker,TouchableOpacity} from 'react-native'
+import React,{useState,useEffect,useContext} from 'react'
+import {View,StyleSheet,Text,TextInput,CheckBox,Picker, ToastAndroid} from 'react-native'
 import { Container, Content, Body } from 'native-base';
 import {useNavigation} from 'react-navigation-hooks'
 import { TextInputMask } from 'react-native-masked-text'
 import axios from 'axios'
 import AsyncStorage from '@react-native-community/async-storage';
-
+import { WebView } from 'react-native-webview';
 import states from '../assets/citys/citys.js'
 import My_Header from '../components/header/my_header'
-import Rait_sq from '../components/common/rait_sq'
-import Send_Co from '../components/add_comment_page/send_co'
+
 import My_Footer from '../components/footer/my_footer'
+import {BascketContext} from '../context/Basc/bascketContext'
+
 
 const User_Info =() => {
     
     const {navigate}=useNavigation();
-    
+    const { bascket,emptyBascket } = useContext(BascketContext);
     const [name,SETname]=useState("")
     const [family,SETfamily]=useState("")
     const [phone,SETphone]=useState("")
@@ -33,7 +34,8 @@ const User_Info =() => {
     const [paymentID,SETpaymentID]=useState("")
     const [commentID,SETcommentID]=useState("")
     const [favoriteID,SETfavoriteID]=useState("")
-
+    const [completeInfo,setCompleteInfo] = useState(false);
+    const [paylink,setPaylink] = useState('')
     useEffect(()=>{
         async function _getUserData() {
             axios({
@@ -57,15 +59,6 @@ const User_Info =() => {
                             city,
                             state,
                             address,
-                            payment {
-                                _id
-                            },
-                            comment {
-                                _id
-                            },
-                            favorite {
-                                _id
-                            }
                             }
                         }
                     `,
@@ -76,20 +69,30 @@ const User_Info =() => {
                     alert(response.data.errors[0].message)
                 }
                 else{
-                    SETname(response.data.data.getSelfInfo.fname)
-                    SETfamily(response.data.data.getSelfInfo.lname)
-                    SETpostalCode(response.data.data.getSelfInfo.code)
-                    SETtell(response.data.data.getSelfInfo.number)
-                    SETbirthday(response.data.data.getSelfInfo.birthday)
-                    SETgender(response.data.data.getSelfInfo.gender)
-                    SETphone(response.data.data.getSelfInfo.phone)
-                    SETmail(response.data.data.getSelfInfo.email)
-                    SETcity_selected(response.data.data.getSelfInfo.city)
-                    SETstate_selected(response.data.data.getSelfInfo.state)
-                    SETaddress(response.data.data.getSelfInfo.address)
-                    SETpaymentID(response.data.data.getSelfInfo.address)
-                    SETcommentID(response.data.data.getSelfInfo.address)
-                    SETfavoriteID(response.data.data.getSelfInfo.address)
+                    const {fname, lname, code, number, birthday, gender, phone, email, city, state, address} = response.data.data.getSelfInfo
+                    if(lname){
+                       
+                        SETname(fname)
+                        SETfamily(lname)
+                        SETpostalCode(code)
+                        SETtell(number)
+                        SETbirthday(birthday)
+                        SETgender(gender)
+                        SETphone(phone)
+                        SETmail(email)
+                        SETcity_selected(city)
+                        SETstate_selected(state)
+                        SETaddress(address)
+                        SETpaymentID(address)
+                        SETcommentID(address)
+                        SETfavoriteID(address)
+                    }
+                    else{
+                        SETname(fname);
+                        SETphone(phone);
+                        setCompleteInfo(true)
+                    }
+                    
                 }
             })
             .catch(function (error) {
@@ -102,35 +105,19 @@ const User_Info =() => {
 
     _buy = () => {
         async function _setUserData() {
+            const token = await AsyncStorage.getItem('token');
             axios({
                 url: '/',
                 method: 'post',
-                headers:{'token':`${await AsyncStorage.getItem('token')}`},
+                headers:{'token':token},
                 data: {
                     query: `
-                        query getSelfInfo {
-                            getSelfInfo {
-                                _id,
-                                fname,
-                                lname,
-                                code,
-                                number,
-                                birthday,
-                                gender,
-                                phone,
-                                email,
-                                password,
-                                payment {
-                                    _id
-                                },
-                                comment {
-                                    _id
-                                },
-                                favorite {
-                                    _id
-                                }
-                            }
+                    mutation UpdateSelfInfo($fname : String, $lname : String, $code : String, $number : String, $email : String, $birthday : String, $gender : Gender, $state : String, $city : String, $address : String) {
+                        UpdateSelfInfo(input : {fname : $fname, lname : $lname, code : $code, number : $number, birthday : $birthday, gender : $gender, email : $email, city : $city, state : $state , address : $address}) {
+                          status,
+                          message
                         }
+                      }
                     `,
                     variables : {
                         "fname": name,
@@ -142,7 +129,7 @@ const User_Info =() => {
                         "address": address,
                         "email": mail,
                         "birthday": birthday,
-                        "gender": men || women
+                        "gender": gender
                     }
                 }
                 })
@@ -152,7 +139,77 @@ const User_Info =() => {
                 }
                 else{
                     // alert('داده با موفقیت ثبت شد')
-                    // alert(JSON.stringify(response.data.data))
+                    const {status} = response.data.data.UpdateSelfInfo
+                     if(status==200){
+                        
+                        const products =[];
+                        const attributes = [];
+                        const discount = 0;
+                        const count = bascket.length;
+                        bascket.map((item)=>{
+                            products.push(item.productId);
+                            attributes.push(item.attributeId);
+                        })
+
+                        console.log(products);
+                        console.log(attributes);
+                        console.log(discount);
+                        console.log(count);
+                        axios({
+                            url: '/',
+                            method: 'post',
+                            headers:{'token':token},
+                            data: {
+                                query: `
+                                mutation payment($products : [ID!]!, $attributes : [ID!]!,$count : Int = 1, $discount : Int = 0, $receptor : ID) {
+                                    payment(input : {products : $products, attributes : $attributes, count : $count, discount : $discount, receptor : $receptor}) {
+                                      payLink,
+                                      status
+                                    }
+                                  }
+                                `,
+                                variables : {
+                                    "products": products,
+                                    "attributes": attributes,
+                                    "count" : count,
+                                    "discount" : discount,
+                                    "receptor": null
+                                  }
+                                 }
+                            }).then((response)=>{
+                                    if(response.data.errors){
+                                        const {message} = response.data.errors[0];
+                                        ToastAndroid.showWithGravityAndOffset(
+                                            message,
+                                            ToastAndroid.LONG,
+                                            ToastAndroid.BOTTOM,
+                                            25,
+                                            50,
+                                          );
+                                    }
+                                    else{
+                                       const {payLink} =   response.data.data.payment;
+                                       setPaylink(payLink);
+                                       ToastAndroid.showWithGravityAndOffset(
+                                        'در حال انتقال به درگاه پرداخت',
+                                        ToastAndroid.LONG,
+                                        ToastAndroid.BOTTOM,
+                                        25,
+                                        50,
+                                      );
+                                    }
+                            }).catch((error)=>{
+                                    console.log(error)
+                            })
+
+
+
+
+
+                     }
+                     else{
+                         alert('خطا در ثبت سفارش')
+                     }
                 }
             })
             .catch(function (error) {
@@ -161,7 +218,7 @@ const User_Info =() => {
         }
 
         _setUserData();
-        navigate('Payment')
+        //navigate('Payment')
     }
 
 
@@ -206,7 +263,8 @@ const User_Info =() => {
         if(women){
             SETwomen(false)
         }
-        SETmen(e)
+        SETmen(e);
+        SETgender("Male")
     }
 
     const _womenHandler = (e) => {
@@ -214,6 +272,7 @@ const User_Info =() => {
             SETmen(false)
         }
         SETwomen(e)
+        SETgender("Famale")
     }
 
     const _postalCodeHandler = (e) => {
@@ -230,151 +289,194 @@ const User_Info =() => {
 
     return(
         <Container style={{backgroundColor:'#eee'}}>
-            <My_Header {...props}/>
-            <Content style={styles.container}>
+                {
+                    paylink !=='' ? 
+                    <WebView 
+                        source={{ uri: paylink }}
+                        style={{flex:1}}
+                        onNavigationStateChange={data =>
+                            {
+                                const route = data.url.replace(/.*?:\/\//g, '');
+                                const id = route.split('/')[1];
+                                const routeName = route.split('/')[4];
+                               
+                                if(routeName)
+                                {
+                                    const status = routeName.split('=')[2];
+                                    if(status =='NOK')
+                                    {
 
-                <View style={styles.view}>
-                    <Text style={styles.text}> نام</Text>
-                    <TextInput 
-                        editable={name?false:true}
-                        style={[styles.textIn]}
-                        value={name}
-                        onChangeText={(e)=>_nameHandler(e)}
-                    />
-                </View>
-
-                <View style={styles.view}>
-                    <Text style={styles.text}> نام خانوادگی</Text>
-                    <TextInput 
-                        editable={family?false:true}
-                        value={family}
-                        style={[styles.textIn]}
-                        onChangeText={(e)=>_familyHandler(e)}
-                    />
-                </View>
-
-                <View style={styles.view}>
-                    <Text style={styles.text}>شماره تلفن ثابت</Text>
-                    <TextInput
-                        value={phone} 
-                        editable={phone?false:true}
-                        style={[styles.textIn]}
-                        onChangeText={(e)=>_phoneHandler(e)}
-                    />
-                </View>
-
-                <View style={styles.view}>
-                    <Text style={styles.text}>شماره همراه</Text>
-                    <TextInput 
-                        value={tell}
-                        editable={tell?false:true}
-                        style={[styles.textIn]}
-                        onChangeText={(e)=>_tellHandler(e)}
-                    />
-                </View>
-
-                <View style={styles.view}>
-                    <Text style={styles.text}>ایمیل</Text>
-                    <TextInput 
-                        value={mail}
-                        editable={mail?false:true}
-                        style={[styles.textIn]}
-                        onChangeText={(e)=>_emailHandler(e)}
-                    />
-                </View>
-
-                <View style={styles.view}>
-                    <Text style={styles.text}>تاریخ تولد</Text>
-                    <TextInputMask
-                        type={'datetime'}
-                        editable={birthday?false:true}
-                        placeholder={"1360/12/1"}
-                        options={{
-                            format: 'YYYY/MM/DD'
-                        }}
-
-                        // dont forget to set the "value" and "onChangeText" props
-                        value={birthday}
-                        onChangeText={_birthdayHandler}
-                        style={styles.textIn}
-                    />
-                </View>
-
-                <View style={styles.view}>
-                    <Text style={styles.text}>جنسیت</Text>
-                    <View style={{flexDirection:'row',alignItems:'center'}}>
-                        <Text>مرد</Text>
-                        <CheckBox
-                            onValueChange={(e)=>_menHandler(e)}
-                            value={gender=="Male"?true:men}
-                            disabled={gender?true:false}
-                        />
-                        <Text>زن</Text>
-                        <CheckBox
-                            onValueChange={(e)=>_womenHandler(e)}
-                            value={gender!="Male"?true:women}
-                            disabled={gender?true:false}
-                        />
-                    </View>
-                </View>
-
-                <View style={styles.view}>
-                    <Text style={styles.text}>استان</Text>
-                    <Picker
-                        selectedValue={state_selected}
-                        style={styles.picher}
-                        onValueChange={_state_selective}
-                    >
-                        <Picker.Item label={state_selected || "استان خود را انتخاب کنید"}/>
-                        {
-                            states.map((item,index)=>(
-                                <Picker.Item label={item.name} value={item.name} key={index}/>
-                            ))
+                                      setPaylink('');
+                                      navigate('Shop_cart')
+                                       ToastAndroid.show(
+                                        'پرداخت شما لغو گردید',
+                                        ToastAndroid.LONG,
+                                        ToastAndroid.BOTTOM,
+                                      );
+                                        
+                                    }
+                                    else if (status =='OK'){
+                                        setPaylink('');
+                                        navigate('Main');
+                                        emptyBascket();
+                                       ToastAndroid.show(
+                                        'پرداخت شما  با موفقیت انجام شد',
+                                        ToastAndroid.LONG,
+                                        ToastAndroid.BOTTOM,
+                                      );
+                                    }
+                                }
+                                
+                            }
+                            
                         }
-                    </Picker>
-                </View>
-
-                <View style={styles.view}>
-                    <Text style={styles.text}>شهر</Text>
-                    <Picker
-                        selectedValue={city_selected}
-                        style={styles.picher}
-                        onValueChange={_city_selective}
-                    >
-                        {
-                            cityes.length==0?
-                                <Picker.Item label={ city_selected || "ابتدا استان خود را انتخاب کنید"}/>
-                            :
-                                cityes.map((item,index)=>(
-                                    <Picker.Item label={item.name} value={item.name} key={index}/>
-                                ))
-                        }
-                    </Picker>
-                </View>
-
-                <View style={styles.view}>
-                    <Text style={styles.text}> کد پستی</Text>
-                    <TextInput 
-                        style={[styles.textIn]}
-                        editable={postalCode?false:true}
-                        value={postalCode}
-                        onChangeText={(e)=>_postalCodeHandler(e)}
-                    />
-                </View>
-
-                <View style={styles.view}>
-                        <Text style={styles.text}>آدرس *</Text>
-                        <TextInput 
-                            scrollEnabled
-                            editable={address?false:true}
-                            value={address}
-                            style={[styles.textIn]}
-                            onChangeText={(e)=>_addressHandler(e)}
-                        />
-                    </View>
-
-            </Content>
-            <My_Footer name={'ثبت نهایی'} onLogin={_buy}/>
+                      />:
+                    <React.Fragment>
+                    <My_Header {...props}/>
+                    <Content style={styles.container}>
+                        
+                        <View style={styles.view}>
+                            <Text style={styles.text}> نام</Text>
+                            <TextInput 
+                               
+                                style={[styles.textIn]}
+                                value={name}
+                                onChangeText={(e)=>_nameHandler(e)}
+                            />
+                        </View>
+        
+                        <View style={styles.view}>
+                            <Text style={styles.text}> نام خانوادگی</Text>
+                            <TextInput 
+                                value={family}
+                                style={[styles.textIn]}
+                                onChangeText={(e)=>_familyHandler(e)}
+                            />
+                        </View>
+        
+                        <View style={styles.view}>
+                            <Text style={styles.text}>شماره همراه</Text>
+                            <TextInput
+                                value={phone} 
+                                editable={phone ? false : true}
+                                style={[styles.textIn]}
+                                onChangeText={(e)=>_phoneHandler(e)}
+                            />
+                        </View>
+        
+                        <View style={styles.view}>
+                            <Text style={styles.text}>شماره تلفن ثابت</Text>
+                            <TextInput 
+                                value={tell}
+                                style={[styles.textIn]}
+                                onChangeText={(e)=>_tellHandler(e)}
+                            />
+                        </View>
+        
+                        <View style={styles.view}>
+                            <Text style={styles.text}>ایمیل</Text>
+                            <TextInput 
+                                value={mail}
+                                style={[styles.textIn]}
+                                onChangeText={(e)=>_emailHandler(e)}
+                            />
+                        </View>
+        
+                        <View style={styles.view}>
+                            <Text style={styles.text}>تاریخ تولد</Text>
+                            <TextInputMask
+                                type={'datetime'}
+                                placeholder={"1360/12/1"}
+                                options={{
+                                    format: 'YYYY/MM/DD'
+                                }}
+        
+                                // dont forget to set the "value" and "onChangeText" props
+                                value={birthday}
+                                onChangeText={_birthdayHandler}
+                                style={styles.textIn}
+                            />
+                        </View>
+        
+                        <View style={styles.view}>
+                            <Text style={styles.text}>جنسیت</Text>
+                            <View style={{flexDirection:'row',alignItems:'center'}}>
+                                <Text>مرد</Text>
+                                <CheckBox
+                                    onValueChange={(e)=>_menHandler(e)}
+                                    value={gender== "Male"?true:false}
+                                    
+                                />
+                                <Text>زن</Text>
+                                <CheckBox
+                                    onValueChange={(e)=>_womenHandler(e)}
+                                    value={gender=="Famale"?true:false}
+                                    
+                                />
+                            </View>
+                        </View>
+        
+                        <View style={styles.view}>
+                            <Text style={styles.text}>استان</Text>
+                            <Picker
+                                selectedValue={state_selected}
+                                style={styles.picher}
+                                onValueChange={_state_selective}
+                            >
+                                <Picker.Item label={state_selected || "استان خود را انتخاب کنید"}/>
+                                {
+                                    states.map((item,index)=>(
+                                        <Picker.Item label={item.name} value={item.name} key={index}/>
+                                    ))
+                                }
+                            </Picker>
+                        </View>
+        
+                        <View style={styles.view}>
+                            <Text style={styles.text}>شهر</Text>
+                            <Picker
+                                selectedValue={city_selected}
+                                style={styles.picher}
+                                onValueChange={_city_selective}
+                            >
+                                       
+                                {
+                                    cityes.length==0?
+                                        <Picker.Item label={ city_selected || "ابتدا استان خود را انتخاب کنید"}/>
+                                    :
+                                        cityes.map((item,index)=>(
+                                            <Picker.Item label={item.name} value={item.name} key={index}/>
+                                        ))
+                                }
+                            </Picker>
+                        </View>
+        
+                        <View style={styles.view}>
+                            <Text style={styles.text}> کد پستی</Text>
+                            <TextInput 
+                                style={[styles.textIn]}
+                               
+                                value={postalCode}
+                                onChangeText={(e)=>_postalCodeHandler(e)}
+                            />
+                        </View>
+        
+                        <View style={styles.view}>
+                                <Text style={styles.text}>آدرس *</Text>
+                                <TextInput 
+                                    scrollEnabled
+                                    
+                                    value={address}
+                                    style={[styles.textIn]}
+                                    onChangeText={(e)=>_addressHandler(e)}
+                                />
+                            </View>
+        
+                    </Content>
+                    <My_Footer name={'ثبت نهایی'} onLogin={_buy}/>
+                    </React.Fragment>
+                }
+           
         </Container>
     )
 }

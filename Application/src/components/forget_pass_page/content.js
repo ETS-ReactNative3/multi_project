@@ -1,22 +1,56 @@
 import React,{useState} from 'react'
-import {View,StyleSheet,TextInput,TouchableOpacity,Text,Dimensions} from 'react-native'
+import {View,StyleSheet,ToastAndroid,Text,Dimensions} from 'react-native'
 import Ripple from 'react-native-material-ripple'
 import CodeInput from 'react-native-confirmation-code-field';
-import {useNavigation} from 'react-navigation-hooks'
+import {useNavigation,useNavigationParam} from 'react-navigation-hooks'
+import axios from 'axios'
 
 const w = Dimensions.get('window').width;
 
 const Content =() => {
     const { navigate } = useNavigation();
     const [errorCode,setErrorCode]=useState(false);
-
+    const num = useNavigationParam('num');
+    const pass = useNavigationParam('pass')
+    console.log(num);
+    console.log(pass)
     const handlerOnFulfill = (code) => {
-        if (code==11111) {
-          alert('کد درست است')
-          setErrorCode(false)
-        } else {
-          setErrorCode(true)
-        }
+        axios({
+            url: '/',
+            method: 'post',
+            data: {
+              query: `
+              mutation {
+                register(input : { phone : "${num}", password : "${pass}", digit : "${code}"}) {
+                      status,
+                  message
+                }
+              }
+                `
+            }
+            }).then((response)=>{
+                    console.log(response)
+                  const{message,status} =  response.data.data.register;
+                  if(status==403)
+                  {
+                    ToastAndroid.show(
+                        message,
+                        ToastAndroid.LONG,
+                        ToastAndroid.BOTTOM,
+                      );
+                     
+                  }
+                  else if(status==200){
+                    ToastAndroid.show(
+                        message,
+                        ToastAndroid.LONG,
+                        ToastAndroid.BOTTOM,
+                      );
+                      navigate('Login')
+                  }
+            }).catch((error)=>{
+                console.log(error)
+            })
     };
 
       
@@ -24,15 +58,12 @@ const Content =() => {
         <View style={styles.container}>
             <View style={styles.sec1}>
                 <Text style={styles.sec1_t1}>
-                  کد تایید برای شماره 09150003423 ارسال گردید
-                </Text>
-                <Text style={styles.sec1_t2} onPress={()=>navigate('Login')}>
-                    ویرایش شماره تماس
+                  کد تایید برای شماره {num} ارسال گردید
                 </Text>
             </View>
             <View style={styles.sec2}>
                 <Text style={styles.sec2_t1}>
-                    کد تایید را وارید نمایید
+                    کد تایید را وارد نمایید
                 </Text>
                 <View style={styles.sec2_p2}>
                     <CodeInput 
@@ -40,11 +71,12 @@ const Content =() => {
                         inactiveColor='#aeaeae'
                         variant='border-b'
                         cellBorderWidth={2}
-                        size={50}
+                        size={40}
                         space={20}
                         fontColor='#3b3b3b'
                         keyboardType='number-pad'
                         font_Sise={20}
+                        cellCount={4}
                         onFulfill={handlerOnFulfill}
                     />
                 </View>

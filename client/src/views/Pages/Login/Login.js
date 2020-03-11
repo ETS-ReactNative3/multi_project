@@ -58,7 +58,7 @@ const Login =(props)=> {
                     }
                   }).then((result) => {
                     setLoading(false);
-                    console.log(result.data);
+                    
                     if(result.data.data)
                     {
                       const {token} =result.data.data.login

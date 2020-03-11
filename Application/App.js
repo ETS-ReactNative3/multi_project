@@ -43,7 +43,7 @@ const Stack = createStackNavigator({
   User_Info:User_Info,
   Payment:Payment,
 },{
-  initialRouteName:"Shop_cart",
+  initialRouteName:"Main",
   headerMode:'none'  
 });
 

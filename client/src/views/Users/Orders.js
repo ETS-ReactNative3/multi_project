@@ -47,23 +47,18 @@ const Orders =(props)=> {
           query: `
           query getAllUsers($userId : ID) {
             getUsers(userId : $userId) {
-              _id,
+              _id
               fname,
               lname,
-              phone,
               payment {
                 _id,
-                orderStatus{
-                  name,
-                },
-                payment,
-                price,
                 createdAt,
-                product {
-                  fname
-                }
-              },
-             
+                orderStatus{
+                  name
+                },
+                price,
+                payment,
+              }
             }
           }
             `,

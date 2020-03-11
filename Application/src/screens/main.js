@@ -29,7 +29,7 @@ const Main = (props) => {
             <Cat />
             <Amazing_Auggestion />
             {/* <Off /> */}
-            <Offer />
+            {/* <Offer /> */}
             {/* <Off /> */}
             <KalaOne />
             <KalaTwo />
