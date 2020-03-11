@@ -82,11 +82,6 @@ export default {
           name: 'پرونده کاربران',
           url: '/users',
           icon: 'icon-cursor',
-        },
-        {
-          name: 'اضافه کردن کاربر ',
-          url: '/users/adduser',
-          icon: 'icon-cursor',
         }
       ],
     },

@@ -338,7 +338,7 @@ const User_Info =() => {
                         <View style={styles.view}>
                             <Text style={styles.text}> نام</Text>
                             <TextInput 
-                                editable={name ?false : true}
+                               
                                 style={[styles.textIn]}
                                 value={name}
                                 onChangeText={(e)=>_nameHandler(e)}

@@ -1,5 +1,5 @@
-import React,{useEffect,useContext,useState} from 'react'
-import {View} from 'react-native'
+import React,{useContext,useState} from 'react'
+import {ToastAndroid} from 'react-native'
 import {Content,Container} from 'native-base'
 import axios from 'axios'
 import {useNavigation} from 'react-navigation-hooks'
@@ -38,18 +38,23 @@ const SignOn =() => {
                 method: 'post',
                 data: {
                   query: `
-                  mutation {
-                    register(input : { phone : "${usernum}", password : "${userpass}"}) {
-                        status,
-                        message
+                  query {
+                    verifyRegister(Phone : "${usernum}") {
+                      status,
+                      message
                     }
                   }
                     `
                 }
                 })
               .then(function (response) {
-                console.log(response.data.data.register.message);
-                navigate('Login',{num:usernum,pass:userpass})
+                const {message} = response.data.data.verifyRegister;
+                ToastAndroid.show(
+                    message,
+                    ToastAndroid.LONG,
+                    ToastAndroid.BOTTOM,
+                  );
+                navigate('Forget_Pass',{num:usernum,pass:userpass})
               })
               .catch(function (error) {
                 console.log('+'+ error);

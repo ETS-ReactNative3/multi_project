@@ -6,7 +6,7 @@ import Content from '../components/forget_pass_page/content'
 
 let props ={
     head_name:'ForrgetPass',
-    head_page_name:'تایید شماره تفلن همراه'
+    head_page_name:'تایید شماره تلفن همراه'
 }
 
 const Forget_Pass =() => {

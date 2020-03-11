@@ -64,14 +64,14 @@ const OrdersStatus = (props)=>{
     }
     else{
       const {allOrderStatus  } = result.data.data;
-      console.log(allOrderStatus);
+      
       const arrayHolder = {...chartData};
       allOrderStatus.map(item=>{
         arrayHolder.labels.push(item.order);
         arrayHolder.datasets[0].data.push(item.count)
       })
       setChartData(arrayHolder);
-      console.log(arrayHolder);
+      
   }
    
   }).catch(error=>{

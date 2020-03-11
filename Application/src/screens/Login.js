@@ -82,18 +82,20 @@ const Login =() => {
     return(
         <Container style={{backgroundColor:'#f3f3f3',}}>
             <My_Header {...props} />
-            {
-                loading?
-                    <Loader/>
-                :
+           
                     <Content>
                         <Body 
                             userpassHandler={(e)=>userpassHandler(e)}
                             usernameHandler={(e)=>usernameHandler(e)}  
                         />
                     </Content>
-            }
-            <My_Footer onLogin={onLogin}/>
+                    {
+                    loading
+                        ?
+                        <Loader/>
+                        :
+                        <My_Footer onLogin={onLogin}/>
+                    }
         </Container>
     )
 }

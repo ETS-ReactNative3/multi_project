@@ -42,7 +42,8 @@ const UserComments =(props)=> {
                 createdAt,
                 check,
                 product {
-                  _id
+                  _id,
+                  fname
                 }
               },
               favorite {
