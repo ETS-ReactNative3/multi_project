@@ -21,7 +21,8 @@ const typeDefs = gql`
         getAllOrderStatus : [OrderStatus],
         getAllMultimedia(page : Int, limit : Int) : [Multimedia],
         getAllSlider(sliderId : ID) : [Slider],
-        getBanner : [Banner]
+        getBanner : [Banner],
+        getFavorite(productId : ID) : operation!
 
         userAtmonth : [AtMonth],
         productAtmonth : [AtMonth],
@@ -64,7 +65,7 @@ const typeDefs = gql`
         payment( input : Inputpayment) : operation!,
         receptor(input : InputReceptor) : operation,
         OrderStatus(name : String!, image : Upload!, default : Boolean) : operation!,
-        favorite(productId : ID!) : operation!
+        favorite(productId : ID!, uncheck : Boolean = false) : operation!
         Banner(categoryId : ID!, imageId : ID!, default : Boolean = false) : operation!
 
         addLike(commentId : ID!) : operation!,
@@ -267,8 +268,10 @@ const typeDefs = gql`
         status : Int,
         message : String,
         payLink : String,
-        like : Int,
-        dislike : Int
+        like : Float,
+        dislike : Float,
+        checkfavorite : Boolean
+
     }
 
     type ProductOperation {

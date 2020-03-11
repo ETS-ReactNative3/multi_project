@@ -674,7 +674,7 @@ const resolvers = {
 
         verifyRegister : async (param, args, { secretID }) => {
             try {
-                const digit = Math.floor(Math.random() * (9999 - 1000)) + 1000;
+                const digit = Math.floor(Math.random() * (99999 - 10000)) + 10000;
                 await VlidationRegister.create({
                     verifyToken : digit
                 })
@@ -930,6 +930,37 @@ const resolvers = {
                 count : commentcount,
                 value : ((value)/(commentcount*surveyCount)).toFixed(1)
             }
+        },
+
+        getFavorite : async (param, args, { check }) => {
+            if(check) {
+                if(args.productId == null || args.productId == "") {
+                    return {
+                        status : 401,
+                        message : 'این محصول در لیست علاقه مندی های کاربر قرار نگرفته است!'
+                    }
+                }
+                const fav = await Favorite.findOne({$and : [{user : check.id}, {product : args.productId}]})
+                if(fav != null) {
+                    return {
+                        status : 200,
+                        message : 'این محصول در لیست علاقه مندی های شما قرار دارد',
+                        checkfavorite : true
+                    }
+                } else {
+                    return {
+                        status : 401,
+                        message : 'این محصول در لیست علاقه مندی های شما قرار ندارد',
+                        checkfavorite : false
+                    }
+                }
+            } else {
+                return {
+                    status : 401,
+                    message : 'امکان فراخوانی علاقه مندی کاربر وجود ندارد! وارد حاب کاربری خود شوید',
+                    checkfavorite : false
+                }
+            }
         }
 
     },
@@ -966,7 +997,7 @@ const resolvers = {
 
                     const codeToken = await VlidationRegister.findOne({ verifyToken : args.input.digit});
 
-                    if(!codeToken) {
+                    if(!codeToken || codeToken.expire == true) {
                         return {
                             status : 403,
                             message : 'درخواست شما اعتبار لازم برای ثبت نام را ندارد!'
@@ -981,6 +1012,9 @@ const resolvers = {
                             ...args
                         });
 
+                        codeToken.set({ expire :true})
+                        await codeToken.save()
+                        
 
                         return {
                             status : 200,
@@ -1437,15 +1471,35 @@ const resolvers = {
                         }
                     }
 
-                    await Favorite.create({
-                        user : user._id,
-                        product : args.productId
-                    })
-
-                    return {
-                        status : 200,
-                        message : 'محصول مورد نظر به لیست علاقه مندی اضافه شد.'
+                    if(args.uncheck == true) {
+                        const fav = await Favorite.findOne({$and : [{user : check.id}, {product : args.productId}]})
+                        if(fav != null) {
+                            await fav.remove()
+                            return {
+                                status : 200,
+                                message : 'این محصول از لیست علاقه مندی های شما خارج شد',
+                                checkfavorite : false
+                            }
+                        } else {
+                            return {
+                                status : 401,
+                                message : 'این محصول در لیست علاقه مندی های شما قرار ندارد',
+                                checkfavorite : false
+                            }
+                        }
+                    } else {
+                        await Favorite.create({
+                            user : user._id,
+                            product : args.productId
+                        })
+    
+                        return {
+                            status : 200,
+                            message : 'محصول مورد نظر به لیست علاقه مندی اضافه شد.',
+                            checkfavorite : true
+                        }
                     }
+
                 } catch {
                     const error = new Error('امکان درج محصول مورد نظر به لیست علاقه مندی وجود ندار!');
                     error.code = 401;
